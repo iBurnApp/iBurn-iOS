@@ -3,7 +3,7 @@ import CoreLocation
 import GRDB
 
 /// Mutant vehicle object with complete API field mapping
-public struct MutantVehicleObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+public struct MutantVehicleObject: DataObject, Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
 
     public static let databaseTableName = "mv_objects"

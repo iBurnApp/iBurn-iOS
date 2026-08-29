@@ -19,8 +19,14 @@ struct FeatureFlagsView: View {
     @State private var timer: Timer?
 
     // SwiftUI Lists feature flag
-    @State private var useSwiftUILists = UserDefaults.standard.bool(forKey: Preferences.FeatureFlags.useSwiftUILists.key)
-    
+    @State private var useSwiftUILists = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useSwiftUILists)
+
+    // Prototype: where the global search entry point lives
+    @State private var searchLayout = MapSearchLayout.current
+
+    // AI semantic merge in global search — off by default, see the flag's doc comment
+    @State private var useAISearch = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
+
     // Dynamically calculated Burning Man dates based on Labor Day
     private var eventYear: Int {
         Calendar.current.component(.year, from: Date())
@@ -112,12 +118,35 @@ struct FeatureFlagsView: View {
             Section {
                 Toggle("Use SwiftUI Lists", isOn: $useSwiftUILists)
                     .onChange(of: useSwiftUILists) { newValue in
-                        UserDefaults.standard.setValue(newValue, forKey: Preferences.FeatureFlags.useSwiftUILists.key)
+                        PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useSwiftUILists)
+                    }
+                Toggle("AI Search Merge", isOn: $useAISearch)
+                    .onChange(of: useAISearch) { newValue in
+                        PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useAISearch)
                     }
             } header: {
                 Text("UI Features")
             } footer: {
-                Text("Use new SwiftUI-based list views for Art and Camps instead of legacy UIKit implementation.")
+                Text("Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps. Turn off to fall back to the legacy UIKit lists. AI Search Merge folds on-device semantic matches into global search — off by default while the results aren't useful. Reopen search after changing it.")
+                    .font(.footnote)
+            }
+
+            // Map Search Layout prototype
+            Section {
+                Picker("Search Bar", selection: $searchLayout) {
+                    ForEach(MapSearchLayout.allCases, id: \.self) { layout in
+                        Text(layout.displayName).tag(layout)
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .onChange(of: searchLayout) { newValue in
+                    MapSearchLayout.current = newValue
+                }
+            } header: {
+                Text("Map Search Layout")
+            } footer: {
+                Text(searchLayoutFooter)
                     .font(.footnote)
             }
 
@@ -164,6 +193,13 @@ struct FeatureFlagsView: View {
         }
     }
     
+    private var searchLayoutFooter: String {
+        if #available(iOS 26.0, *) {
+            return searchLayout.summary
+        }
+        return "The bottom layouts need iOS 26; this device falls back to the navigation bar."
+    }
+
     private func setupView() {
         // Load saved date if available
         if let savedDate = UserDefaults.standard.object(forKey: "BRCMockDateValue") as? Date {

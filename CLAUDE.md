@@ -29,159 +29,68 @@ Each document should include:
 * **Related Work**: Reference previous documents and build upon them
 * **Completion**: Mark final outcomes and any remaining work
 
+## Driving the App / Flow Verification
+
+* To run the app in the simulator and exercise user flows (sanity passes, screenshots, UI bug repro), use the **`drive-app` skill** (`.claude/skills/drive-app/SKILL.md`). It covers XcodeBuildMCP setup, the SwiftUI/PlayaDB feature flag, onboarding automation, and on-device database verification. Physical-device deployment lives in `.claude/skills/drive-app/references/device-deploy.md`.
+* Critical-flow scripts live in `.claude/skills/drive-app/references/flows.md`. **Keep them current:** when a change adds or alters a user-facing flow (screens, onboarding steps, permissions, navigation), update the corresponding flow entry in the same change. When driving the app, if reality diverges from the doc, fix the doc in that session.
+
 ## Source Control
 
-IMPORTANT: Do not perform any operations that result in git writes unless authorized by the user. Never attempt to rewrite history, pull from remote, squash, merge or rebase unless authorized. You can use read-only operations like `git show`, `git log` etc.
-
-## Project Overview
-
-iBurn is an offline map and guide for the Burning Man art festival. It's a native iOS application built primarily with Swift and Objective-C, featuring offline map tiles, art/camp/event data management, and location tracking capabilities.
-
-## Project Details
-
-**Key Project Information**:
-- **Workspace Path**: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace`
-- **Main Scheme**: `iBurn` (for building the app)
-- **Test Schemes**: `iBurnTests`, `PlayaKitTests` 
-- **Default Destination**: iPhone 16 Pro (arm64 simulator)
-- **Active Branch**: Check with `git status` as development happens on feature branches
-
-### Project Discovery
-
-Start new sessions by exploring the project structure:
-
-```bash
-# List available schemes
-xcodebuild -workspace iBurn.xcworkspace -list
-
-# List available simulators
-xcrun simctl list devices available
-
-# Check workspace structure
-open iBurn.xcworkspace  # Opens in Xcode for scheme inspection
-```
+* **Commit after finishing a validated chunk of work.** Once a coherent unit of work is complete and verified (tests passing, plus an app build when the change could affect the app target), commit it without waiting to be asked. Keep each commit scoped to one logical change with a descriptive message.
+* Before committing, check `git status` for unintended changes (e.g. xcodebuild flipping `DEVELOPMENT_TEAM` in the pbxproj — revert those rather than committing them).
+* Do NOT push to remotes unless the user asks. Never rewrite history, pull from remote, squash, merge or rebase unless authorized.
+* Read-only operations (`git show`, `git log`, `git diff`, etc.) are always fine.
 
 ## Development Commands
-
-### Build/Test Output Parsing (xcsift)
-
-This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
-
-Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
-
-Examples:
-```bash
-xcodebuild build ... 2>&1 | xcsift -f toon -w
-xcodebuild test ... 2>&1 | xcsift -f toon -w
-swift test 2>&1 | xcsift -f toon -w
-```
 
 ### Building and Dependencies
 - `pod install` - Install CocoaPods dependencies (required after cloning)
 - `git submodule update --init` - Initialize git submodules (required after cloning)
 - Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
 
-### Build Commands
+### Build/Test Output Parsing (xcsift)
 
-**Preferred Build Command (arm64 simulator, parsed via xcsift)**:
-```bash
-# Build for iOS Simulator (quiet xcodebuild + xcsift parsing)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
-#
-# Note: if xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully
-# incremental build with `-quiet`). Re-run without `-quiet`.
+This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
+Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
 
-# Build and show full xcodebuild output (debugging)
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
-```
-
-**Testing Commands**:
-```bash
-# Run tests on simulator with quiet output
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
-
-# Run tests with full output (for debugging)
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' 2>&1 | xcsift -f toon -w
-
-# Run PlayaKit tests
-xcodebuild test -workspace iBurn.xcworkspace -scheme PlayaKitTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.2,arch=arm64' -quiet 2>&1 | xcsift -f toon -w
-
-# Run SwiftPM tests (note: may require elevated permissions in sandboxed environments)
-swift test 2>&1 | xcsift -f toon -w
-```
-
-**Utility Commands**:
-```bash
-# Clean build products
-xcodebuild clean -workspace iBurn.xcworkspace -scheme iBurn 2>&1 | xcsift -f toon -w
-
-# Show build settings
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -showBuildSettings 2>&1 | xcsift -f toon -w
-```
-
-### Simulator Management
-
-Basic simulator control using standard tools:
+Default destination: **iPhone 17 Pro Max, iOS 26.5, arm64 simulator**. Schemes: `iBurn` (app), `iBurn (Mock Date)`, `iBurnTests`, `iBurnWatch`.
 
 ```bash
-# List available simulators
-xcrun simctl list devices available
+DEST='platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64'
 
-# Boot a simulator
-xcrun simctl boot "iPhone 17 Pro Max"
-
-# Open Simulator app
-open -a Simulator
-
-# Shutdown simulator
-xcrun simctl shutdown "iPhone 17 Pro Max"
-
-# Erase simulator content
-xcrun simctl erase "iPhone 17 Pro Max"
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
+swift test --package-path Packages/PlayaDB 2>&1 | xcsift -f toon -w   # SwiftPM packages run per-directory (PlayaDB, PlayaAPI, ...);
+                                                                      # there is no root Package.swift. May need sandbox disabled.
 ```
 
-### Physical Device Deployment (XcodeBuildMCP)
+If xcsift prints "Error: No input provided", xcodebuild likely produced no output (e.g. a fully incremental build with `-quiet`). Re-run without `-quiet`.
 
-To build and run on a physical device using XcodeBuildMCP, the `device` workflow must be enabled.
+### Pre-baked database seed (`playa-seed`)
 
-**Configuration** (`.xcodebuildmcp/config.yaml`):
-```yaml
-schemaVersion: 1
-enabledWorkflows: ["simulator", "device"]
-```
+`iBurn/PlayaDB-<year>.zip` and `iBurnWatch/PlayaDB-<year>.zip` ship a pre-populated PlayaDB
+so first launch doesn't import JSON or compute thumbnail colors on device. Both are
+gitignored — regenerate them whenever the API data or media files change:
 
-After creating or modifying this file, restart the XcodeBuildMCP MCP server (e.g. `/mcp` → reconnect in Claude Code).
-
-**Device Discovery**:
 ```bash
-# List connected physical devices (USB or network)
-xcrun devicectl list devices
+swift run --package-path Packages/PlayaSeed playa-seed --fetch-media
 ```
 
-**XcodeBuildMCP Device Workflow**:
-1. `list_devices` — List connected devices and their UDIDs
-2. `session_set_defaults` — Set workspace, scheme, and `deviceId` (UDID)
-3. `build_run_device` — Build, install, and launch on device (single step)
-4. `launch_app_device` — Launch an already-installed app
-5. `start_device_log_cap` / `stop_device_log_cap` — Capture device logs
-6. `test_device` — Run tests on the physical device
+One run writes both copies (the phone and watch each restore from their own bundle).
+`--fetch-media` also downloads any thumbnails the API references but
+`Submodules/iBurn-Data/data/<year>/MediaFiles/MediaFiles.bundle` is missing; commit those
+in the submodule. `--help` lists the rest (`--year`, `--data-root`, `--output`,
+`--skip-colors`). Without a seed both apps still work — they fall back to the on-device
+JSON import — so a missing zip shows up as a slow first launch, not a build failure. The
+JSON stays bundled either way: `needsImport` compares it against the seed's `update_info`
+and re-imports when a build ships data newer than the baked database.
 
-**Requirements**:
-- Code signing must be configured in Xcode for the target device
-- Device must have Developer Mode enabled
-- Device must be unlocked for app launch to succeed
-
-### Fastlane Commands
-- `fastlane ios beta` - Build and upload to TestFlight
-- `fastlane ios refresh_dsyms` - Download and upload crash symbols
+Colors come from `Packages/PlayaColors`, which the app also uses at runtime, so a baked
+color is identical to one the device would compute.
 
 ### Testing
 
 When adding new functionality, make sure to plan for testability. When your feature is complete, add tests to validate your business logic, and then ensure they are passing.
-
-- **Command Line**: Use xcodebuild test commands shown above for automated testing
-- **Xcode GUI**: Run tests through Xcode Test Navigator or `Cmd+U`  
-- **Test targets**: `iBurnTests`, `PlayaKitTests`, and local Swift Package targets for `PlayaDB` and `PlayaAPI`
 
 ## Architecture Overview
 
@@ -189,204 +98,29 @@ When adding new functionality, make sure to plan for testability. When your feat
 
 Protocolize dependencies and use dependency injection with factory pattern. For example `protocol FooService` and `class FooServiceImpl: FooService`, where the factory builds and returns a `FooService`, obscuring the underlying Impl.
 
-### Core Components
-
-**Database Layer (YapDatabase)**
-- Primary data storage using YapDatabase (key-value database)
-- Database manager: `BRCDatabaseManager` (Obj-C) with Swift extensions
-- Data objects inherit from `BRCYapDatabaseObject` and conform to YAP protocols
-- Background/UI connection separation for performance
-
-**Data Models**
-- `BRCDataObject` - Base class for all data objects (Art, Camps, Events)
-- `BRCArtObject`, `BRCCampObject`, `BRCEventObject` - Specific data types
-- `BRCUpdateInfo` - Manages data updates and versioning
-- Data import handled by `BRCDataImporter` (both Obj-C and Swift versions)
-
-**Map System (MapLibre)**
-- Uses MapLibre for offline map rendering (migrated from Mapbox)
-- `BaseMapViewController` - Base map functionality
-- `MainMapViewController` - Primary map interface
-- `MapViewAdapter` and `UserMapViewAdapter` - Map interaction handling
-- Custom annotation views: `ImageAnnotationView`, `LabelAnnotationView`
-
-**UI Architecture**
-- Mix of UIKit (programmatic and Storyboard) with some SwiftUI adoption
-- `TabController` - Root tab bar controller with theme management
-- Table view adapters: `YapTableViewAdapter` for database-driven lists
-- Custom table cells for different data types with corresponding XIB files
-
-**Location Services**
-- `BRCLocations` - Centralized location management
-- `CLLocationManager+iBurn` - Location utilities
-- User tracking with breadcrumb trail functionality
-
-**Data Management**
-- Year-based configuration via `YearSettings`
-- Embargo system for restricted data access
-- Background data downloads and updates
-- Offline-first approach with optional data syncing
-
-### Key Frameworks
-- **YapDatabase** - Local database storage
-- **MapLibre** - Map rendering and offline tiles  
-- **Mantle** - Object serialization/deserialization
-- **CocoaLumberjack** - Logging
-- **Firebase** - Analytics and crash reporting
-- **Anchorage** - Auto Layout helpers
-
-### File Organization
-- `/iBurn/` - Main application code
-  - Core data objects and managers
-  - View controllers and UI components
-  - Map-related functionality
-  - Utility extensions and helpers
-- `/PlayaKit/` - Shared data models and protocols
-- `/Submodules/` - Git submodules for custom dependencies
-- `/Pods/` - CocoaPods dependencies
-
 ### Required Setup Files
-Before building, create these files:
+Before building, create these files (they are gitignored, so they won't exist in a fresh clone):
 - `iBurn/BRCSecrets.m` - API keys and configuration constants
 - `iBurn/InfoPlistSecrets.h` - Preprocessor defines for sensitive data
 - `iBurn/crashlytics.sh` - Crashlytics build script (optional)
 
-### Development Notes
-- The app supports both light and dark themes via `Appearance` system
-- Heavy use of Objective-C categories for extending system classes
-- Mix of programmatic UI and Interface Builder (XIB files)
-- Database views are used extensively for filtered/sorted data presentation
-- Location data is embargoed by Burning Man organization until gates open each year
+### Domain Notes
+- Location data is embargoed by the Burning Man organization until gates open each year; year-based configuration lives in `YearSettings`.
 
 ## Submodule Dependencies
 
-### iBurn-Data (`/Submodules/iBurn-Data/`)
-Data repository containing yearly festival datasets, geospatial data, and processing scripts for offline map tiles, art/camp/event data, and Black Rock City layout geometry.
+`Submodules/iBurn-Data/` (festival datasets, geospatial data, offline tiles) and its
+`scripts/BlackRockCityPlanner/` (GeoJSON generation + Burning Man address geocoding) each
+have their own `CLAUDE.md`, which loads automatically when you work in those directories.
+Read those for the current data-generation and geocoder-build pipelines.
 
-**Key Features:**
-- Year-based data structure (`data/YYYY/`) with APIData, geo/, layouts/, Map/, and MediaFiles/
-- Burning Man's unique time-based addressing system (12:00, 1:00, etc.)
-- GeoJSON generation for streets, plazas, toilets, and city boundaries
-- Offline MBTiles for mobile map consumption
-- Data embargo system (location data restricted until gates open)
+## CI/CD
 
-**Common Commands:**
-```bash
-cd Submodules/iBurn-Data/scripts/BlackRockCityPlanner
-npm install
-node src/cli/generate_all.js -d ../../data/2024
-```
+GitHub Actions workflows live in `.github/workflows/` (`ci.yml`, `pr.yml`, `deploy.yml`, plus the
+Claude review workflows). Secrets are managed through GitHub Secrets — the workflow files list the
+exact names required. Deployment is triggered by git tags starting with `v`.
 
-### BlackRockCityPlanner (`/Submodules/iBurn-Data/scripts/BlackRockCityPlanner/`)
-Node.js geospatial tool that generates GeoJSON files for Black Rock City's unique radial layout and provides geocoding for Burning Man addresses.
+For the Travis → GitHub Actions migration history, see `Docs/2025-07-23-github-actions-migration.md`.
 
-**Key Features:**
-- Generates radial street grids based on clock positions (3:00 & 500')
-- Geocodes user addresses to coordinates with fuzzy matching
-- Creates city geometry: streets, polygons, fence, toilets
-- Handles special locations (Center Camp Plaza, Man Base)
-- Uses Turf.js v3.x and JSTS for geospatial operations
-
-**Common Commands:**
-```bash
-npm test  # Run geocoding and geometry tests
-node src/cli/api.js -l layout.json -f camp.json -k location_string -o camp-location.json
-browserify src/geocoder/index.js -o bundle.js
-```
-
-**Address Formats Supported:**
-- Time-based: "3:00 & 500'" (radial position + distance)
-- Intersections: "Esplanade & 6:00" (named street + time)
-- Special locations: "Center Camp Plaza", "9:00 Portal"
-
-## CI/CD with GitHub Actions
-
-The project uses GitHub Actions for continuous integration and deployment. This replaced the legacy Travis CI setup in July 2025 with modern macOS runners and enhanced security.
-
-### Workflow Overview
-
-**Three main workflows handle different aspects of CI/CD:**
-
-1. **`.github/workflows/ci.yml`** - Main CI pipeline for master/develop branches
-2. **`.github/workflows/pr.yml`** - Lightweight validation for pull requests  
-3. **`.github/workflows/deploy.yml`** - Deployment to TestFlight
-
-### Infrastructure Details
-
-- **Runners:** macOS 15 ARM64 with Xcode 16.4 (latest stable)
-- **Simulators:** iPhone 16 Pro ARM64 with latest iOS
-- **Ruby:** Version 3.1 with bundler caching
-- **Dependencies:** CocoaPods with intelligent caching
-- **Parallel Execution:** Build and test schemes run concurrently
-
-### Security & Secrets
-
-All sensitive data is managed through GitHub Secrets:
-
-```bash
-# Required Secrets for CI
-MAPBOX_ACCESS_TOKEN
-CRASHLYTICS_API_TOKEN
-HOCKEY_BETA_IDENTIFIER
-HOCKEY_LIVE_IDENTIFIER
-EMBARGO_PASSCODE_SHA256
-UPDATES_URL
-MAPBOX_STYLE_URL
-
-# Additional Secrets for Deployment
-APP_STORE_CONNECT_API_KEY
-APP_STORE_CONNECT_API_KEY_ID
-APP_STORE_CONNECT_API_ISSUER_ID
-GOOGLE_SERVICE_INFO_PLIST
-BUILD_CERTIFICATE_BASE64
-P12_PASSWORD
-BUILD_PROVISION_PROFILE_BASE64
-KEYCHAIN_PASSWORD
-FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD
-FASTLANE_SESSION
-MATCH_PASSWORD
-```
-
-### Workflow Triggers
-
-**Automatic Triggers:**
-- **CI:** All pushes to master/develop, all pull requests
-- **PR:** Pull request open/sync/reopen (lightweight validation only)
-- **Deploy:** Git tags starting with 'v' (e.g., v1.2.3)
-
-**Manual Triggers:**
-- All workflows support manual dispatch via "Run workflow" button
-- Deploy workflow allows choosing Fastlane lane (beta, refresh_dsyms)
-
-### Performance Optimizations
-
-- **Intelligent Caching:** Ruby gems and CocoaPods cached across runs
-- **Parallel Execution:** Build matrix allows concurrent scheme testing
-- **Artifact Storage:** Test results and build logs preserved for debugging
-- **Optimized Dependencies:** Concurrent installation with retry logic
-
-### Monitoring & Debugging
-
-**Workflow Monitoring:**
-- View all workflows in repository Actions tab
-- Real-time logs with timestamps and step-by-step execution
-- Build artifacts and test results preserved (30 days for CI, 7 days for PRs)
-
-**Test Analysis:**
-- XCResult files uploaded as artifacts for detailed analysis
-- Test failures include full logs and error context
-- PR workflows automatically comment build status
-
-**Common Debugging Steps:**
-1. Check workflow logs in GitHub Actions tab
-2. Download test result artifacts for detailed analysis
-3. Verify GitHub Secrets are properly configured
-4. Check for CocoaPods or dependency issues in setup steps
-
-### Migration Notes
-
-**Replaced:** Legacy `.travis.yml` configuration (Xcode 12.3, basic security)
-**Enhanced:** Modern infrastructure (Xcode 16.4), secure secrets, parallel execution, comprehensive testing
-**Added:** PR validation, automated deployment, intelligent caching, detailed reporting
-
-For complete migration details, see `Docs/2025-07-23-github-actions-migration.md`.
+### Fastlane
+`fastlane lanes` lists the available lanes (`fastlane/Fastfile`); `beta` uploads to TestFlight.

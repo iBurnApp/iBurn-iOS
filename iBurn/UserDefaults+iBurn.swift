@@ -66,4 +66,15 @@ extension UserDefaults {
             UserDefaults.standard.setEnteredEmbargoPasscode(newValue)
         }
     }
+
+    /// Latched the first time this device takes a fix inside the Burning Man region.
+    /// The persisted half of the location embargo rule — see `EmbargoService`.
+    @objc static var enteredBurningManRegion: Bool {
+        get {
+            return UserDefaults.standard.enteredBurningManRegion()
+        }
+        set {
+            UserDefaults.standard.setEnteredBurningManRegion(newValue)
+        }
+    }
 }

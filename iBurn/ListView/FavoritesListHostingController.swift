@@ -16,7 +16,17 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
         self.playaDB = dependencies.playaDB
         self.viewModel = dependencies.makeFavoritesViewModel()
         super.init(rootView: FavoritesView(viewModel: viewModel))
-        self.rootView = FavoritesView(
+        self.rootView = makeRootView()
+        self.title = "Favorites"
+        observeEmbargoDidClear()
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> FavoritesView {
+        FavoritesView(
             viewModel: viewModel,
             onSelectArt: { [weak self] art in
                 self?.showDetail(for: .art(ListRow(object: art, metadata: nil, thumbnailColors: nil)))
@@ -34,11 +44,23 @@ class FavoritesListHostingController: UIHostingController<FavoritesView> {
                 self?.showMap(annotations: annotations)
             }
         )
-        self.title = "Favorites"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal host addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     // MARK: - Navigation

@@ -10,7 +10,7 @@ final class FilterRequestBuilderTests: XCTestCase {
     private var playaDB: PlayaDB!
     private var tempDBPath: String!
 
-    private var dbQueue: DatabaseQueue {
+    private var dbQueue: any DatabaseWriter {
         (playaDB as! PlayaDBImpl).dbQueue
     }
 
@@ -390,55 +390,45 @@ final class FilterRequestBuilderTests: XCTestCase {
             "Only art with events should be returned"
         )
 
-        let metadata = try await dbQueue.read { db in
-            try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.art.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == artWithEvent.uid)
-                .fetchOne(db)
-        }
-        XCTAssertNotNil(metadata, "Fetching art with events should ensure metadata exists")
     }
 
-    func testFetchObjectsEnsuresMetadata() async throws {
+    /// Read paths must not write: fetching objects should never pre-populate blank
+    /// object_metadata rows (metadata is created lazily on actual writes only).
+    func testFetchObjectsDoesNotCreateMetadata() async throws {
         let region = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 40.79, longitude: -119.20),
             span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         )
 
+        let baseline = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
+        }
+
         let objects = try await playaDB.fetchObjects(in: region)
         XCTAssertGreaterThan(objects.count, 0, "Region should return objects")
 
-        try await dbQueue.read { db in
-            for object in objects {
-                let metadata = try ObjectMetadata
-                    .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                    .filter(ObjectMetadata.Columns.objectId == object.uid)
-                    .fetchOne(db)
-                XCTAssertNotNil(metadata, "Metadata should exist for \(object.uid)")
-            }
+        let after = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
         }
+        XCTAssertEqual(after, baseline, "fetchObjects(in:) should not create metadata rows")
     }
 
-    func testSearchObjectsEnsuresMetadata() async throws {
-        let searchTerms = ["Burning", "ASL", "Tarot"]
-        var seenObjects: [any DataObject] = []
-
-        for term in searchTerms {
-            let results = try await playaDB.searchObjects(term)
-            seenObjects.append(contentsOf: results)
-
-            try await dbQueue.read { db in
-                for object in results {
-                    let metadata = try ObjectMetadata
-                        .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                        .filter(ObjectMetadata.Columns.objectId == object.uid)
-                        .fetchOne(db)
-                    XCTAssertNotNil(metadata, "Metadata should exist for search result \(object.uid)")
-                }
-            }
+    func testSearchObjectsDoesNotCreateMetadata() async throws {
+        let baseline = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
         }
 
+        var seenObjects: [any DataObject] = []
+        for term in ["Burning", "ASL", "Tarot"] {
+            let results = try await playaDB.searchObjects(term)
+            seenObjects.append(contentsOf: results)
+        }
         XCTAssertFalse(seenObjects.isEmpty, "Search should locate at least one object")
+
+        let after = try await dbQueue.read { db in
+            try ObjectMetadata.fetchCount(db)
+        }
+        XCTAssertEqual(after, baseline, "searchObjects should not create metadata rows")
     }
 
     func testMetadataLookupCreatesRow() async throws {
@@ -553,6 +543,49 @@ final class FilterRequestBuilderTests: XCTestCase {
         }
         XCTAssertEqual(overlapResult.map(\.eventId), ["ongoing", "in-window"],
                        "Overlap window keeps in-progress events and excludes ended/future ones")
+    }
+
+    /// `maxDuration` must hide occurrences whose span EXCEEDS the limit while keeping those
+    /// exactly at the limit (inclusive `<=`), and `nil` must apply no limit at all. Guards
+    /// the julianday()-based SQL span comparison against the stored TEXT date format.
+    func testEventOccurrenceRequestMaxDurationFilter() async throws {
+        // Non-hour-aligned base so the exactly-6h case exercises julianday()'s float path
+        // rather than a value that happens to be exactly representable.
+        let base = Date(timeIntervalSince1970: 1_756_012_345)
+
+        try await insertEvent(uid: "dur-5h59m", name: "Just Under", year: 2025,
+                              start: base, end: base.addingTimeInterval(5 * 3600 + 59 * 60))
+        try await insertEvent(uid: "dur-6h", name: "Exactly Six", year: 2025,
+                              start: base, end: base.addingTimeInterval(6 * 3600))
+        try await insertEvent(uid: "dur-6h1m", name: "Just Over", year: 2025,
+                              start: base, end: base.addingTimeInterval(6 * 3600 + 60))
+        try await insertEvent(uid: "dur-12h", name: "All Morning", year: 2025,
+                              start: base, end: base.addingTimeInterval(12 * 3600))
+
+        let impl = try XCTUnwrap(playaDB as? PlayaDBImpl)
+
+        // 6h cap: exactly-6h stays (inclusive), longer occurrences are hidden. Scope to the
+        // fixture uids since setUp seeds unrelated mock events (no time filter applies here).
+        let capped = EventFilter(includeExpired: true, maxDuration: 6 * 3600)
+        let cappedResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: capped).fetchAll(db)
+        }
+        XCTAssertEqual(
+            Set(cappedResult.map(\.eventId).filter { $0.hasPrefix("dur-") }),
+            Set(["dur-5h59m", "dur-6h"]),
+            "maxDuration=6h keeps occurrences <= 6h (inclusive) and hides 6h1m / 12h"
+        )
+
+        // No cap: every fixture occurrence is returned.
+        let uncapped = EventFilter(includeExpired: true, maxDuration: nil)
+        let uncappedResult = try await dbQueue.read { db in
+            try impl.eventOccurrenceRequest(filter: uncapped).fetchAll(db)
+        }
+        XCTAssertEqual(
+            Set(uncappedResult.map(\.eventId).filter { $0.hasPrefix("dur-") }),
+            Set(["dur-5h59m", "dur-6h", "dur-6h1m", "dur-12h"]),
+            "nil maxDuration applies no duration limit"
+        )
     }
 
     func testFetchEventsAppliesYearRegionAndSearchFilters() async throws {

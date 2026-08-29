@@ -7,14 +7,6 @@
 //
 
 import Foundation
-import UIImageColors
-
-extension UIImageColors {
-    var brc_ImageColors: BRCImageColors {
-        let colors = BRCImageColors(backgroundColor: background, primaryColor: primary, secondaryColor: secondary, detailColor: detail)
-        return colors
-    }
-}
 
 extension UIViewController {
     func refreshNavigationBarColors(_ animated: Bool) {
@@ -209,8 +201,7 @@ public class ColorCache: NSObject {
             
             // Otherwise calculate the colors and save to db
             let brcColors: BRCImageColors? = autoreleasepool {
-                let colors = image.getColors(quality: .high)
-                return colors?.brc_ImageColors
+                image.brc_extractColors()
             }
             
             guard let extractedColors = brcColors else {

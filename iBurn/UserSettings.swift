@@ -31,7 +31,6 @@ public final class UserSettings: NSObject {
         static let showCampsOnMap = "kBRCShowCampsOnMapKey"
         static let showActiveEventsOnMap = "kBRCShowActiveEventsOnMapKey"
         static let showFavoritesOnMap = "kBRCShowFavoritesOnMapKey"
-        static let showTodaysFavoritesOnlyOnMap = "kBRCShowTodaysFavoritesOnlyOnMapKey"
         static let selectedEventTypesForMap = "kBRCSelectedEventTypesForMapKey"
         // Zoom-based visibility keys
         static let showArtOnlyZoomedIn = "kBRCShowArtOnlyZoomedInKey"
@@ -295,20 +294,6 @@ public final class UserSettings: NSObject {
                 return true
             }
             return UserDefaults.standard.bool(forKey: Keys.showFavoritesOnMap)
-        }
-    }
-    
-    /// Show only today's favorites on map
-    @objc public static var showTodaysFavoritesOnlyOnMap: Bool {
-        set {
-            UserDefaults.standard.set(newValue, forKey: Keys.showTodaysFavoritesOnlyOnMap)
-        }
-        get {
-            // Default to true to show only today's favorites
-            if UserDefaults.standard.object(forKey: Keys.showTodaysFavoritesOnlyOnMap) == nil {
-                return true
-            }
-            return UserDefaults.standard.bool(forKey: Keys.showTodaysFavoritesOnlyOnMap)
         }
     }
     

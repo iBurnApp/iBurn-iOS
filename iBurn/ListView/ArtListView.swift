@@ -69,6 +69,7 @@ struct ArtListView: View {
                             EmptyView()
                         }
                     }
+                    .padding(.trailing, indexRailInset)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onSelect(row.object)
@@ -76,6 +77,7 @@ struct ArtListView: View {
                 }
             }
             .listStyle(.plain)
+            .alphabetIndexRail(rows: indexRailRows, accessibilityLabel: "Art index")
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search art, artists, descriptions"
@@ -142,6 +144,17 @@ struct ArtListView: View {
 
     // MARK: - Helper Properties
 
+    /// Rows the A–Z rail indexes: whatever the list is showing right now, so search and
+    /// the filters shorten the rail along with the list.
+    private var indexRailRows: [AlphabetIndexRow] {
+        viewModel.filteredItems.map { AlphabetIndexRow(id: $0.object.uid, name: $0.object.name) }
+    }
+
+    /// Room the rows give up to the rail so their trailing text doesn't run underneath it.
+    private var indexRailInset: CGFloat {
+        AlphabetIndex.isEnabled(rowCount: viewModel.filteredItems.count) ? AlphabetIndex.railRowInset : 0
+    }
+
     /// Icon name for filter button (filled when filters are active)
     private var filterIconName: String {
         if viewModel.filter.onlyWithEvents || viewModel.filter.onlyFavorites {
@@ -171,6 +184,7 @@ struct ArtListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: .all,
+                initialItems: PreviewArtDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -197,6 +211,7 @@ struct ArtListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "artListFilter.preview",
                 initialFilter: ArtFilter(onlyWithEvents: true),
+                initialItems: PreviewArtDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -215,29 +230,66 @@ struct ArtListView: View {
     }
 }
 
+#Preview("Art List - Loading") {
+    NavigationView {
+        ArtListView(
+            viewModel: ArtListViewModel(
+                dataProvider: PreviewArtDataProvider(rows: []),
+                locationProvider: MockLocationProvider(),
+                filterStorageKey: "artListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                matchesSearch: { _, _ in true }
+            )
+        )
+    }
+}
+
 // MARK: - Preview Helpers
 
-@MainActor
 private class PreviewArtDataProvider: ArtDataProvider {
-    init() {
-        // This will fail in preview but that's okay
-        super.init(playaDB: try! createPlayaDB())
+    private let rows: [ListRow<ArtObject>]
+
+    /// Pass empty `rows` for a permanent loading-state preview: the stream never
+    /// yields, so the view model keeps `isLoading` with no items. The default
+    /// (`nil`) uses `mockRows`.
+    @MainActor
+    init(rows: [ListRow<ArtObject>]? = nil) {
+        self.rows = rows ?? Self.mockRows
+        super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: ArtFilter) -> AsyncStream<[ListRow<ArtObject>]> {
-        AsyncStream { continuation in
-            continuation.yield([
-                Self.createMockArt(name: "Temple of Transition"),
-                Self.createMockArt(name: "The Man"),
-                Self.createMockArt(name: "Galaxy Portal")
-            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
-            continuation.finish()
+        let rows = self.rows
+        return AsyncStream { continuation in
+            if !rows.isEmpty {
+                continuation.yield(rows)
+                continuation.finish()
+            }
         }
     }
 
-    private nonisolated static func createMockArt(name: String) -> ArtObject {
+    static let mockRows: [ListRow<ArtObject>] = [
+        ListRow(
+            object: createMockArt(uid: "preview-art-1", name: "Temple of Transition"),
+            metadata: .forArt(id: "preview-art-1", isFavorite: true),
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockArt(uid: "preview-art-2", name: "The Man"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockArt(uid: "preview-art-3", name: "Galaxy Portal"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+    ]
+
+    private nonisolated static func createMockArt(uid: String, name: String) -> ArtObject {
         ArtObject(
-            uid: UUID().uuidString,
+            uid: uid,
             name: name,
             year: 2025,
             description: "A beautiful art installation",

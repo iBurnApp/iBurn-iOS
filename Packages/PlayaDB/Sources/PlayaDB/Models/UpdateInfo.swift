@@ -2,7 +2,7 @@ import Foundation
 import GRDB
 
 /// Information about data updates and versioning
-public struct UpdateInfo: Codable, FetchableRecord, MutablePersistableRecord {
+public struct UpdateInfo: Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
 
     public static let databaseTableName = "update_info"

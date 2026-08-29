@@ -2,7 +2,8 @@
 //  FilteredMapDataSource.swift
 //  iBurn
 //
-//  Data source that combines PlayaDB annotations with YapDB user pins.
+//  Data source that combines PlayaDB object annotations with PlayaDB user map pins.
+//  (User pins moved off YapDatabase to the `user_map_pins` table in commit 99587a3, 2026-04-05.)
 //
 
 import Foundation

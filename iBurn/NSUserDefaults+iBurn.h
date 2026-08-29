@@ -25,6 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)enteredEmbargoPasscode;
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode;
 
+/** Whether this device has ever taken a location fix inside the Burning Man
+ *  region this season. Latched (never cleared) and year-stamped, so it re-arms
+ *  next year. The un-forgeable half of the location embargo rule — see
+ *  BRCEmbargoService. */
+- (BOOL)enteredBurningManRegion;
+- (void)setEnteredBurningManRegion:(BOOL)enteredBurningManRegion;
+
 - (BOOL)hasViewedOnboarding;
 - (void)setHasViewedOnboarding:(BOOL)hasViewedOnboarding;
 

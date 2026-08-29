@@ -18,7 +18,11 @@ public struct Art: Codable, Hashable, Sendable {
     public let images: [ArtImage]
     public let guidedTours: Bool
     public let selfGuidedTourMap: Bool
-    
+    /// Remote audio-tour recording (`audio_tour_url`). Present only in years where
+    /// BMorg ships the audio tour (2016–2025 had it; the field is absent from the
+    /// 2026 payload as of this writing), so it must always decode optionally.
+    public let audioTourUrl: URL?
+
     public init(
         uid: ArtID,
         name: String,
@@ -35,7 +39,8 @@ public struct Art: Codable, Hashable, Sendable {
         locationString: String? = nil,
         images: [ArtImage] = [],
         guidedTours: Bool = false,
-        selfGuidedTourMap: Bool = false
+        selfGuidedTourMap: Bool = false,
+        audioTourUrl: URL? = nil
     ) {
         self.uid = uid
         self.name = name
@@ -53,6 +58,33 @@ public struct Art: Codable, Hashable, Sendable {
         self.images = images
         self.guidedTours = guidedTours
         self.selfGuidedTourMap = selfGuidedTourMap
+        self.audioTourUrl = audioTourUrl
+    }
+
+    // Custom decoding: `url` and `donationLink` are user-entered free text and are
+    // salvaged leniently rather than decoded strictly (see `LenientURL`). Encoding
+    // stays synthesized/unchanged.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uid = try container.decode(ArtID.self, forKey: .uid)
+        name = try container.decode(String.self, forKey: .name)
+        year = try container.decode(Int.self, forKey: .year)
+        url = try container.decodeLenientURLIfPresent(forKey: .url)
+        contactEmail = try container.decodeIfPresent(String.self, forKey: .contactEmail)
+        hometown = try container.decodeIfPresent(String.self, forKey: .hometown)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        artist = try container.decodeIfPresent(String.self, forKey: .artist)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        program = try container.decodeIfPresent(String.self, forKey: .program)
+        donationLink = try container.decodeLenientURLIfPresent(forKey: .donationLink)
+        location = try container.decodeIfPresent(ArtLocation.self, forKey: .location)
+        locationString = try container.decodeIfPresent(String.self, forKey: .locationString)
+        images = try container.decode([ArtImage].self, forKey: .images)
+        guidedTours = try container.decode(Bool.self, forKey: .guidedTours)
+        selfGuidedTourMap = try container.decode(Bool.self, forKey: .selfGuidedTourMap)
+        // Absent in years without an audio tour, and lenient like the other URL
+        // fields so a malformed value can never roll back the whole import.
+        audioTourUrl = try container.decodeLenientURLIfPresent(forKey: .audioTourUrl)
     }
 }
 
@@ -77,6 +109,11 @@ public extension Art {
     /// Whether this art installation offers any kind of tours
     var hasTours: Bool {
         guidedTours || selfGuidedTourMap
+    }
+
+    /// Whether this art installation has a remote audio-tour recording
+    var hasAudioTour: Bool {
+        audioTourUrl != nil
     }
     
     /// Whether this art installation has contact information

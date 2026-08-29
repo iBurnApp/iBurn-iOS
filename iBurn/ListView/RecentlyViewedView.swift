@@ -181,7 +181,7 @@ struct RecentlyViewedView: View {
                 subtitle: subtitle,
                 rightSubtitle: event.timeDescription(now: Date()),
                 hostName: event.hostName,
-                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.hostAddress : nil,
+                hostAddress: BRCEmbargo.canShowLocation(for: event) ? event.hostAddress : nil,
                 isFavorite: isFav,
                 onFavoriteTap: favAction
             ) { _ in
@@ -207,7 +207,6 @@ struct RecentlyViewedView: View {
     // MARK: - Subtitle
 
     private func subtitleString(for item: RecentlyViewedItem) -> AttributedString? {
-        guard let dist = viewModel.distanceString(for: item) else { return nil }
-        return AttributedString(dist)
+        viewModel.distanceAttributedString(for: item)
     }
 }

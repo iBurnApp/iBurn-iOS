@@ -50,6 +50,7 @@ final class EventListViewModel: ObservableObject {
 
     private let dataProvider: EventDataProvider
     private let locationProvider: LocationProvider
+    private let regionStatus: RegionStatusService
     private let filterStorageKey: String
 
     // MARK: - Public
@@ -64,25 +65,40 @@ final class EventListViewModel: ObservableObject {
     private var loadingGateTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
+    /// Monotonic token identifying the current observation. Rapid filter changes (e.g.
+    /// each tick of the duration slider) cancel-and-restart the observation many times in
+    /// quick succession, but cancellation doesn't stop an emission already past its
+    /// suspension point — a superseded observation can deliver AFTER the newest one,
+    /// silently replacing fresh buckets with stale ones (rows the current filter
+    /// excludes; their taps then fail showDetail's visibleRows guard). Emissions are
+    /// dropped unless their generation is still current.
+    private var observationGeneration = 0
+
     // MARK: - Init
 
     init(
         dataProvider: EventDataProvider,
         locationProvider: LocationProvider,
+        regionStatus: RegionStatusService = RegionStatusServiceFactory.makeService(),
         filterStorageKey: String = "eventListFilter",
         festivalDays: [Date]
     ) {
         self.dataProvider = dataProvider
         self.locationProvider = locationProvider
+        self.regionStatus = regionStatus
         self.filterStorageKey = filterStorageKey
         self.festivalDays = festivalDays
 
         // Default to current day within the festival range
         self.selectedDay = YearSettings.dayWithinFestival(.present)
 
-        // Load persisted filter or use sensible default (hide expired)
-        self.filter = Self.loadFilter(key: filterStorageKey)
+        // Load persisted filter or use sensible default (hide expired). The max-duration
+        // preference is stored under its own key and overlaid here so the 6h default applies
+        // to fresh AND existing installs (see EventFilterStorage).
+        var loadedFilter = EventFilterStorage.loadFilter(key: filterStorageKey)
             ?? EventFilter(includeExpired: false)
+        loadedFilter.maxDuration = EventFilterStorage.loadMaxDuration(filterKey: filterStorageKey)
+        self.filter = loadedFilter
 
         self.currentLocation = locationProvider.currentLocation
 
@@ -155,7 +171,7 @@ final class EventListViewModel: ObservableObject {
         f.startDate = nil
         f.endDate = nil
         f.searchText = nil
-        return f
+        return gatedForRegion(f)
     }
 
     /// Search mode filter: user filters + searchText, all days (no date scope).
@@ -164,13 +180,25 @@ final class EventListViewModel: ObservableObject {
         f.startDate = nil
         f.endDate = nil
         f.searchText = query
-        return f
+        return gatedForRegion(f)
+    }
+
+    /// Legacy parity: hide "Mature Audiences" (`adlt`) events until the device has
+    /// physically entered the Burning Man region, mirroring the YapDatabase gate in
+    /// `BRCDatabaseManager.eventsFilteredByExpiration:eventTypes:artHostedOnly:`.
+    /// Applied to the observation filter only — never persisted, and the filter
+    /// sheet still reflects the user's own type selection.
+    private func gatedForRegion(_ f: EventFilter) -> EventFilter {
+        guard !regionStatus.hasEnteredBurningManRegion else { return f }
+        return f.excludingAdultEvents()
     }
 
     private func restartObservation() {
         observationTask?.cancel()
         loadingGateTask?.cancel()
         isLoading = true
+        observationGeneration += 1
+        let generation = observationGeneration
 
         switch mode {
         case .browse:
@@ -178,19 +206,20 @@ final class EventListViewModel: ObservableObject {
             let f = browseFilter()
             observationTask = Task { [weak self] in
                 guard let self else { return }
-                var didReceiveFirstEmission = false
                 for await bucket in self.dataProvider.observeObjectsByDayThenHour(filter: f) {
-                    didReceiveFirstEmission = true
                     await MainActor.run {
+                        guard self.observationGeneration == generation else { return }
                         self.dayBuckets = bucket
                         if !bucket.isEmpty {
                             self.isLoading = false
+                            self.loadingGateTask?.cancel()
                         }
                     }
-                    if didReceiveFirstEmission, !bucket.isEmpty {
-                        await MainActor.run { self.loadingGateTask?.cancel() }
-                    } else if didReceiveFirstEmission, bucket.isEmpty {
-                        startLoadingGateIfNeeded()
+                    if bucket.isEmpty {
+                        await MainActor.run {
+                            guard self.observationGeneration == generation else { return }
+                            self.startLoadingGateIfNeeded()
+                        }
                     }
                 }
             }
@@ -202,6 +231,7 @@ final class EventListViewModel: ObservableObject {
                 guard let self else { return }
                 for await rows in self.dataProvider.observeObjects(filter: f) {
                     await MainActor.run {
+                        guard self.observationGeneration == generation else { return }
                         self.searchResults = rows
                         self.isLoading = false
                     }
@@ -269,23 +299,20 @@ final class EventListViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Max Duration Preference
+
+    /// Default max event-occurrence duration for the Events tab: hide occurrences longer
+    /// than 6h (all-day / half-day "amenity listing" pseudo-events). Applied to fresh AND
+    /// existing installs until the user chooses their own value.
+    ///
+    /// The rule itself lives in `EventFilterStorage` — Nearby shares it — and deliberately
+    /// NOT in PlayaDB's `EventFilter`, whose package default stays `nil` (no limit) so other
+    /// consumers (watch, detail screens) are unaffected.
+    static let defaultMaxDuration: TimeInterval = EventFilterStorage.defaultMaxDuration
+
     // MARK: - Filter Persistence
 
     private func saveFilter() {
-        // Don't persist startDate/endDate (those come from selectedDay) or searchText.
-        var persistFilter = filter
-        persistFilter.startDate = nil
-        persistFilter.endDate = nil
-        persistFilter.searchText = nil
-        guard let data = try? JSONEncoder().encode(persistFilter) else { return }
-        UserDefaults.standard.set(data, forKey: filterStorageKey)
-    }
-
-    private static func loadFilter(key: String) -> EventFilter? {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let filter = try? JSONDecoder().decode(EventFilter.self, from: data) else {
-            return nil
-        }
-        return filter
+        EventFilterStorage.saveFilter(filter, key: filterStorageKey)
     }
 }

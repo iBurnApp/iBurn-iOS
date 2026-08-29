@@ -8,11 +8,15 @@ import PlayaAPI
 internal class PlayaDBImpl: PlayaDB {
     // MARK: - Database Connection
 
-    internal let dbQueue: DatabaseQueue  // Internal for testing
+    /// On-disk databases use a DatabasePool (WAL) so reads run concurrently with
+    /// writes — the first-launch seed import is one long write transaction and must
+    /// not block UI reads. In-memory databases (tests) fall back to a DatabaseQueue,
+    /// which is the only connection type that supports ":memory:" paths.
+    internal let dbQueue: any DatabaseWriter  // Internal for testing
     private let dbPath: String
-    
+
     // MARK: - Initialization
-    
+
     init(dbPath: String? = nil) throws {
         // Use custom path or default to Documents directory
         if let customPath = dbPath {
@@ -21,21 +25,28 @@ internal class PlayaDBImpl: PlayaDB {
             let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
             self.dbPath = "\(documentsPath)/PlayaDB.sqlite"
         }
-        
-        // Create database queue
-        self.dbQueue = try DatabaseQueue(path: self.dbPath)
-        
+
+        if self.dbPath == ":memory:" || self.dbPath.hasPrefix("file::memory:") {
+            self.dbQueue = try DatabaseQueue(path: self.dbPath)
+        } else {
+            self.dbQueue = try DatabasePool(path: self.dbPath)
+        }
+
         // Initialize database schema
         try setupDatabase()
-        
-        // Setup reactive observations
-        setupObservations()
     }
     
     // MARK: - Database Setup
     
     private func setupDatabase() throws {
-        try dbQueue.write { db in
+        var migrator = DatabaseMigrator()
+
+        // v1: the complete schema as of 2026-07. All DDL is idempotent
+        // (IF NOT EXISTS / conditional column adds), so databases created before the
+        // migrator was adopted record this migration as applied without conflicting
+        // with the schema they already have. Register future schema changes as new
+        // numbered migrations below — do not extend v1.
+        migrator.registerMigration("v1-initial-schema") { db in
             // Create art_objects table
             try db.execute(sql: """
                 CREATE TABLE IF NOT EXISTS art_objects (
@@ -253,6 +264,10 @@ internal class PlayaDBImpl: PlayaDB {
             // Index for last_viewed queries (fetchRecentlyViewed)
             try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_object_metadata_last_viewed ON object_metadata(last_viewed)")
 
+            // end_time index: notExpired (the default list filter), happeningNow, and
+            // activeWindow all constrain end_time; only start_time was indexed before.
+            try db.execute(sql: "CREATE INDEX IF NOT EXISTS idx_event_occurrences_end_time ON event_occurrences(end_time)")
+
             // Migration: add first_viewed column for existing databases
             if try !db.columns(in: "object_metadata").contains(where: { $0.name == "first_viewed" }) {
                 try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN first_viewed TEXT")
@@ -271,171 +286,274 @@ internal class PlayaDBImpl: PlayaDB {
                 try db.execute(sql: "ALTER TABLE update_info ADD COLUMN fetch_date TEXT")
                 try db.execute(sql: "ALTER TABLE update_info ADD COLUMN ingestion_date TEXT")
             }
+        }
 
+        // v2: dedicated favorite change stamp for last-writer-wins favorites sync.
+        // `updated_at` can't be used for LWW because view tracking and notes writes
+        // also bump it. Backfill existing favorites so they participate in sync.
+        migrator.registerMigration("v2-favorite-sync") { db in
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN favorite_updated_at DATETIME")
+            try db.execute(sql: "UPDATE object_metadata SET favorite_updated_at = updated_at WHERE is_favorite = 1")
+        }
+
+        // v3: visit status (raw VisitStatus: 0=unvisited, 1=visited, 2=wantToVisit)
+        // with a dedicated change stamp, mirroring v2's favorite stamp, so favorite
+        // and visit status can merge independently in last-writer-wins sync.
+        migrator.registerMigration("v3-visit-status") { db in
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status INTEGER NOT NULL DEFAULT 0")
+            try db.execute(sql: "ALTER TABLE object_metadata ADD COLUMN visit_status_updated_at DATETIME")
+        }
+
+        // v4: audio tour URL from the API's `audio_tour_url` field. Additive only —
+        // the column is repopulated by every import, so no backfill is needed (the
+        // next import writes it, and years without an audio tour leave it NULL).
+        migrator.registerMigration("v4-audio-tour") { db in
+            try db.execute(sql: "ALTER TABLE art_objects ADD COLUMN audio_tour_url TEXT")
+        }
+
+        // v5: per-occurrence EKEvent identifiers for calendar sync.
+        //
+        // Legacy (YapDatabase) stored one EKEvent identifier per event *occurrence*
+        // because Yap split each API event into per-occurrence records. PlayaDB keeps
+        // one row per API event plus an `event_occurrences` child table, so calendar
+        // bookkeeping needs its own per-occurrence key.
+        //
+        // Key choice: (event_id, occurrence_key) where `occurrence_key` is the
+        // occurrence's start time formatted as a fixed ISO-8601 UTC string
+        // (see `EventCalendarEntry.occurrenceKey(for:)`). `event_occurrences.id` is an
+        // AUTOINCREMENT rowid that `importFromData` wipes and reissues on every import,
+        // so rowids can never survive a data refresh; the (event uid, start instant)
+        // pair is the natural key that does. Start times also survive import unchanged
+        // — only end times are ever rewritten (see `correctedOccurrenceTimes`).
+        //
+        // This table is intentionally NOT touched by `importFromData` (like
+        // `object_metadata`, `thumbnail_colors` and `user_map_pins`), so calendar
+        // identifiers survive data refreshes.
+        migrator.registerMigration("v5-calendar-entries") { db in
+            try db.execute(sql: """
+                CREATE TABLE IF NOT EXISTS event_calendar_entries (
+                    event_id TEXT NOT NULL,
+                    occurrence_key TEXT NOT NULL,
+                    ek_event_identifier TEXT NOT NULL,
+                    PRIMARY KEY (event_id, occurrence_key)
+                )
+            """)
+        }
+
+        // v6: soft deletes for user map pins. Pin sync exchanges whole snapshots
+        // with last-writer-wins on modified_date; without a tombstone, a row
+        // missing from a peer's snapshot is ambiguous ("never created there" vs
+        // "deleted there") and deleted pins resurrect on the next push.
+        //
+        // Numbered v6, not v4: this was authored in parallel on `watchos-updates`,
+        // which claimed v4 before `2026-updates` landed v4-audio-tour and
+        // v5-calendar-entries. GRDB matches migrations by identifier string, so the
+        // rename is what stops an install that already ran the old `v4-pin-sync`
+        // from re-running this ALTER and failing on "duplicate column name".
+        migrator.registerMigration("v6-pin-sync") { db in
+            try db.execute(sql: "ALTER TABLE user_map_pins ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0")
+        }
+
+        // v7: prefix indexes on the FTS5 tables.
+        //
+        // Live search now matches prefixes (`matching(searchText:)` → `temp*`), which an
+        // FTS table without `prefix=` answers by scanning the term dictionary. The option
+        // is part of the CREATE statement, and `setupFTS5Tables` creates with
+        // IF NOT EXISTS — so every database that already has FTS tables (every upgrade,
+        // and every install restored from the pre-baked seed) would keep the old
+        // definition forever. Drop the stale tables here; `setupFTS5Tables`, which runs
+        // right after migration, recreates them with `prefix=` and rebuilds the index
+        // from the content tables. External-content FTS tables store no source data, so
+        // dropping one loses nothing but the index.
+        migrator.registerMigration("v7-fts-prefix-index") { db in
+            for config in Self.ftsTableConfigs {
+                guard let sql = try Self.ftsTableDefinition(db, table: config.ftsTable),
+                      !sql.contains("prefix=") else { continue }
+                try db.execute(sql: "DROP TABLE IF EXISTS \(config.ftsTable)")
+            }
+        }
+
+        try migrator.migrate(dbQueue)
+
+        // Open-time maintenance rather than migrations: the FTS/R*Tree helpers carry
+        // their own self-repair logic (legacy trigger replacement, minT-variant drop)
+        // and are re-invoked by imports; the backfill and metadata fold are
+        // data-dependent and idempotent.
+        try dbQueue.write { db in
             // Create FTS5 virtual tables for full-text search
-            try setupFTS5Tables(db)
-            
+            try self.setupFTS5Tables(db)
+
             // Create R-Tree spatial index for geographic queries
-            try setupRTreeIndex(db)
+            try self.setupRTreeIndex(db)
 
             // Backfill the occurrence index for installs whose DB predates it (existing users
             // don't re-import; PlayaDBSeeder only imports when update_info is empty).
             let occRtreeCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrence_rtree") ?? 0
             let occCount = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM event_occurrences") ?? 0
             if occRtreeCount == 0, occCount > 0 {
-                try rebuildOccurrenceRTree(db)
+                try self.rebuildOccurrenceRTree(db)
             }
+
+            // Migration: fold occurrence-keyed event metadata into parent event rows.
+            try self.migrateOccurrenceKeyedMetadata(db)
+
+            // Migration: split legacy series favorites (one row on the bare event uid)
+            // into per-occurrence rows. Runs after the fold above so rows it rescued are
+            // included. Data-dependent: no-ops until event_occurrences is populated.
+            try self.foldLegacyEventFavorites(db)
+
+            // Migration: collapse duplicate home/bike pins written by the pre-upsert
+            // placement path (see `collapseDuplicateSingletonPins`).
+            try Self.collapseDuplicateSingletonPins(db)
         }
     }
     
+    /// Content table + indexed columns backing each external-content FTS5 table.
+    /// The FTS table is named "\(table)_fts" and always carries a leading
+    /// `uid UNINDEXED` column so search results can be joined back by uid.
+    private struct FTSTableConfig {
+        let table: String
+        let indexedColumns: [String]
+
+        var ftsTable: String { "\(table)_fts" }
+        var allColumns: [String] { ["uid"] + indexedColumns }
+    }
+
+    private static let ftsTableConfigs: [FTSTableConfig] = [
+        FTSTableConfig(table: "art_objects", indexedColumns: ["name", "description", "artist", "hometown", "category"]),
+        FTSTableConfig(table: "camp_objects", indexedColumns: ["name", "description", "landmark", "hometown"]),
+        FTSTableConfig(table: "event_objects", indexedColumns: ["name", "description", "event_type_label", "print_description"]),
+        FTSTableConfig(table: "mv_objects", indexedColumns: ["name", "description", "artist", "hometown", "tags_text"]),
+    ]
+
+    /// FTS5 `prefix=` index sizes. Live search matches prefixes on every keystroke
+    /// (`matching(searchText:)` builds `temp*`), and without a prefix index FTS5 answers
+    /// `x*` by scanning every term in the dictionary that could start with `x` — the
+    /// shortest, earliest-typed prefixes being the most expensive. Indexing 2/3/4-char
+    /// prefixes covers the keystrokes users actually wait on; 5+ chars narrow enough that
+    /// the term scan is cheap. A 1-char index was skipped deliberately: it is nearly as
+    /// large as the whole term index and matches most of the corpus anyway.
+    private static let ftsPrefixSizes = "2 3 4"
+
     private func setupFTS5Tables(_ db: Database) throws {
-        // Create FTS5 table for art objects
+        for config in Self.ftsTableConfigs {
+            // An FTS table created before `prefix=` was added answers prefix queries by
+            // term scan. Drop it so the CREATE below rebuilds it with the prefix index —
+            // external-content tables hold no source data, so nothing is lost.
+            // (The v7 migration does the same for existing installs; this is the
+            // belt-and-braces path for seed-restored databases.)
+            let existingSQL = try Self.ftsTableDefinition(db, table: config.ftsTable)
+            if let existingSQL, !existingSQL.contains("prefix=") {
+                try db.execute(sql: "DROP TABLE IF EXISTS \(config.ftsTable)")
+            }
+            let needsRebuild = existingSQL == nil || !existingSQL!.contains("prefix=")
+
+            let indexed = config.indexedColumns.joined(separator: ",\n                    ")
+            try db.execute(sql: """
+                CREATE VIRTUAL TABLE IF NOT EXISTS \(config.ftsTable) USING fts5(
+                    uid UNINDEXED,
+                    \(indexed),
+                    content=\(config.table),
+                    content_rowid=rowid,
+                    tokenize='porter unicode61',
+                    prefix='\(Self.ftsPrefixSizes)'
+                )
+            """)
+            // A freshly created external-content table is empty until rebuilt. Cheap
+            // no-op on a first-run database (the content table is empty too).
+            if needsRebuild {
+                try db.execute(sql: "INSERT INTO \(config.ftsTable)(\(config.ftsTable)) VALUES('rebuild')")
+            }
+            try setupFTS5Triggers(db, config: config)
+        }
+    }
+
+    /// The `CREATE VIRTUAL TABLE` statement recorded for an FTS table, or nil if absent.
+    private static func ftsTableDefinition(_ db: Database, table: String) throws -> String? {
+        try String.fetchOne(
+            db,
+            sql: "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+            arguments: [table]
+        )
+    }
+
+    /// Keeps an external-content FTS5 table in sync with its content table.
+    ///
+    /// External-content tables must be updated with FTS5's special 'delete' command,
+    /// passing the OLD column values — a plain `DELETE FROM fts WHERE rowid = …` makes
+    /// FTS5 read the content table for the values to un-index, but inside an AFTER
+    /// DELETE/UPDATE trigger that row is already gone/changed, silently corrupting the
+    /// index. Earlier versions shipped plain-DELETE triggers; those are detected below,
+    /// replaced, and the index rebuilt once.
+    private func setupFTS5Triggers(_ db: Database, config: FTSTableConfig) throws {
+        let columnList = config.allColumns.joined(separator: ", ")
+        let newValues = config.allColumns.map { "new.\($0)" }.joined(separator: ", ")
+        let oldValues = config.allColumns.map { "old.\($0)" }.joined(separator: ", ")
+
+        let ftsInsert = """
+            INSERT INTO \(config.ftsTable)(rowid, \(columnList))
+                    VALUES (new.rowid, \(newValues));
+            """
+        let ftsDelete = """
+            INSERT INTO \(config.ftsTable)(\(config.ftsTable), rowid, \(columnList))
+                    VALUES ('delete', old.rowid, \(oldValues));
+            """
+
+        // Migration: drop legacy triggers that used plain DELETE (index-corrupting).
+        let legacyDeleteTriggerSQL = try String.fetchOne(db, sql: """
+            SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = ?
+            """, arguments: ["\(config.table)_ad"])
+        let hadCorruptingTriggers: Bool
+        if let sql = legacyDeleteTriggerSQL, !sql.contains("'delete'") {
+            hadCorruptingTriggers = true
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_ai")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_ad")
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_au")
+        } else {
+            hadCorruptingTriggers = false
+        }
+
         try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS art_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                artist,
-                hometown,
-                category,
-                content=art_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create FTS5 table for camp objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS camp_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                landmark,
-                hometown,
-                content=camp_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create FTS5 table for event objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS event_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                event_type_label,
-                print_description,
-                content=event_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
-        
-        // Create triggers to keep FTS tables in sync
-        
-        // Art triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_ai AFTER INSERT ON art_objects BEGIN
-                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_ai AFTER INSERT ON \(config.table) BEGIN
+                \(ftsInsert)
             END
         """)
-        
         try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_ad AFTER DELETE ON art_objects BEGIN
-                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_ad AFTER DELETE ON \(config.table) BEGIN
+                \(ftsDelete)
             END
         """)
-        
         try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_objects_au AFTER UPDATE ON art_objects BEGIN
-                DELETE FROM art_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO art_objects_fts(rowid, uid, name, description, artist, hometown, category)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.category);
-            END
-        """)
-        
-        // Camp triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_ai AFTER INSERT ON camp_objects BEGIN
-                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_ad AFTER DELETE ON camp_objects BEGIN
-                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_objects_au AFTER UPDATE ON camp_objects BEGIN
-                DELETE FROM camp_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO camp_objects_fts(rowid, uid, name, description, landmark, hometown)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.landmark, new.hometown);
-            END
-        """)
-        
-        // Event triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_ai AFTER INSERT ON event_objects BEGIN
-                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_ad AFTER DELETE ON event_objects BEGIN
-                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_objects_au AFTER UPDATE ON event_objects BEGIN
-                DELETE FROM event_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO event_objects_fts(rowid, uid, name, description, event_type_label, print_description)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.event_type_label, new.print_description);
+            CREATE TRIGGER IF NOT EXISTS \(config.table)_au AFTER UPDATE ON \(config.table) BEGIN
+                \(ftsDelete)
+                \(ftsInsert)
             END
         """)
 
-        // Create FTS5 table for mutant vehicle objects
-        try db.execute(sql: """
-            CREATE VIRTUAL TABLE IF NOT EXISTS mv_objects_fts USING fts5(
-                uid UNINDEXED,
-                name,
-                description,
-                artist,
-                hometown,
-                tags_text,
-                content=mv_objects,
-                content_rowid=rowid,
-                tokenize='porter unicode61'
-            )
-        """)
+        if hadCorruptingTriggers {
+            // The old triggers may have left the index inconsistent with the content table.
+            try db.execute(sql: "INSERT INTO \(config.ftsTable)(\(config.ftsTable)) VALUES('rebuild')")
+        }
+    }
 
-        // MV triggers
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_ai AFTER INSERT ON mv_objects BEGIN
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
-            END
-        """)
-
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_ad AFTER DELETE ON mv_objects BEGIN
-                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
-            END
-        """)
-
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS mv_objects_au AFTER UPDATE ON mv_objects BEGIN
-                DELETE FROM mv_objects_fts WHERE rowid = old.rowid;
-                INSERT INTO mv_objects_fts(rowid, uid, name, description, artist, hometown, tags_text)
-                VALUES (new.rowid, new.uid, new.name, new.description, new.artist, new.hometown, new.tags_text);
-            END
-        """)
+    /// Drops the FTS and spatial per-row sync triggers so bulk imports don't pay
+    /// per-row index maintenance. The import rebuilds every index wholesale and
+    /// recreates the triggers (setupFTS5Tables / setupRTreeIndex) before committing.
+    private static func dropIndexSyncTriggers(_ db: Database) throws {
+        for config in ftsTableConfigs {
+            for suffix in ["ai", "ad", "au"] {
+                try db.execute(sql: "DROP TRIGGER IF EXISTS \(config.table)_\(suffix)")
+            }
+        }
+        for trigger in [
+            "art_spatial_insert", "art_spatial_delete", "art_spatial_update",
+            "camp_spatial_insert", "camp_spatial_delete", "camp_spatial_update",
+            "event_spatial_insert", "event_spatial_delete", "event_spatial_update",
+            "event_occurrence_rtree_insert", "event_occurrence_rtree_delete",
+            "event_occurrence_rtree_event_update",
+        ] {
+            try db.execute(sql: "DROP TRIGGER IF EXISTS \(trigger)")
+        }
     }
     
     private func setupRTreeIndex(_ db: Database) throws {
@@ -458,74 +576,62 @@ internal class PlayaDBImpl: PlayaDB {
             )
         """)
         
-        // Create triggers to maintain spatial index for art objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_spatial_insert AFTER INSERT ON art_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('art', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS art_spatial_delete AFTER DELETE ON art_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'art' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'art' AND object_uid = OLD.uid;
-            END
-        """)
-        
-        // Create triggers for camp objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_spatial_insert AFTER INSERT ON camp_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('camp', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS camp_spatial_delete AFTER DELETE ON camp_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'camp' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'camp' AND object_uid = OLD.uid;
-            END
-        """)
-        
-        // Create triggers for event objects
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_spatial_insert AFTER INSERT ON event_objects
-            WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
-            BEGIN
-                INSERT INTO spatial_objects (object_type, object_uid) VALUES ('event', NEW.uid);
-                INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
-                VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
-            END
-        """)
-        
-        try db.execute(sql: """
-            CREATE TRIGGER IF NOT EXISTS event_spatial_delete AFTER DELETE ON event_objects
-            WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
-            BEGIN
-                DELETE FROM spatial_index WHERE id = (
-                    SELECT spatial_id FROM spatial_objects 
-                    WHERE object_type = 'event' AND object_uid = OLD.uid
-                );
-                DELETE FROM spatial_objects WHERE object_type = 'event' AND object_uid = OLD.uid;
-            END
-        """)
+        // Insert/delete/update triggers keeping the point R*Tree in sync for each
+        // GPS-bearing object table. The update triggers matter for the embargo drop:
+        // if location data ever arrives as an in-place UPDATE of gps columns rather
+        // than a full reimport, the R*Tree must follow or region queries silently
+        // miss those rows.
+        let spatialTables: [(type: String, table: String)] = [
+            ("art", "art_objects"),
+            ("camp", "camp_objects"),
+            ("event", "event_objects"),
+        ]
+        for config in spatialTables {
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_insert AFTER INSERT ON \(config.table)
+                WHEN NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL
+                BEGIN
+                    INSERT INTO spatial_objects (object_type, object_uid) VALUES ('\(config.type)', NEW.uid);
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    VALUES (last_insert_rowid(), NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude);
+                END
+            """)
+
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_delete AFTER DELETE ON \(config.table)
+                WHEN OLD.gps_latitude IS NOT NULL AND OLD.gps_longitude IS NOT NULL
+                BEGIN
+                    DELETE FROM spatial_index WHERE id = (
+                        SELECT spatial_id FROM spatial_objects
+                        WHERE object_type = '\(config.type)' AND object_uid = OLD.uid
+                    );
+                    DELETE FROM spatial_objects WHERE object_type = '\(config.type)' AND object_uid = OLD.uid;
+                END
+            """)
+
+            // Drop any stale entry, then re-add when the new coordinate is usable.
+            // The second insert is keyed off the mapping table (not last_insert_rowid)
+            // so the NULL-coordinate case degrades to two no-op inserts.
+            try db.execute(sql: """
+                CREATE TRIGGER IF NOT EXISTS \(config.type)_spatial_update
+                AFTER UPDATE OF gps_latitude, gps_longitude ON \(config.table)
+                BEGIN
+                    DELETE FROM spatial_index WHERE id = (
+                        SELECT spatial_id FROM spatial_objects
+                        WHERE object_type = '\(config.type)' AND object_uid = NEW.uid
+                    );
+                    DELETE FROM spatial_objects WHERE object_type = '\(config.type)' AND object_uid = NEW.uid;
+                    INSERT INTO spatial_objects (object_type, object_uid)
+                    SELECT '\(config.type)', NEW.uid
+                    WHERE NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    SELECT so.spatial_id, NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude
+                    FROM spatial_objects so
+                    WHERE so.object_type = '\(config.type)' AND so.object_uid = NEW.uid
+                      AND NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
+                END
+            """)
+        }
 
         // Spatial R*Tree over event occurrences (point index keyed by event_occurrences.id,
         // so no mapping table is needed). lat/lon come from the parent event's denormalized
@@ -574,27 +680,37 @@ internal class PlayaDBImpl: PlayaDB {
                 DELETE FROM event_occurrence_rtree WHERE id = OLD.id;
             END
         """)
+
+        // Event GPS updates must also refresh the denormalized occurrence R*Tree.
+        // Created after event_occurrence_rtree exists — SQLite validates referenced
+        // tables when the trigger is created.
+        try db.execute(sql: """
+            CREATE TRIGGER IF NOT EXISTS event_occurrence_rtree_event_update
+            AFTER UPDATE OF gps_latitude, gps_longitude ON event_objects
+            BEGIN
+                DELETE FROM event_occurrence_rtree WHERE id IN (
+                    SELECT id FROM event_occurrences WHERE event_id = NEW.uid
+                );
+                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+                SELECT o.id, NEW.gps_latitude, NEW.gps_latitude, NEW.gps_longitude, NEW.gps_longitude
+                FROM event_occurrences o
+                WHERE o.event_id = NEW.uid
+                  AND NEW.gps_latitude IS NOT NULL AND NEW.gps_longitude IS NOT NULL;
+            END
+        """)
     }
 
     /// Rebuild the occurrence spatial index from current data. Indexes each occurrence whose
     /// parent event has GPS, using the event's denormalized coordinate as a point.
     func rebuildOccurrenceRTree(_ db: Database) throws {
         try db.execute(sql: "DELETE FROM event_occurrence_rtree")
-        let rows = try Row.fetchAll(db, sql: """
-            SELECT o.id AS id, e.gps_latitude AS lat, e.gps_longitude AS lon
+        try db.execute(sql: """
+            INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
+            SELECT o.id, e.gps_latitude, e.gps_latitude, e.gps_longitude, e.gps_longitude
             FROM event_occurrences o
             JOIN event_objects e ON e.uid = o.event_id
             WHERE e.gps_latitude IS NOT NULL AND e.gps_longitude IS NOT NULL
-        """)
-        for row in rows {
-            let id: Int64 = row["id"]
-            let lat: Double = row["lat"]
-            let lon: Double = row["lon"]
-            try db.execute(sql: """
-                INSERT OR REPLACE INTO event_occurrence_rtree (id, minLat, maxLat, minLon, maxLon)
-                VALUES (?, ?, ?, ?, ?)
-                """, arguments: [id, lat, lat, lon, lon])
-        }
+            """)
     }
 
     /// Occurrence ids whose host location falls within `region`, via the spatial R*Tree.
@@ -614,28 +730,22 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Data Access Methods
     
     func fetchArt() async throws -> [ArtObject] {
-        let art = try await dbQueue.read { db in
-            try ArtObject.fetchAll(db)
+        try await dbQueue.read { db in
+            try ArtObject.all().orderedByName().fetchAll(db)
         }
-        try await ensureMetadata(for: .art, ids: art.map(\.uid))
-        return art
     }
-    
+
     func fetchCamps() async throws -> [CampObject] {
-        let camps = try await dbQueue.read { db in
-            try CampObject.fetchAll(db)
+        try await dbQueue.read { db in
+            try CampObject.all().orderedByName().fetchAll(db)
         }
-        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
-        return camps
     }
-    
+
     func fetchEvents() async throws -> [EventObjectOccurrence] {
-        let events = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             let events = try EventObject.fetchAll(db)
             return try eventObjectOccurrences(for: events, db: db)
         }
-        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
-        return events
     }
     
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
@@ -740,12 +850,6 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects)
         }
 
-        try await ensureMetadata(for: [
-            (.art, result.0.map(\.uid)),
-            (.camp, result.1.map(\.uid)),
-            (.event, result.2.map(\.uid)),
-        ])
-
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
         objects.append(contentsOf: result.1)
@@ -804,13 +908,6 @@ internal class PlayaDBImpl: PlayaDB {
             return (artObjects, campObjects, eventObjects, mvObjects)
         }
 
-        try await ensureMetadata(for: [
-            (.art, result.0.map(\.uid)),
-            (.camp, result.1.map(\.uid)),
-            (.event, result.2.map(\.uid)),
-            (.mutantVehicle, result.3.map(\.uid)),
-        ])
-
         var objects: [any DataObject] = []
         objects.append(contentsOf: result.0)
         objects.append(contentsOf: result.1)
@@ -822,33 +919,21 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Single Object Fetch
 
     func fetchArt(uid: String) async throws -> ArtObject? {
-        let art = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try ArtObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let art {
-            try await ensureMetadata(for: .art, ids: [art.uid])
-        }
-        return art
     }
 
     func fetchCamp(uid: String) async throws -> CampObject? {
-        let camp = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try CampObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let camp {
-            try await ensureMetadata(for: .camp, ids: [camp.uid])
-        }
-        return camp
     }
 
     func fetchEvent(uid: String) async throws -> EventObject? {
-        let event = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try EventObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let event {
-            try await ensureMetadata(for: .event, ids: [event.uid])
-        }
-        return event
     }
 
     func fetchOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence] {
@@ -868,9 +953,7 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             return try eventObjectOccurrences(for: eventObjects, db: db)
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     func fetchEvents(locatedAtArtUID artUID: String) async throws -> [EventObjectOccurrence] {
@@ -880,78 +963,57 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             return try eventObjectOccurrences(for: eventObjects, db: db)
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     // MARK: - Mutant Vehicle Data Access
 
     func fetchMutantVehicles() async throws -> [MutantVehicleObject] {
-        let mvs = try await dbQueue.read { db in
-            try MutantVehicleObject.fetchAll(db)
+        try await dbQueue.read { db in
+            try MutantVehicleObject.all().orderedByName().fetchAll(db)
         }
-        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
-        return mvs
     }
 
     func fetchMutantVehicles(filter: MutantVehicleFilter) async throws -> [MutantVehicleObject] {
-        let mvs = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try self.mutantVehicleRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .mutantVehicle, ids: mvs.map(\.uid))
-        return mvs
     }
 
     func fetchMutantVehicle(uid: String) async throws -> MutantVehicleObject? {
-        let mv = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try MutantVehicleObject.filter(Column("uid") == uid).fetchOne(db)
         }
-        if let mv {
-            try await ensureMetadata(for: .mutantVehicle, ids: [mv.uid])
-        }
-        return mv
     }
 
     func fetchMutantVehicleImageURLs() async throws -> [String: URL] {
-        try await dbQueue.read { db in
-            let images = try MutantVehicleImage
-                .filter(MutantVehicleImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
-            var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.mvId] == nil {
-                    result[image.mvId] = url
-                }
-            }
-            return result
-        }
+        try await fetchFirstThumbnailURLs(table: "mv_images", ownerColumn: "mv_id")
     }
 
     func fetchArtImageURLs() async throws -> [String: URL] {
-        try await dbQueue.read { db in
-            let images = try ArtImage
-                .filter(ArtImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
-            var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.artId] == nil {
-                    result[image.artId] = url
-                }
-            }
-            return result
-        }
+        try await fetchFirstThumbnailURLs(table: "art_images", ownerColumn: "art_id")
     }
 
     func fetchCampImageURLs() async throws -> [String: URL] {
+        try await fetchFirstThumbnailURLs(table: "camp_images", ownerColumn: "camp_id")
+    }
+
+    /// First (lowest-id) thumbnail URL per owning object, aggregated in SQL rather
+    /// than decoding every image row. SQLite's bare-column-with-MIN semantics
+    /// guarantee thumbnail_url comes from the MIN(id) row.
+    private func fetchFirstThumbnailURLs(table: String, ownerColumn: String) async throws -> [String: URL] {
         try await dbQueue.read { db in
-            let images = try CampImage
-                .filter(CampImage.Columns.thumbnailUrl != nil)
-                .fetchAll(db)
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT \(ownerColumn) AS owner_id, thumbnail_url, MIN(id)
+                FROM \(table)
+                WHERE thumbnail_url IS NOT NULL
+                GROUP BY \(ownerColumn)
+                """)
             var result: [String: URL] = [:]
-            for image in images {
-                if let url = image.thumbnailUrl, result[image.campId] == nil {
-                    result[image.campId] = url
+            for row in rows {
+                let ownerId: String = row["owner_id"]
+                if let urlString: String = row["thumbnail_url"], let url = URL(string: urlString) {
+                    result[ownerId] = url
                 }
             }
             return result
@@ -986,6 +1048,11 @@ internal class PlayaDBImpl: PlayaDB {
 
         if filter.onlyWithEvents {
             request = request.withEvents()
+        }
+
+        // Apply audio-tour filter (nil = no filter)
+        if let hasAudioTour = filter.hasAudioTour {
+            request = request.hasAudioTour(hasAudioTour)
         }
 
         // Default ordering
@@ -1088,6 +1155,24 @@ internal class PlayaDBImpl: PlayaDB {
                 .filter(EventOccurrence.Columns.endTime > window.start)
         }
 
+        // Max-duration cap: hide occurrences whose [start, end) span EXCEEDS maxDuration
+        // seconds. Applied here so every filtered path (joined browse + non-joined search/
+        // fetch) inherits it uniformly.
+        //
+        // start_time/end_time are stored as TEXT (GRDB's default Date encoding,
+        // "YYYY-MM-DD HH:MM:SS.SSS", UTC), so the span is computed in SQL via julianday()
+        // (fractional days) scaled to seconds — matching the notExpired()/happeningNow()
+        // date-comparison idioms elsewhere, which also rely on GRDB's TEXT date encoding.
+        // Inclusive (<=): an occurrence exactly at the limit stays visible. The 0.5s
+        // tolerance absorbs julianday()'s double-precision rounding (worst case ~1e-4 s at
+        // these magnitudes) so an exactly-at-limit occurrence is never dropped by float
+        // error; it stays far below the 60s granularity of real event durations.
+        if let maxDuration = filter.maxDuration {
+            request = request.filter(sql: """
+                (julianday(event_occurrences.end_time) - julianday(event_occurrences.start_time)) * 86400.0 <= ? + 0.5
+                """, arguments: [maxDuration])
+        }
+
         // FTS5 search constraint (UIDs pre-resolved against event_objects_fts)
         if let uids = matchingEventUIDs {
             request = request.filter(uids.contains(EventOccurrence.Columns.eventId))
@@ -1133,16 +1218,20 @@ internal class PlayaDBImpl: PlayaDB {
             .including(optional: EventObject.locatedArt))
 
         // Push remaining filters into SQL.
+        //
+        // Favorites are keyed per occurrence (`EventFavoriteKey`), whose id embeds an
+        // ISO-8601 rendering of the start instant. Rather than have SQLite re-derive that
+        // string from the stored date, SQL narrows to events with *any* favorited row and
+        // the exact per-occurrence rule runs in Swift below — same rule, same one place.
+        let favoriteIndex: EventFavoriteIndex?
         if filter.onlyFavorites {
-            let predicate: SQL = SQL("""
-                EXISTS (
-                    SELECT 1 FROM object_metadata
-                    WHERE object_metadata.object_type = \(DataObjectType.event.rawValue)
-                      AND object_metadata.object_id = event_occurrences.event_id
-                      AND object_metadata.is_favorite = 1
-                )
-            """)
-            request = request.filter(predicate)
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+            request = request.filter(candidates.contains(EventOccurrence.Columns.eventId))
+            favoriteIndex = index
+        } else {
+            favoriteIndex = nil
         }
         if let year = filter.year {
             request = request.joining(required: eventAssociation
@@ -1159,7 +1248,9 @@ internal class PlayaDBImpl: PlayaDB {
         }
 
         let joined = try EventOccurrenceJoinedRow.fetchAll(db, request)
-        return joined.map { $0.toEventObjectOccurrence() }
+        let inflated = joined.map { $0.toEventObjectOccurrence() }
+        guard let favoriteIndex else { return inflated }
+        return inflated.filter { favoriteIndex.isFavorite($0) }
     }
 
     private func eventObjectOccurrences(
@@ -1190,30 +1281,29 @@ internal class PlayaDBImpl: PlayaDB {
             let regionIDs = try occurrenceIDsInRegion(db, region: region)
             occurrenceRequest = occurrenceRequest.filter(regionIDs.contains(EventOccurrence.Columns.id))
         }
+        // Same narrowing as `eventObjectOccurrencesJoined`: events with any favorited row
+        // in SQL, the exact per-occurrence rule in Swift.
+        let favoriteIndex: EventFavoriteIndex?
+        if filter.onlyFavorites {
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+            occurrenceRequest = occurrenceRequest
+                .filter(candidates.contains(EventOccurrence.Columns.eventId))
+            favoriteIndex = index
+        } else {
+            favoriteIndex = nil
+        }
+
         let occurrences = try occurrenceRequest.fetchAll(db)
 
         let pairs = try eventObjectOccurrences(for: occurrences, db: db)
 
-        let favoriteEventIds: Set<String>
-        if filter.onlyFavorites {
-            let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
-                .filter(ObjectMetadata.Columns.isFavorite == true)
-                .fetchAll(db)
-            favoriteEventIds = Set(metadata.map(\.objectId))
-        } else {
-            favoriteEventIds = []
-        }
-
         return pairs.filter { pair in
             let event = pair.event
-            let occurrence = pair.occurrence
 
-            if filter.onlyFavorites {
-                let occurrenceUID = "\(event.uid)_\(occurrence.id ?? 0)"
-                if !favoriteEventIds.contains(occurrenceUID) && !favoriteEventIds.contains(event.uid) {
-                    return false
-                }
+            if let favoriteIndex, !favoriteIndex.isFavorite(pair) {
+                return false
             }
 
             if let year = filter.year, event.year != year {
@@ -1235,41 +1325,53 @@ internal class PlayaDBImpl: PlayaDB {
     // MARK: - Filtered Data Access (Public API)
 
     func fetchArt(filter: ArtFilter) async throws -> [ArtObject] {
-        let art = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try artRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .art, ids: art.map(\.uid))
-        return art
     }
 
     func fetchCamps(filter: CampFilter) async throws -> [CampObject] {
-        let camps = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try campRequest(filter: filter).fetchAll(db)
         }
-        try await ensureMetadata(for: .camp, ids: camps.map(\.uid))
-        return camps
     }
 
     func fetchEvents(filter: EventFilter) async throws -> [EventObjectOccurrence] {
-        let events = try await dbQueue.read { db in
+        try await dbQueue.read { db in
             try eventObjectOccurrences(filter: filter, db: db)
         }
-        try await ensureMetadata(for: .event, ids: events.map { $0.event.uid })
-        return events
     }
 
     // MARK: - Filtered Observation Helpers
+
+    /// Metadata region for list observations, narrowed to the columns list rows
+    /// actually render (favorite state, notes). Excludes first/last_viewed and the
+    /// timestamps so detail-screen "mark viewed" writes don't re-run list queries —
+    /// with the full-table region, every setLastViewed re-ran the 8k-row event JOIN.
+    /// Row inserts/deletes still trigger regardless of column selection.
+    private var listMetadataRegion: any DatabaseRegionConvertible {
+        ObjectMetadata.select(
+            ObjectMetadata.Columns.objectType,
+            ObjectMetadata.Columns.objectId,
+            ObjectMetadata.Columns.isFavorite,
+            ObjectMetadata.Columns.userNotes
+        )
+    }
 
     /// Observe objects as fully-inflated ListRows. Fetches objects, metadata, and
     /// thumbnail colors in a single read transaction.
     /// - Parameter regions: Explicit observation regions. When provided, only changes to these
     ///   regions trigger re-evaluation. The fetch closure can read from any table freely.
     ///   When nil, GRDB auto-tracks all tables accessed in the fetch closure.
-    private func observeListRows<T>(
+    /// - Parameter favoriteIdentity: When the object's favorite bit lives on a *different*
+    ///   `object_metadata` row than its notes/visits/views — which is the case for event
+    ///   occurrences (see ``EventFavoriteKey``) — this returns that row's id, and the
+    ///   inflated `ListRow.metadata` gets `isFavorite` overlaid from it.
+    private func observeListRows<T: Equatable>(
         type: DataObjectType,
         ids: @escaping ([T]) -> [String],
+        favoriteIdentity: (@Sendable (T) -> String)? = nil,
         regions: [any DatabaseRegionConvertible]? = nil,
-        skipEnsureMetadata: Bool = false,
         value: @escaping @Sendable (Database) throws -> [T],
         onChange: @escaping ([ListRow<T>]) -> Void,
         onError: @escaping (Error) -> Void
@@ -1293,36 +1395,53 @@ internal class PlayaDBImpl: PlayaDB {
                 .fetchAll(db)
             let colorsByID = Dictionary(uniqueKeysWithValues: allColors.map { ($0.objectId, $0) })
 
+            // One read of the event metadata slice covers every row's favorite overlay.
+            let favoriteIndex = favoriteIdentity == nil ? nil : try EventFavoriteIndex.load(db)
+
             return objects.map { obj in
                 let uid = ids([obj]).first ?? ""
+                var metadata = metaByID[uid]
+                if let favoriteIdentity, let favoriteIndex {
+                    let isFavorite = favoriteIndex.isFavorite(identity: favoriteIdentity(obj))
+                    if metadata != nil {
+                        metadata?.isFavorite = isFavorite
+                    } else if isFavorite {
+                        // No parent row (never viewed, no notes) but the occurrence is
+                        // favorited: synthesize the record the row needs to draw a
+                        // filled heart. Not persisted — it's a read-time projection.
+                        // Fixed timestamps, not `Date()`: these values feed the
+                        // observation's `removeDuplicates`, and a fresh `now` on every
+                        // fetch would make every emission look like a change.
+                        metadata = ObjectMetadata(
+                            objectType: typeRaw,
+                            objectId: uid,
+                            isFavorite: true,
+                            createdAt: .distantPast,
+                            updatedAt: .distantPast
+                        )
+                    }
+                }
                 return ListRow(
                     object: obj,
-                    metadata: metaByID[uid],
+                    metadata: metadata,
                     thumbnailColors: colorsByID[uid]
                 )
             }
         }
 
-        let observation: ValueObservation<ValueReducers.Fetch<[ListRow<T>]>>
+        // removeDuplicates: broad tracked regions (whole object_metadata / thumbnail_colors
+        // tables) mean unrelated writes re-run the fetch; suppress emissions whose result
+        // is value-identical so the UI doesn't re-diff thousands of rows for nothing.
+        let observation: ValueObservation<ValueReducers.RemoveDuplicates<ValueReducers.Fetch<[ListRow<T>]>>>
         if let regions {
-            observation = ValueObservation.tracking(regions: regions, fetch: fetch)
+            observation = ValueObservation.tracking(regions: regions, fetch: fetch).removeDuplicates()
         } else {
-            observation = ValueObservation.tracking(fetch)
+            observation = ValueObservation.tracking(fetch).removeDuplicates()
         }
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
-            onChange: { [weak self] rows in
-                if !skipEnsureMetadata {
-                    let identifiers = ids(rows.map(\.object))
-                    if !identifiers.isEmpty {
-                        Task {
-                            try? await self?.ensureMetadata(for: type, ids: identifiers)
-                        }
-                    }
-                }
-                onChange(rows)
-            }
+            onChange: onChange
         )
         return PlayaDBObservationToken(cancellable)
     }
@@ -1332,9 +1451,19 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<ArtObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observeListRows(
+        // FTS/spatial subquery tables only change via art_objects triggers or the
+        // import (which rewrites art_objects too), so tracking the content table
+        // covers them. event_objects matters only for the onlyWithEvents EXISTS.
+        var regions: [any DatabaseRegionConvertible] = [
+            ArtObject.all(), listMetadataRegion, ThumbnailColors.all()
+        ]
+        if filter.onlyWithEvents {
+            regions.append(EventObject.all())
+        }
+        return observeListRows(
             type: .art,
             ids: { $0.map(\.uid) },
+            regions: regions,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.artRequest(filter: filter).fetchAll(db)
@@ -1352,6 +1481,7 @@ internal class PlayaDBImpl: PlayaDB {
         observeListRows(
             type: .camp,
             ids: { $0.map(\.uid) },
+            regions: [CampObject.all(), listMetadataRegion, ThumbnailColors.all()],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.campRequest(filter: filter).fetchAll(db)
@@ -1366,13 +1496,22 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<EventObjectOccurrence>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        // Explicitly scope observation to event tables only.
-        // The fetch closure also JOINs camp_objects/art_objects for host data,
-        // but changes to those tables should not trigger re-evaluation.
+        // Tracked regions: event tables drive membership/order; narrowed metadata and
+        // ThumbnailColors feed ListRow inflation (favorite toggles must refresh hearts
+        // and the favorites-only map layer; cached-color writes refresh row chrome).
+        // Camp/art tables are intentionally excluded — the fetch JOINs them for host
+        // data, but host edits don't reshuffle the event list.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
-            regions: [EventOccurrence.all(), EventObject.all(), Table("event_occurrence_rtree")],
+            favoriteIdentity: { $0.favoriteIdentity },
+            regions: [
+                EventOccurrence.all(),
+                EventObject.all(),
+                listMetadataRegion,
+                ThumbnailColors.all(),
+                Table("event_occurrence_rtree")
+            ],
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrences(filter: filter, db: db)
@@ -1387,9 +1526,16 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([ListRow<MutantVehicleObject>]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        observeListRows(
+        var regions: [any DatabaseRegionConvertible] = [
+            MutantVehicleObject.all(), listMetadataRegion, ThumbnailColors.all()
+        ]
+        if filter.tag != nil {
+            regions.append(Table("mv_tags"))
+        }
+        return observeListRows(
             type: .mutantVehicle,
             ids: { $0.map(\.uid) },
+            regions: regions,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.mutantVehicleRequest(filter: filter).fetchAll(db)
@@ -1414,25 +1560,21 @@ internal class PlayaDBImpl: PlayaDB {
         onChange: @escaping ([Date: [EventHourSection]]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> PlayaDBObservationToken {
-        // Tracked regions: event tables drive bucket membership/order; ObjectMetadata is needed
-        // so favorite toggles refresh the heart UI; ThumbnailColors so cached-color writes refresh
-        // the row chrome. Camp/art tables are intentionally excluded — host edits don't reshuffle
-        // the event list.
-        // skipEnsureMetadata: avoids a startup feedback loop where the first emission
-        // would write 8000+ blank metadata rows, which the ObjectMetadata region would
-        // immediately observe and re-fire the JOIN. Fetch already tolerates nil metadata
-        // via `metaByID[uid]` so blank pre-population is unnecessary.
+        // Tracked regions: event tables drive bucket membership/order; narrowed metadata is
+        // needed so favorite toggles refresh the heart UI; ThumbnailColors so cached-color
+        // writes refresh the row chrome. Camp/art tables are intentionally excluded — host
+        // edits don't reshuffle the event list.
         observeListRows(
             type: .event,
             ids: { $0.map { $0.event.uid } },
+            favoriteIdentity: { $0.favoriteIdentity },
             regions: [
                 EventOccurrence.all(),
                 EventObject.all(),
-                ObjectMetadata.all(),
+                listMetadataRegion,
                 ThumbnailColors.all(),
                 Table("event_occurrence_rtree")
             ],
-            skipEnsureMetadata: true,
             value: { [weak self, filter] db in
                 guard let self else { return [] }
                 return try self.eventObjectOccurrencesJoined(filter: filter, db: db)
@@ -1548,6 +1690,17 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    // MARK: - Distribution
+
+    func compactForDistribution() async throws {
+        try await dbQueue.writeWithoutTransaction { db in
+            // VACUUM rebuilds the file (reclaiming import churn), then the truncating
+            // checkpoint empties the WAL so PlayaDB.sqlite stands alone.
+            try db.execute(sql: "VACUUM")
+            try db.execute(sql: "PRAGMA wal_checkpoint(TRUNCATE)")
+        }
+    }
+
     func fetchCachedColorObjectIDs() async throws -> Set<String> {
         try await dbQueue.read { db in
             let ids = try String.fetchAll(db, sql: "SELECT object_id FROM thumbnail_colors")
@@ -1557,29 +1710,131 @@ internal class PlayaDBImpl: PlayaDB {
 
     // MARK: - User Map Pins
 
+    /// Upserts the pin, and — for the singleton types — retires whatever else was
+    /// holding that type.
+    ///
+    /// Home and bike are one-per-device by design (see `UserMapPinType.singletonTypes`).
+    /// Enforcing that here rather than in the UI is what makes a double tap on the map's
+    /// bike button harmless: the second write supersedes the first instead of leaving two
+    /// rows behind, no matter how the two taps interleave.
     func saveUserMapPin(_ pin: UserMapPin) async throws {
         try await dbQueue.write { db in
             var pin = pin
+            if let previous = try UserMapPin.fetchOne(db, key: pin.id) {
+                // Overwriting a row we already have is an *edit*, and an edit has to
+                // advance the last-writer-wins stamp or it loses to a peer that still
+                // holds the pre-edit row. Callers can't be trusted to do it: the iOS map
+                // writes back the `modifiedDate` it read at load time (see
+                // `BRCUserMapPoint.toUserMapPin()`), so a move or rename carried the *old*
+                // stamp and was undone by the watch's snapshot on the next launch — the
+                // pin "reverted to its original position" every relaunch.
+                //
+                // Stamped here rather than trusting the caller because there is no caller
+                // that legitimately sets it: peer snapshots merge through
+                // `applyUserMapPinSync`, which keeps the peer's stamp; everything reaching
+                // `saveUserMapPin` is a local create or edit happening *now*.
+                pin.modifiedDate = Self.nextModifiedDate(
+                    after: max(previous.modifiedDate, pin.modifiedDate)
+                )
+                // Creation is a fact about the pin, not a field an edit gets to rewrite.
+                // (`BRCUserMapPoint` rebuilds `creationDate` from the current clock every
+                // time it is loaded, and live pins are ordered by it.)
+                pin.createdDate = min(previous.createdDate, pin.createdDate)
+            }
             try pin.save(db, onConflict: .replace)
+            try Self.retireOtherSingletonPins(db, keeping: pin)
         }
     }
 
+    /// The stamp an edit must carry: now, but never older than — nor equal to — the row
+    /// it replaces.
+    ///
+    /// A plain `Date()` is not enough. `modified_date` can legitimately sit in the future
+    /// relative to the writing device's clock: the iOS app stamps new pins with
+    /// `Date.present`, which is a *mocked* date whenever date override is on (defaulting to
+    /// event week), and a peer's clock can simply run ahead. Last-writer-wins compares
+    /// stamps strictly, so a write born stale is silently reverted by the peer's next
+    /// snapshot — which `PeerSyncManager` replays at every session activation, i.e. every
+    /// launch. Matches what `tombstone(_:in:)` already does for retired singletons.
+    static func nextModifiedDate(after previous: Date) -> Date {
+        max(Date(), previous.addingTimeInterval(1))
+    }
+
+    /// Tombstones every *other* live row sharing `pin`'s type, when that type is a
+    /// singleton. Soft-deleted rather than hard-deleted so the collapse survives sync:
+    /// a row that simply vanished here would come straight back from the peer's snapshot.
+    private static func retireOtherSingletonPins(_ db: Database, keeping pin: UserMapPin) throws {
+        guard UserMapPinType(pinTypeString: pin.pinType).isSingleton, !pin.isDeleted else { return }
+        let losers = try UserMapPin
+            .filter(UserMapPin.Columns.pinType == pin.pinType)
+            .filter(UserMapPin.Columns.isDeleted == false)
+            .filter(UserMapPin.Columns.id != pin.id)
+            .fetchAll(db)
+        try tombstone(losers, in: db)
+    }
+
+    /// Marks each pin deleted with a stamp strictly newer than the one it replaces, so
+    /// last-writer-wins on the peer resolves in the tombstone's favour.
+    private static func tombstone(_ pins: some Sequence<UserMapPin>, in db: Database) throws {
+        for pin in pins {
+            var tombstoned = pin
+            tombstoned.isDeleted = true
+            tombstoned.modifiedDate = nextModifiedDate(after: pin.modifiedDate)
+            try tombstoned.update(db)
+        }
+    }
+
+    /// Folds pre-existing duplicate home/bike rows down to one live row per type.
+    ///
+    /// Placing a home or bike used to be "ask the database whether one exists, insert if
+    /// not", with the insert unawaited — so two quick taps could both miss and both write.
+    /// `saveUserMapPin` now upserts by type, but databases written by earlier builds still
+    /// carry the duplicates, which show up as stacked pins on the map. Run at open, next
+    /// to the other data-dependent folds. Idempotent, and it writes nothing at all in the
+    /// overwhelmingly common case of at most one live row per type.
+    static func collapseDuplicateSingletonPins(_ db: Database) throws {
+        for type in UserMapPinType.singletonTypes {
+            let live = try UserMapPin
+                .filter(UserMapPin.Columns.pinType == type.rawValue)
+                .filter(UserMapPin.Columns.isDeleted == false)
+                .fetchAll(db)
+            guard live.count > 1 else { continue }
+            // Newest edit wins, with creation date and id as tie-breakers so two devices
+            // folding the same rows independently keep the same survivor.
+            let ordered = live.sorted { lhs, rhs in
+                if lhs.modifiedDate != rhs.modifiedDate { return lhs.modifiedDate < rhs.modifiedDate }
+                if lhs.createdDate != rhs.createdDate { return lhs.createdDate < rhs.createdDate }
+                return lhs.id < rhs.id
+            }
+            try tombstone(ordered.dropLast(), in: db)
+        }
+    }
+
+    /// Soft delete: the row becomes a tombstone so the deletion can win a
+    /// last-writer-wins merge on the peer device. Every read path below filters
+    /// tombstones out, so callers see a normal delete.
     func deleteUserMapPin(id: String) async throws {
         _ = try await dbQueue.write { db in
-            try UserMapPin.deleteOne(db, key: id)
+            guard var pin = try UserMapPin.fetchOne(db, key: id) else { return }
+            pin.isDeleted = true
+            // Strictly newer than the row it retires, so the tombstone can never lose the
+            // last-writer-wins merge to a peer still holding the live pin — which is what
+            // made deleted pins reappear after a relaunch.
+            pin.modifiedDate = Self.nextModifiedDate(after: pin.modifiedDate)
+            try pin.update(db)
         }
     }
 
     func fetchUserMapPins() async throws -> [UserMapPin] {
         try await dbQueue.read { db in
-            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
+            try Self.liveUserMapPins(db)
         }
     }
 
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken {
         let observation = ValueObservation.tracking { db in
-            try UserMapPin.order(UserMapPin.Columns.createdDate).fetchAll(db)
-        }
+            try Self.liveUserMapPins(db)
+        }.removeDuplicates()
         let cancellable = observation.start(
             in: dbQueue,
             onError: { error in
@@ -1594,10 +1849,137 @@ internal class PlayaDBImpl: PlayaDB {
         return PlayaDBObservationToken(cancellable)
     }
 
+    // MARK: - Calendar Entries
+
+    func saveCalendarEntry(_ entry: EventCalendarEntry) async throws {
+        try await dbQueue.write { db in
+            var entry = entry
+            try entry.save(db, onConflict: .replace)
+        }
+    }
+
+    func fetchCalendarEntries(eventId: String) async throws -> [EventCalendarEntry] {
+        try await dbQueue.read { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .order(EventCalendarEntry.Columns.occurrenceKey)
+                .fetchAll(db)
+        }
+    }
+
+    func deleteCalendarEntries(eventId: String) async throws {
+        _ = try await dbQueue.write { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .deleteAll(db)
+        }
+    }
+
+    func deleteCalendarEntry(eventId: String, occurrenceKey: String) async throws {
+        _ = try await dbQueue.write { db in
+            try EventCalendarEntry
+                .filter(EventCalendarEntry.Columns.eventId == eventId)
+                .filter(EventCalendarEntry.Columns.occurrenceKey == occurrenceKey)
+                .deleteAll(db)
+        }
+    }
+
+    func fetchAllCalendarEntries() async throws -> [EventCalendarEntry] {
+        try await dbQueue.read { db in
+            try EventCalendarEntry
+                .order(EventCalendarEntry.Columns.eventId, EventCalendarEntry.Columns.occurrenceKey)
+                .fetchAll(db)
+        }
+    }
+
+    // MARK: - User Map Pin Sync
+
+    func userMapPinSyncSnapshot() async throws -> [UserMapPin] {
+        try await dbQueue.read { db in
+            try Self.userMapPinSyncItems(db)
+        }
+    }
+
+    @discardableResult
+    func applyUserMapPinSync(_ pins: [UserMapPin]) async throws -> [UserMapPin] {
+        try await dbQueue.write { db in
+            var applied: [UserMapPin] = []
+            for incoming in pins {
+                guard !incoming.id.isEmpty else { continue }
+                let existing = try UserMapPin.fetchOne(db, key: incoming.id)
+
+                guard var merged = existing else {
+                    // A tombstone for a pin this device never had says nothing
+                    // worth storing — skip it so the table only ever holds pins
+                    // we actually saw.
+                    guard !incoming.isDeleted else { continue }
+                    var newPin = incoming
+                    try newPin.insert(db)
+                    applied.append(newPin)
+                    continue
+                }
+
+                // Last-writer-wins on the whole row: title, coordinate, type and
+                // the tombstone flag all move together, so a strictly newer
+                // stamp is the only thing that can overwrite local state.
+                guard incoming.modifiedDate > merged.modifiedDate else { continue }
+                merged.title = incoming.title
+                merged.latitude = incoming.latitude
+                merged.longitude = incoming.longitude
+                merged.pinType = incoming.pinType
+                merged.isDeleted = incoming.isDeleted
+                merged.modifiedDate = incoming.modifiedDate
+                // Creation is a fact about the pin, not a field to race over.
+                merged.createdDate = min(merged.createdDate, incoming.createdDate)
+
+                // Never write when nothing changed: applying a peer's snapshot
+                // must not re-fire the local observation, or the two devices
+                // ping-pong pushes forever.
+                guard merged != existing else { continue }
+                try merged.update(db)
+                applied.append(merged)
+            }
+            return applied
+        }
+    }
+
+    @discardableResult
+    func observeUserMapPinSyncState(
+        onChange: @escaping ([UserMapPin]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try Self.userMapPinSyncItems(db)
+        }.removeDuplicates()
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { pins in
+                DispatchQueue.main.async {
+                    onChange(pins)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
+    /// Pins visible to the app: tombstones excluded.
+    private static func liveUserMapPins(_ db: Database) throws -> [UserMapPin] {
+        try UserMapPin
+            .filter(UserMapPin.Columns.isDeleted == false)
+            .order(UserMapPin.Columns.createdDate)
+            .fetchAll(db)
+    }
+
+    /// Everything a peer needs to converge, tombstones included.
+    private static func userMapPinSyncItems(_ db: Database) throws -> [UserMapPin] {
+        try UserMapPin.order(UserMapPin.Columns.id).fetchAll(db)
+    }
+
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
         let observation = ValueObservation.tracking { db in
             try UpdateInfo.fetchAll(db)
-        }
+        }.removeDuplicates()
         let cancellable = observation.start(
             in: dbQueue,
             onError: onError,
@@ -1610,7 +1992,273 @@ internal class PlayaDBImpl: PlayaDB {
         return PlayaDBObservationToken(cancellable)
     }
 
+    // MARK: - Favorite Sync
+
+    /// Shared query for snapshot + observation: every row whose favorite or
+    /// visit status has ever been explicitly set (non-nil stamp on either
+    /// field), deterministically ordered.
+    private static func favoriteSyncItems(_ db: Database) throws -> [FavoriteSyncItem] {
+        let rows = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.favoriteUpdatedAt != nil
+                    || ObjectMetadata.Columns.visitStatusUpdatedAt != nil)
+            .order(ObjectMetadata.Columns.objectType, ObjectMetadata.Columns.objectId)
+            .fetchAll(db)
+        return rows.map { metadata in
+            FavoriteSyncItem(
+                objectType: metadata.objectType,
+                objectId: metadata.objectId,
+                isFavorite: metadata.isFavorite,
+                favoriteUpdatedAt: metadata.favoriteUpdatedAt,
+                visitStatus: metadata.visitStatus,
+                visitStatusUpdatedAt: metadata.visitStatusUpdatedAt
+            )
+        }
+    }
+
+    func favoriteSyncSnapshot() async throws -> [FavoriteSyncItem] {
+        try await dbQueue.read { db in
+            try Self.favoriteSyncItems(db)
+        }
+    }
+
+    @discardableResult
+    func applyFavoriteSync(_ items: [FavoriteSyncItem]) async throws -> [FavoriteSyncItem] {
+        try await dbQueue.write { db in
+            var applied: [FavoriteSyncItem] = []
+            for item in items {
+                guard DataObjectType(rawValue: item.objectType) != nil else { continue }
+
+                let existingMetadata = try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == item.objectType)
+                    .filter(ObjectMetadata.Columns.objectId == item.objectId)
+                    .fetchOne(db)
+
+                // A visit field is only meaningful when it carries a stamp and a
+                // raw value we recognize.
+                let incomingVisitValid = item.visitStatusUpdatedAt != nil
+                    && VisitStatus(rawValue: item.visitStatus) != nil
+
+                if var metadata = existingMetadata {
+                    // Per-field last-writer-wins: favorite and visit status merge
+                    // independently, each on its own dedicated stamp.
+                    var changedColumns: [ObjectMetadata.Columns] = []
+
+                    if let incomingStamp = item.favoriteUpdatedAt,
+                       metadata.isFavorite != item.isFavorite,
+                       metadata.favoriteUpdatedAt.map({ incomingStamp > $0 }) ?? true {
+                        metadata.isFavorite = item.isFavorite
+                        metadata.favoriteUpdatedAt = incomingStamp
+                        changedColumns += [.isFavorite, .favoriteUpdatedAt]
+                    }
+
+                    if incomingVisitValid,
+                       let incomingStamp = item.visitStatusUpdatedAt,
+                       metadata.visitStatus != item.visitStatus,
+                       metadata.visitStatusUpdatedAt.map({ incomingStamp > $0 }) ?? true {
+                        metadata.visitStatus = item.visitStatus
+                        metadata.visitStatusUpdatedAt = incomingStamp
+                        changedColumns += [.visitStatus, .visitStatusUpdatedAt]
+                    }
+
+                    // Nothing applied: never write, so applying a peer's snapshot
+                    // doesn't re-fire observations (and cause push loops).
+                    guard !changedColumns.isEmpty else { continue }
+                    metadata.updatedAt = Date()
+                    changedColumns.append(.updatedAt)
+                    try metadata.update(db, columns: changedColumns)
+                    applied.append(item)
+                } else {
+                    // No local row: only materialize when the incoming item has
+                    // something non-default to say. Stamps are set only for the
+                    // fields the item actually carries.
+                    let hasFavoriteField = item.favoriteUpdatedAt != nil
+                    let insertWorthy = (hasFavoriteField && item.isFavorite)
+                        || (incomingVisitValid && item.visitStatus != VisitStatus.unvisited.rawValue)
+                    guard insertWorthy else { continue }
+                    var newMetadata = ObjectMetadata(
+                        objectType: item.objectType,
+                        objectId: item.objectId,
+                        isFavorite: hasFavoriteField ? item.isFavorite : false,
+                        favoriteUpdatedAt: hasFavoriteField ? item.favoriteUpdatedAt : nil,
+                        visitStatus: incomingVisitValid ? item.visitStatus : 0,
+                        visitStatusUpdatedAt: incomingVisitValid ? item.visitStatusUpdatedAt : nil
+                    )
+                    try newMetadata.insert(db)
+                    applied.append(item)
+                }
+            }
+            return applied
+        }
+    }
+
+    @discardableResult
+    func observeFavoriteSyncState(onChange: @escaping ([FavoriteSyncItem]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken {
+        let observation = ValueObservation.tracking { db in
+            try Self.favoriteSyncItems(db)
+        }.removeDuplicates()
+        let cancellable = observation.start(
+            in: dbQueue,
+            onError: onError,
+            onChange: { items in
+                DispatchQueue.main.async {
+                    onChange(items)
+                }
+            }
+        )
+        return PlayaDBObservationToken(cancellable)
+    }
+
     // MARK: - Metadata Helpers
+
+    /// Metadata identity for an object's *non-favorite* fields (notes, visit status,
+    /// view history). Event occurrences share their parent event's row here: "I visited
+    /// this" and "my note about this" are statements about the event, not about one
+    /// morning of it. (`EventObjectOccurrence.uid` is a synthesized
+    /// "<eventUID>_<occurrenceID>" that never matches the event_objects table, and whose
+    /// numeric half is reissued by every import — it is never a storage key.)
+    ///
+    /// Favorites are the exception and are keyed per occurrence — see
+    /// ``favoriteTarget(for:)`` and ``EventFavoriteKey``.
+    private func metadataIdentity(for object: any DataObject) -> (type: DataObjectType, uid: String) {
+        if let occurrence = object as? EventObjectOccurrence {
+            return (.event, occurrence.event.uid)
+        }
+        return (object.objectType, object.uid)
+    }
+
+    /// What a favorite write or read is actually about.
+    private enum FavoriteTarget {
+        /// One `object_metadata` row: any non-event object, or one event occurrence
+        /// (whose objectID is the ``EventFavoriteKey`` composite).
+        case single(type: DataObjectType, objectID: String)
+        /// Every occurrence of one event. A bare `EventObject` has no occurrence to
+        /// point at, so its heart means the whole series (Detail opened on an event
+        /// rather than on a specific showing).
+        case eventSeries(eventUID: String)
+    }
+
+    /// Where an object's favorite bit lives. Event occurrences get their own row so
+    /// favoriting Tuesday's yoga leaves Wednesday's alone.
+    private func favoriteTarget(for object: any DataObject) -> FavoriteTarget {
+        if let occurrence = object as? EventObjectOccurrence {
+            return .single(type: .event, objectID: occurrence.favoriteIdentity)
+        }
+        if let event = object as? EventObject {
+            return .eventSeries(eventUID: event.uid)
+        }
+        return .single(type: object.objectType, objectID: object.uid)
+    }
+
+    /// Resolves an occurrence's favorite state, honoring the legacy parent-uid row.
+    /// See ``EventFavoriteKey`` for the precedence rule.
+    private static func isFavoriteOccurrence(identity: String, db: Database) throws -> Bool {
+        if let own = try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, identity]) {
+            return own
+        }
+        let parentUID = EventFavoriteKey.eventUID(from: identity)
+        return try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, parentUID]) ?? false
+    }
+
+    /// Every occurrence identity of one event, oldest first.
+    private static func occurrenceIdentities(eventUID: String, db: Database) throws -> [String] {
+        let startDates = try Date.fetchAll(db, sql: """
+            SELECT start_time FROM event_occurrences WHERE event_id = ? ORDER BY start_time
+            """, arguments: [eventUID])
+        return startDates.map { EventFavoriteKey.objectID(eventUID: eventUID, startDate: $0) }
+    }
+
+    /// Merges legacy occurrence-keyed event metadata rows ("<eventUID>_<occID>") into
+    /// their parent event's row. Earlier versions wrote favorites through
+    /// EventObjectOccurrence.uid, producing rows invisible to the JOIN-based favorite
+    /// filter and to ListRow metadata inflation (both keyed by the event uid).
+    private func migrateOccurrenceKeyedMetadata(_ db: Database) throws {
+        let candidates = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            .filter(sql: "instr(object_id, '_') > 0")
+            .fetchAll(db)
+        guard !candidates.isEmpty else { return }
+
+        for synthetic in candidates {
+            guard let separator = synthetic.objectId.lastIndex(of: "_") else { continue }
+            let parentUID = String(synthetic.objectId[..<separator])
+            let suffix = synthetic.objectId[synthetic.objectId.index(after: separator)...]
+            guard !parentUID.isEmpty, Int64(suffix) != nil else { continue }
+            guard try EventObject.filter(Column("uid") == parentUID).fetchCount(db) > 0 else { continue }
+
+            if var parent = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == parentUID)
+                .fetchOne(db) {
+                parent.isFavorite = parent.isFavorite || synthetic.isFavorite
+                parent.firstViewed = [parent.firstViewed, synthetic.firstViewed].compactMap { $0 }.min()
+                parent.lastViewed = [parent.lastViewed, synthetic.lastViewed].compactMap { $0 }.max()
+                parent.userNotes = parent.userNotes ?? synthetic.userNotes
+                parent.updatedAt = Date()
+                try parent.update(db)
+            } else {
+                var moved = synthetic
+                moved.objectId = parentUID
+                moved.updatedAt = Date()
+                try moved.insert(db)
+            }
+
+            try db.execute(sql: """
+                DELETE FROM object_metadata WHERE object_type = ? AND object_id = ?
+                """, arguments: [DataObjectType.event.rawValue, synthetic.objectId])
+        }
+    }
+
+    /// Promotes legacy series favorites (a favorited row keyed by the bare event uid)
+    /// into explicit per-occurrence rows.
+    ///
+    /// Before per-occurrence favorites, favoriting any showing of a recurring event wrote
+    /// one row under the parent uid, which meant *every* occurrence read as favorited.
+    /// That intent is preserved literally: each occurrence of the event gets its own row
+    /// carrying the parent's `is_favorite` and `favorite_updated_at`.
+    ///
+    /// Notes:
+    /// - **The parent row is left favorited.** It stays the fallback for occurrences that
+    ///   have no row of their own — including ones a later data refresh adds, and ones a
+    ///   peer running an older build knows about. Clearing it would also push an
+    ///   "unfavorited" edit at those peers through `favoriteSyncItems`.
+    /// - **Explicit occurrence rows are never overwritten**, so a user who has already
+    ///   unfavorited one showing keeps that decision.
+    /// - **Data-dependent and idempotent.** Events with no occurrences yet (the fold can
+    ///   run before the first import or seed restore) are skipped and picked up on a later
+    ///   open; occurrences that already have a row are skipped every time after the first.
+    private func foldLegacyEventFavorites(_ db: Database) throws {
+        let parentRows = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            .filter(ObjectMetadata.Columns.isFavorite == true)
+            .fetchAll(db)
+            .filter { !EventFavoriteKey.isComposite($0.objectId) }
+        guard !parentRows.isEmpty else { return }
+
+        for parent in parentRows {
+            let identities = try Self.occurrenceIdentities(eventUID: parent.objectId, db: db)
+            guard !identities.isEmpty else { continue }
+
+            let existing = try ObjectMetadata
+                .select(ObjectMetadata.Columns.objectId, as: String.self)
+                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+                .filter(identities.contains(ObjectMetadata.Columns.objectId))
+                .fetchSet(db)
+
+            for identity in identities where !existing.contains(identity) {
+                var row = ObjectMetadata(
+                    objectType: DataObjectType.event.rawValue,
+                    objectId: identity,
+                    isFavorite: true,
+                    favoriteUpdatedAt: parent.favoriteUpdatedAt ?? parent.updatedAt
+                )
+                try row.insert(db)
+            }
+        }
+    }
 
     private func ensureMetadata(for type: DataObjectType, ids: [String]) async throws {
         try await ensureMetadata(for: [(type, ids)])
@@ -1716,17 +2364,118 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func metadata(for object: any DataObject) async throws -> ObjectMetadata {
-        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+        let identity = metadataIdentity(for: object)
+        let favorite = favoriteTarget(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         return try await dbQueue.read { db in
-            guard let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+            guard var metadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
+            // Notes/visits/views come from the row above; the favorite bit may live on a
+            // different (occurrence-keyed) row. Overlay it so callers see one coherent
+            // record — the merge belongs here, not in every screen.
+            switch favorite {
+            case let .single(_, objectID) where objectID != identity.uid:
+                metadata.isFavorite = try Self.isFavoriteOccurrence(identity: objectID, db: db)
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                metadata.isFavorite = try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+            case .single:
+                break
+            }
             return metadata
         }
+    }
+
+    /// Whether *any* showing of an event is favorited — what a bare `EventObject`'s heart
+    /// answers. Falls back to the parent row for events with no occurrences on file.
+    private static func isFavoriteSeries(
+        eventUID: String,
+        identities: [String],
+        db: Database
+    ) throws -> Bool {
+        guard !identities.isEmpty else {
+            return try Bool.fetchOne(db, sql: """
+                SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+                """, arguments: [DataObjectType.event.rawValue, eventUID]) ?? false
+        }
+        for identity in identities {
+            if try isFavoriteOccurrence(identity: identity, db: db) { return true }
+        }
+        return false
+    }
+
+    /// Writes one favorite row, creating it when needed. Returns whether anything changed.
+    @discardableResult
+    private static func writeFavorite(
+        _ isFavorite: Bool,
+        type: DataObjectType,
+        objectID: String,
+        currentValue: Bool,
+        db: Database
+    ) throws -> Bool {
+        let existing = try ObjectMetadata
+            .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+            .filter(ObjectMetadata.Columns.objectId == objectID)
+            .fetchOne(db)
+
+        if var metadata = existing {
+            guard metadata.isFavorite != isFavorite else { return false }
+            metadata.isFavorite = isFavorite
+            metadata.favoriteUpdatedAt = Date()
+            metadata.updatedAt = Date()
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.isFavorite,
+                ObjectMetadata.Columns.favoriteUpdatedAt,
+                ObjectMetadata.Columns.updatedAt,
+            ])
+            return true
+        }
+
+        // No row of our own. `currentValue` may still be true — an occurrence inheriting a
+        // legacy parent favorite — in which case a `false` row has to be materialized to
+        // out-vote the parent (see `EventFavoriteKey`). Only a no-op `false` is skipped.
+        guard isFavorite || currentValue else { return false }
+        var newMetadata = ObjectMetadata(
+            objectType: type.rawValue,
+            objectId: objectID,
+            isFavorite: isFavorite,
+            favoriteUpdatedAt: Date()
+        )
+        try newMetadata.insert(db)
+        return true
+    }
+
+    /// Sets every occurrence of an event to `isFavorite`, plus the parent row so the
+    /// series answer survives a later data refresh adding occurrences.
+    /// Returns the number of rows actually changed.
+    @discardableResult
+    private static func writeSeriesFavorite(
+        _ isFavorite: Bool,
+        eventUID: String,
+        db: Database
+    ) throws -> Int {
+        var changed = 0
+        for identity in try occurrenceIdentities(eventUID: eventUID, db: db) {
+            let current = try isFavoriteOccurrence(identity: identity, db: db)
+            if try writeFavorite(isFavorite, type: .event, objectID: identity,
+                                 currentValue: current, db: db) {
+                changed += 1
+            }
+        }
+        let parentCurrent = try Bool.fetchOne(db, sql: """
+            SELECT is_favorite FROM object_metadata WHERE object_type = ? AND object_id = ?
+            """, arguments: [DataObjectType.event.rawValue, eventUID]) ?? false
+        if try writeFavorite(isFavorite, type: .event, objectID: eventUID,
+                             currentValue: parentCurrent, db: db) {
+            changed += 1
+        }
+        return changed
     }
 
     // MARK: - Metadata Operations
@@ -1741,6 +2490,210 @@ internal class PlayaDBImpl: PlayaDB {
             var artIDs: [String] = [], campIDs: [String] = []
             var eventIDs: [String] = [], mvIDs: [String] = []
             for meta in favoriteMetadata {
+                switch meta.dataObjectType {
+                case .art: artIDs.append(meta.objectId)
+                case .camp: campIDs.append(meta.objectId)
+                // Favorites for events are per occurrence, but this API answers in whole
+                // `EventObject`s — collapse composite ids back to the parent uid so an
+                // event with any favorited showing appears exactly once. Callers that
+                // need the showings use `fetchFavoriteEvents`.
+                case .event: eventIDs.append(EventFavoriteKey.eventUID(from: meta.objectId))
+                case .mutantVehicle: mvIDs.append(meta.objectId)
+                case .none: break
+                }
+            }
+
+            var objects: [any DataObject] = []
+            if !artIDs.isEmpty {
+                objects += try ArtObject.filter(artIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !campIDs.isEmpty {
+                objects += try CampObject.filter(campIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !eventIDs.isEmpty {
+                objects += try EventObject.filter(eventIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            if !mvIDs.isEmpty {
+                objects += try MutantVehicleObject.filter(mvIDs.contains(Column("uid"))).fetchAll(db)
+            }
+            return objects
+        }
+    }
+    
+    func toggleFavorite(_ object: any DataObject) async throws {
+        let target = favoriteTarget(for: object)
+        let postedType: DataObjectType
+        switch target {
+        case let .single(type, _): postedType = type
+        case .eventSeries: postedType = .event
+        }
+        let result = try await dbQueue.write { db -> (uid: String, isFavorite: Bool) in
+            switch target {
+            case let .single(type, objectID):
+                // Current state, not "the row we happen to have": an occurrence with no
+                // row of its own can still read favorited through the legacy parent row,
+                // and tapping its heart has to turn that *off*.
+                let current = type == .event
+                    ? try Self.isFavoriteOccurrence(identity: objectID, db: db)
+                    : try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == objectID)
+                        .fetchOne(db)?.isFavorite ?? false
+                try Self.writeFavorite(!current, type: type, objectID: objectID,
+                                       currentValue: current, db: db)
+                return (objectID, !current)
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                let current = try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+                try Self.writeSeriesFavorite(!current, eventUID: eventUID, db: db)
+                return (eventUID, !current)
+            }
+        }
+        // Every screen that toggles a heart funnels through here, which is what makes this
+        // the one place a "someone just favorited this" signal can be posted once. See
+        // `FavoriteChangeNotification.swift`. For event occurrences the uid is the
+        // ``EventFavoriteKey`` composite, which is what lets an observer tell "one showing"
+        // from "the whole series" (see `FavoriteSeriesToastCoordinator` in the app).
+        PlayaDBFavoriteChange.post(
+            objectType: postedType.rawValue,
+            uid: result.uid,
+            isFavorite: result.isFavorite
+        )
+    }
+
+    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
+        let target = favoriteTarget(for: object)
+        try await dbQueue.write { db in
+            switch target {
+            case let .single(type, objectID):
+                let current = type == .event
+                    ? try Self.isFavoriteOccurrence(identity: objectID, db: db)
+                    : try ObjectMetadata
+                        .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                        .filter(ObjectMetadata.Columns.objectId == objectID)
+                        .fetchOne(db)?.isFavorite ?? false
+                try Self.writeFavorite(isFavorite, type: type, objectID: objectID,
+                                       currentValue: current, db: db)
+            case let .eventSeries(eventUID):
+                try Self.writeSeriesFavorite(isFavorite, eventUID: eventUID, db: db)
+            }
+        }
+    }
+
+    func setFavorite(_ isFavorite: Bool, forEventSeries eventUID: String) async throws -> Int {
+        try await dbQueue.write { db in
+            try Self.writeSeriesFavorite(isFavorite, eventUID: eventUID, db: db)
+        }
+    }
+
+    func favoriteOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence] {
+        try await dbQueue.read { db in
+            let index = try EventFavoriteIndex.load(db)
+            let occurrences = try EventOccurrence
+                .filter(EventOccurrence.Columns.eventId == uid)
+                .order(EventOccurrence.Columns.startTime)
+                .fetchAll(db)
+            let inflated = try self.eventObjectOccurrences(for: occurrences, db: db)
+            return inflated.filter { index.isFavorite($0) }
+        }
+    }
+
+    func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String> {
+        guard !objects.isEmpty else { return [] }
+
+        // Non-event objects answer to their own uid; event occurrences answer to their
+        // ``EventFavoriteKey`` composite, so two showings of one event are asked about
+        // separately (which is the whole point).
+        var mutableIDsByType: [DataObjectType: Set<String>] = [:]
+        var occurrenceIdentities: Set<String> = []
+        var seriesUIDs: Set<String> = []
+        for object in objects {
+            switch favoriteTarget(for: object) {
+            case let .single(type, objectID) where type == .event:
+                occurrenceIdentities.insert(objectID)
+            case let .single(type, objectID):
+                mutableIDsByType[type, default: []].insert(objectID)
+            case let .eventSeries(eventUID):
+                seriesUIDs.insert(eventUID)
+            }
+        }
+        let idsByType = mutableIDsByType
+        let occurrences = occurrenceIdentities
+        let series = seriesUIDs
+
+        return try await dbQueue.read { db in
+            var favorites: Set<String> = []
+            for (type, ids) in idsByType {
+                let favorited = try ObjectMetadata
+                    .select(ObjectMetadata.Columns.objectId, as: String.self)
+                    .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                    .filter(ObjectMetadata.Columns.isFavorite == true)
+                    .filter(ids.contains(ObjectMetadata.Columns.objectId))
+                    .fetchAll(db)
+                favorites.formUnion(favorited)
+            }
+            if !occurrences.isEmpty || !series.isEmpty {
+                let index = try EventFavoriteIndex.load(db)
+                for identity in occurrences where index.isFavorite(identity: identity) {
+                    favorites.insert(identity)
+                }
+                for eventUID in series {
+                    let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                    if index.isAnyFavorite(eventUID: eventUID, occurrenceIdentities: identities) {
+                        favorites.insert(eventUID)
+                    }
+                }
+            }
+            return favorites
+        }
+    }
+
+    func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
+        try await dbQueue.write { db in
+            let objectType = identity.type.rawValue
+            let objectId = identity.uid
+
+            let existingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.objectType == objectType)
+                .filter(ObjectMetadata.Columns.objectId == objectId)
+                .fetchOne(db)
+
+            if var metadata = existingMetadata {
+                guard metadata.visitStatus != status.rawValue else { return }
+                metadata.visitStatus = status.rawValue
+                metadata.visitStatusUpdatedAt = Date()
+                metadata.updatedAt = Date()
+                try metadata.update(db, columns: [
+                    ObjectMetadata.Columns.visitStatus,
+                    ObjectMetadata.Columns.visitStatusUpdatedAt,
+                    ObjectMetadata.Columns.updatedAt,
+                ])
+            } else {
+                // Unvisited is the default state: don't create junk rows for it.
+                guard status != .unvisited else { return }
+                var newMetadata = ObjectMetadata(
+                    objectType: objectType,
+                    objectId: objectId,
+                    visitStatus: status.rawValue,
+                    visitStatusUpdatedAt: Date()
+                )
+                try newMetadata.insert(db)
+            }
+        }
+    }
+
+    func fetchObjects(visitStatus status: VisitStatus) async throws -> [any DataObject] {
+        return try await dbQueue.read { db in
+            let matchingMetadata = try ObjectMetadata
+                .filter(ObjectMetadata.Columns.visitStatus == status.rawValue)
+                .fetchAll(db)
+
+            // Group by type for batch fetching
+            var artIDs: [String] = [], campIDs: [String] = []
+            var eventIDs: [String] = [], mvIDs: [String] = []
+            for meta in matchingMetadata {
                 switch meta.dataObjectType {
                 case .art: artIDs.append(meta.objectId)
                 case .camp: campIDs.append(meta.objectId)
@@ -1766,79 +2719,34 @@ internal class PlayaDBImpl: PlayaDB {
             return objects
         }
     }
-    
-    func toggleFavorite(_ object: any DataObject) async throws {
-        try await dbQueue.write { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
-
-            let existingMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            if var metadata = existingMetadata {
-                metadata.isFavorite = !metadata.isFavorite
-                metadata.updatedAt = Date()
-                try metadata.update(db)
-            } else {
-                var newMetadata = ObjectMetadata(
-                    objectType: objectType,
-                    objectId: objectId,
-                    isFavorite: true
-                )
-                try newMetadata.insert(db)
-            }
-        }
-    }
-
-    func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws {
-        try await dbQueue.write { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
-
-            let existingMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            if var metadata = existingMetadata {
-                guard metadata.isFavorite != isFavorite else { return }
-                metadata.isFavorite = isFavorite
-                metadata.updatedAt = Date()
-                try metadata.update(db)
-            } else {
-                var newMetadata = ObjectMetadata(
-                    objectType: objectType,
-                    objectId: objectId,
-                    isFavorite: isFavorite
-                )
-                try newMetadata.insert(db)
-            }
-        }
-    }
 
     func isFavorite(_ object: any DataObject) async throws -> Bool {
-        try await dbQueue.read { db in
-            let objectType = object.objectType.rawValue
-            let objectId = object.uid
-
-            let metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == objectType)
-                .filter(ObjectMetadata.Columns.objectId == objectId)
-                .fetchOne(db)
-
-            return metadata?.isFavorite ?? false
+        let target = favoriteTarget(for: object)
+        return try await dbQueue.read { db in
+            switch target {
+            case let .single(type, objectID) where type == .event:
+                return try Self.isFavoriteOccurrence(identity: objectID, db: db)
+            case let .single(type, objectID):
+                return try ObjectMetadata
+                    .filter(ObjectMetadata.Columns.objectType == type.rawValue)
+                    .filter(ObjectMetadata.Columns.objectId == objectID)
+                    .fetchOne(db)?.isFavorite ?? false
+            case let .eventSeries(eventUID):
+                let identities = try Self.occurrenceIdentities(eventUID: eventUID, db: db)
+                return try Self.isFavoriteSeries(
+                    eventUID: eventUID, identities: identities, db: db)
+            }
         }
     }
 
     func setUserNotes(_ notes: String?, for object: any DataObject) async throws {
-        try await ensureMetadata(for: object.objectType, ids: [object.uid])
+        let identity = metadataIdentity(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
@@ -1846,29 +2754,21 @@ internal class PlayaDBImpl: PlayaDB {
             let trimmed = notes?.trimmingCharacters(in: .whitespacesAndNewlines)
             metadata.userNotes = (trimmed?.isEmpty == true) ? nil : trimmed
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.userNotes,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
 
     func setLastViewed(_ date: Date, for object: any DataObject) async throws {
-        // For event occurrences, track the parent event so recently viewed lookups work.
-        // EventObjectOccurrence has a synthesized UID that won't match the EventObject table.
-        let trackingUID: String
-        let trackingType: DataObjectType
-        if let occ = object as? EventObjectOccurrence {
-            trackingUID = occ.event.uid
-            trackingType = .event
-        } else {
-            trackingUID = object.uid
-            trackingType = object.objectType
-        }
-
-        try await ensureMetadata(for: trackingType, ids: [trackingUID])
+        let identity = metadataIdentity(for: object)
+        try await ensureMetadata(for: identity.type, ids: [identity.uid])
 
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == trackingType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == trackingUID)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else {
                 throw PlayaDBError.metadataNotFound
             }
@@ -1878,7 +2778,13 @@ internal class PlayaDBImpl: PlayaDB {
             }
             metadata.lastViewed = date
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            // Column-limited update: a full-row UPDATE would touch is_favorite and
+            // re-fire every list observation (their regions include that column).
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.firstViewed,
+                ObjectMetadata.Columns.lastViewed,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
     
@@ -1985,15 +2891,19 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func clearLastViewed(for object: any DataObject) async throws {
+        let identity = metadataIdentity(for: object)
         try await dbQueue.write { db in
             guard var metadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.objectType == object.objectType.rawValue)
-                .filter(ObjectMetadata.Columns.objectId == object.uid)
+                .filter(ObjectMetadata.Columns.objectType == identity.type.rawValue)
+                .filter(ObjectMetadata.Columns.objectId == identity.uid)
                 .fetchOne(db) else { return }
 
             metadata.lastViewed = nil
             metadata.updatedAt = Date()
-            try metadata.update(db)
+            try metadata.update(db, columns: [
+                ObjectMetadata.Columns.lastViewed,
+                ObjectMetadata.Columns.updatedAt,
+            ])
         }
     }
 
@@ -2006,28 +2916,24 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
 
+    /// Every favorited *occurrence*, oldest first.
+    ///
+    /// Since favorites became per occurrence this returns exactly the showings the user
+    /// picked — not every showing of an event with one favorited showing, which is what
+    /// the Favorites screen used to list.
     func fetchFavoriteEvents() async throws -> [EventObjectOccurrence] {
         let events = try await dbQueue.read { db -> [EventObjectOccurrence] in
-            let favoriteMetadata = try ObjectMetadata
-                .filter(ObjectMetadata.Columns.isFavorite == true)
-                .filter(ObjectMetadata.Columns.objectType == DataObjectType.event.rawValue)
+            let index = try EventFavoriteIndex.load(db)
+            let candidates = index.candidateEventUIDs
+            guard !candidates.isEmpty else { return [] }
+
+            let occurrences = try EventOccurrence
+                .filter(candidates.contains(EventOccurrence.Columns.eventId))
                 .fetchAll(db)
-
-            let favoriteIds = Set(favoriteMetadata.map(\.objectId))
-            guard !favoriteIds.isEmpty else { return [] }
-
-            // Batch fetch all favorite events at once
-            let eventObjects = try EventObject
-                .filter(favoriteIds.contains(Column("uid")))
-                .fetchAll(db)
-
-            return try eventObjectOccurrences(for: eventObjects, db: db)
+            let inflated = try eventObjectOccurrences(for: occurrences, db: db)
+            return inflated.filter { index.isFavorite($0) }
         }
-        let sorted = events.sorted { $0.startDate < $1.startDate }
-        if !sorted.isEmpty {
-            try await ensureMetadata(for: .event, ids: sorted.map { $0.event.uid })
-        }
-        return sorted
+        return events.sorted { $0.startDate < $1.startDate }
     }
 
     func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject] {
@@ -2050,14 +2956,45 @@ internal class PlayaDBImpl: PlayaDB {
         let artData = try BundleDataLoader.loadArt()
         let campData = try BundleDataLoader.loadCamps()
         let eventData = try BundleDataLoader.loadEvents()
-        
-        try await importFromData(artData: artData, campData: campData, eventData: eventData)
+        let updateData = try? BundleDataLoader.loadUpdateInfo()
+
+        try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: nil, updateData: updateData)
     }
-    
-    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
+
+    func needsImport(bundleUpdateData: Data) async throws -> Bool {
+        let bundleInfo = try APIParserFactory.create().parseUpdateInfo(from: bundleUpdateData)
+        let storedInfo = try await getUpdateInfo()
+        guard !storedInfo.isEmpty else { return true }
+
+        let storedByType = Dictionary(uniqueKeysWithValues: storedInfo.map { ($0.dataType, $0) })
+        let bundleByType: [(DataObjectType, FileUpdateInfo?)] = [
+            (.art, bundleInfo.art),
+            (.camp, bundleInfo.camps),
+            (.event, bundleInfo.events),
+            (.mutantVehicle, bundleInfo.mv)
+        ]
+        for (type, fileInfo) in bundleByType {
+            guard let fileInfo else { continue }
+            guard let stored = storedByType[type.rawValue] else { return true }
+            if fileInfo.updated > stored.lastUpdated { return true }
+        }
+        return false
+    }
+
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?, updateData: Data?) async throws {
         let apiParser = APIParserFactory.create()
-        
+        let importStart = CFAbsoluteTimeGetCurrent()
+
+        // Per-type source timestamps from update.json; fall back to import time so that
+        // `needsImport` comparisons remain conservative for data imported without metadata.
+        let bundleUpdateInfo = updateData.flatMap { try? apiParser.parseUpdateInfo(from: $0) }
+
         try await dbQueue.write { db in
+            // The import wholesale-rebuilds the FTS and spatial indexes below, so the
+            // per-row sync triggers are pure overhead during the bulk delete + insert.
+            // Drop them for the duration of the transaction and recreate afterwards.
+            try Self.dropIndexSyncTriggers(db)
+
             // Clear update_info first (required for re-imports — primary key conflict otherwise)
             try UpdateInfo.deleteAll(db)
 
@@ -2067,11 +3004,16 @@ internal class PlayaDBImpl: PlayaDB {
             // Clear existing art data
             try ArtImage.deleteAll(db)
             try ArtObject.deleteAll(db)
-            
+
+            // uid → denormalized GPS for event location resolution (avoids per-event lookups)
+            var artGPS: [String: (lat: Double?, lon: Double?)] = [:]
+            artGPS.reserveCapacity(apiArtObjects.count)
+
             for apiArt in apiArtObjects {
                 var artObject = try self.convertArtObject(from: apiArt)
                 try artObject.insert(db)
-                
+                artGPS[artObject.uid] = (artObject.gpsLatitude, artObject.gpsLongitude)
+
                 // Insert art images
                 for apiImage in apiArt.images {
                     var artImage = ArtImage(
@@ -2083,18 +3025,22 @@ internal class PlayaDBImpl: PlayaDB {
                     try artImage.insert(db)
                 }
             }
-            
+
             // Step 2: Import camp objects
             let apiCampObjects = try apiParser.parseCamps(from: campData)
-            
+
             // Clear existing camp data
             try CampImage.deleteAll(db)
             try CampObject.deleteAll(db)
-            
+
+            var campGPS: [String: (lat: Double?, lon: Double?)] = [:]
+            campGPS.reserveCapacity(apiCampObjects.count)
+
             for apiCamp in apiCampObjects {
                 var campObject = try self.convertCampObject(from: apiCamp)
                 try campObject.insert(db)
-                
+                campGPS[campObject.uid] = (campObject.gpsLatitude, campObject.gpsLongitude)
+
                 // Insert camp images
                 for apiImage in apiCamp.images {
                     var campImage = CampImage(
@@ -2105,22 +3051,23 @@ internal class PlayaDBImpl: PlayaDB {
                     try campImage.insert(db)
                 }
             }
-            
+
             // Step 3: Import events with relationship resolution
             let apiEventObjects = try apiParser.parseEvents(from: eventData)
-            
+
             // Clear existing event data
             try EventOccurrence.deleteAll(db)
             try EventObject.deleteAll(db)
-            
+
             // Track unique events to handle duplicates in data
             var processedEventUIDs = Set<String>()
+            var duplicateEventCount = 0
             var correctedOccurrenceCount = 0
 
             for apiEvent in apiEventObjects {
                 // Skip duplicate events (keep first occurrence)
                 if processedEventUIDs.contains(apiEvent.uid.value) {
-                    print("Warning: Skipping duplicate event UID: \(apiEvent.uid.value)")
+                    duplicateEventCount += 1
                     continue
                 }
                 processedEventUIDs.insert(apiEvent.uid.value)
@@ -2128,19 +3075,15 @@ internal class PlayaDBImpl: PlayaDB {
                 var eventObject = try self.convertEventObject(from: apiEvent)
 
                 // Resolve camp relationship and copy GPS coordinates
-                if let campId = apiEvent.hostedByCamp?.value {
-                    if let campObject = try CampObject.fetchOne(db, key: campId) {
-                        eventObject.gpsLatitude = campObject.gpsLatitude
-                        eventObject.gpsLongitude = campObject.gpsLongitude
-                    }
+                if let campId = apiEvent.hostedByCamp?.value, let gps = campGPS[campId] {
+                    eventObject.gpsLatitude = gps.lat
+                    eventObject.gpsLongitude = gps.lon
                 }
 
                 // Resolve art relationship and copy GPS coordinates
-                if let artId = apiEvent.locatedAtArt?.value {
-                    if let artObject = try ArtObject.fetchOne(db, key: artId) {
-                        eventObject.gpsLatitude = artObject.gpsLatitude
-                        eventObject.gpsLongitude = artObject.gpsLongitude
-                    }
+                if let artId = apiEvent.locatedAtArt?.value, let gps = artGPS[artId] {
+                    eventObject.gpsLatitude = gps.lat
+                    eventObject.gpsLongitude = gps.lon
                 }
 
                 try eventObject.insert(db)
@@ -2164,6 +3107,9 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
 
+            if duplicateEventCount > 0 {
+                print("PlayaDB: Skipped \(duplicateEventCount) duplicate event UIDs during import")
+            }
             if correctedOccurrenceCount > 0 {
                 print("PlayaDB: Corrected \(correctedOccurrenceCount) event occurrence times during import")
             }
@@ -2202,62 +3148,45 @@ internal class PlayaDBImpl: PlayaDB {
                 }
             }
 
-            // Step 4: Rebuild FTS indexes (in case triggers weren't created yet)
+            // Step 4: Rebuild FTS indexes wholesale (sync triggers were dropped above)
             try db.execute(sql: "INSERT INTO art_objects_fts(art_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO camp_objects_fts(camp_objects_fts) VALUES('rebuild')")
             try db.execute(sql: "INSERT INTO event_objects_fts(event_objects_fts) VALUES('rebuild')")
             if mvData != nil {
                 try db.execute(sql: "INSERT INTO mv_objects_fts(mv_objects_fts) VALUES('rebuild')")
             }
-            
-            // Step 4b: Rebuild spatial index
-            // Clear existing spatial data
+
+            // Step 4b: Rebuild spatial index set-based (object rows already carry GPS)
             try db.execute(sql: "DELETE FROM spatial_index")
             try db.execute(sql: "DELETE FROM spatial_objects")
-            
-            // Re-insert all objects with GPS coordinates
-            let spatialArt = try ArtObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for art in spatialArt {
-                if let lat = art.gpsLatitude, let lon = art.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["art", art.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
+            for (type, table) in [("art", "art_objects"), ("camp", "camp_objects"), ("event", "event_objects")] {
+                try db.execute(sql: """
+                    INSERT INTO spatial_objects (object_type, object_uid)
+                    SELECT '\(type)', uid FROM \(table)
+                    WHERE gps_latitude IS NOT NULL AND gps_longitude IS NOT NULL
+                    """)
+                try db.execute(sql: """
+                    INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon)
+                    SELECT so.spatial_id, t.gps_latitude, t.gps_latitude, t.gps_longitude, t.gps_longitude
+                    FROM spatial_objects so
+                    JOIN \(table) t ON t.uid = so.object_uid
+                    WHERE so.object_type = '\(type)'
+                    """)
             }
-            
-            let spatialCamps = try CampObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for camp in spatialCamps {
-                if let lat = camp.gpsLatitude, let lon = camp.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["camp", camp.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
-            }
-            
-            let spatialEvents = try EventObject.filter(Column("gps_latitude") != nil).fetchAll(db)
-            for event in spatialEvents {
-                if let lat = event.gpsLatitude, let lon = event.gpsLongitude {
-                    try db.execute(sql: "INSERT INTO spatial_objects (object_type, object_uid) VALUES (?, ?)", 
-                                  arguments: ["event", event.uid])
-                    let spatialId = db.lastInsertedRowID
-                    try db.execute(sql: "INSERT INTO spatial_index (id, minLat, maxLat, minLon, maxLon) VALUES (?, ?, ?, ?, ?)",
-                                  arguments: [spatialId, lat, lat, lon, lon])
-                }
-            }
-            
-            // Step 4d: Rebuild the occurrence spatio-temporal index.
+
+            // Step 4c: Rebuild the occurrence spatial index.
             try rebuildOccurrenceRTree(db)
+
+            // Step 4d: Recreate the per-row sync triggers dropped at the start.
+            try self.setupFTS5Tables(db)
+            try self.setupRTreeIndex(db)
 
             // Step 5: Update import info
             let now = Date()
 
             var artUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.art.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.art?.updated ?? now,
                 totalCount: apiArtObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2268,7 +3197,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             var campUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.camp.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.camps?.updated ?? now,
                 totalCount: apiCampObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2279,7 +3208,7 @@ internal class PlayaDBImpl: PlayaDB {
 
             var eventUpdateInfo = UpdateInfo(
                 dataType: DataObjectType.event.rawValue,
-                lastUpdated: now,
+                lastUpdated: bundleUpdateInfo?.events?.updated ?? now,
                 totalCount: apiEventObjects.count,
                 createdAt: now,
                 fetchStatus: "complete",
@@ -2291,7 +3220,7 @@ internal class PlayaDBImpl: PlayaDB {
             if mvData != nil {
                 var mvUpdateInfo = UpdateInfo(
                     dataType: DataObjectType.mutantVehicle.rawValue,
-                    lastUpdated: now,
+                    lastUpdated: bundleUpdateInfo?.mv?.updated ?? now,
                     totalCount: mvCount,
                     createdAt: now,
                     fetchStatus: "complete",
@@ -2301,8 +3230,11 @@ internal class PlayaDBImpl: PlayaDB {
                 try mvUpdateInfo.insert(db)
             }
         }
+
+        let elapsed = CFAbsoluteTimeGetCurrent() - importStart
+        print(String(format: "PlayaDB: Import completed in %.2fs", elapsed))
     }
-    
+
     // MARK: - Data Conversion Methods
     
     private func convertArtObject(from apiArt: Art) throws -> ArtObject {
@@ -2326,7 +3258,8 @@ internal class PlayaDBImpl: PlayaDB {
             gpsLatitude: apiArt.location?.gpsLatitude,
             gpsLongitude: apiArt.location?.gpsLongitude,
             guidedTours: apiArt.guidedTours,
-            selfGuidedTourMap: apiArt.selfGuidedTourMap
+            selfGuidedTourMap: apiArt.selfGuidedTourMap,
+            audioTourUrl: apiArt.audioTourUrl
         )
     }
     
@@ -2448,143 +3381,6 @@ internal class PlayaDBImpl: PlayaDB {
         return try await dbQueue.read { db in
             try UpdateInfo.fetchAll(db)
         }
-    }
-    
-    // MARK: - Reactive Data Access
-    
-    private var _allArt: [ArtObject] = []
-    private var _allCamps: [CampObject] = []
-    private var _allEvents: [EventObjectOccurrence] = []
-    private var _allMutantVehicles: [MutantVehicleObject] = []
-    private var _favorites: [ObjectMetadata] = []
-    
-    private var observations: [DatabaseCancellable] = []
-    
-    var allArt: [ArtObject] {
-        _allArt
-    }
-    
-    var allCamps: [CampObject] {
-        _allCamps
-    }
-    
-    var allEvents: [EventObjectOccurrence] {
-        _allEvents
-    }
-
-    var allMutantVehicles: [MutantVehicleObject] {
-        _allMutantVehicles
-    }
-    
-    var favorites: [ObjectMetadata] {
-        _favorites
-    }
-    
-    private func setupObservations() {
-        // Observe art objects
-        let artObservation = ValueObservation.tracking { db in
-            try ArtObject.fetchAll(db)
-        }
-        let artCancellable = artObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing art objects: \(error)")
-            },
-            onChange: { [weak self] artObjects in
-                if !artObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .art, ids: artObjects.map(\.uid))
-                    }
-                }
-                self?._allArt = artObjects
-            }
-        )
-        
-        // Observe camp objects
-        let campObservation = ValueObservation.tracking { db in
-            try CampObject.fetchAll(db)
-        }
-        let campCancellable = campObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing camp objects: \(error)")
-            },
-            onChange: { [weak self] campObjects in
-                if !campObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .camp, ids: campObjects.map(\.uid))
-                    }
-                }
-                self?._allCamps = campObjects
-            }
-        )
-        
-        // Observe event objects with occurrences.
-        // Explicit regions: only re-fire on event table changes, not camp/art
-        // (the fetch closure JOINs camp/art for host data but those shouldn't trigger re-evaluation).
-        let eventObservation = ValueObservation.tracking(
-            regions: [EventObject.all(), EventOccurrence.all()],
-            fetch: { [self] db in
-                let events = try EventObject.fetchAll(db)
-                return try eventObjectOccurrences(for: events, db: db)
-            }
-        )
-        let eventCancellable = eventObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing events: \(error)")
-            },
-            onChange: { [weak self] eventObjectOccurrences in
-                if !eventObjectOccurrences.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .event, ids: eventObjectOccurrences.map { $0.event.uid })
-                    }
-                }
-                self?._allEvents = eventObjectOccurrences
-            }
-        )
-        
-        // Observe mutant vehicle objects
-        let mvObservation = ValueObservation.tracking { db in
-            try MutantVehicleObject.fetchAll(db)
-        }
-        let mvCancellable = mvObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing mutant vehicles: \(error)")
-            },
-            onChange: { [weak self] mvObjects in
-                if !mvObjects.isEmpty {
-                    Task {
-                        try? await self?.ensureMetadata(for: .mutantVehicle, ids: mvObjects.map(\.uid))
-                    }
-                }
-                self?._allMutantVehicles = mvObjects
-            }
-        )
-
-        // Observe favorites
-        let favoritesObservation = ValueObservation.tracking { db in
-            try ObjectMetadata.filter(Column("is_favorite") == true).fetchAll(db)
-        }
-        let favoritesCancellable = favoritesObservation.start(
-            in: dbQueue,
-            onError: { error in
-                print("Error observing favorites: \(error)")
-            },
-            onChange: { [weak self] favoriteMetadata in
-                self?._favorites = favoriteMetadata
-            }
-        )
-        
-        // Store cancellables
-        observations = [
-            artCancellable,
-            campCancellable,
-            eventCancellable,
-            mvCancellable,
-            favoritesCancellable
-        ]
     }
 }
 

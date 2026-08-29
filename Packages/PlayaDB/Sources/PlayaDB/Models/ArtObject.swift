@@ -3,7 +3,7 @@ import CoreLocation
 import GRDB
 
 /// Art installation object with complete API field mapping
-public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+public struct ArtObject: DataObject, Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "art_objects"
@@ -52,6 +52,7 @@ public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistabl
         case locationCategory = "location_category"
         case guidedTours = "guided_tours"
         case selfGuidedTourMap = "self_guided_tour_map"
+        case audioTourUrl = "audio_tour_url"
     }
 
     // Use Columns as CodingKeys
@@ -122,7 +123,14 @@ public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistabl
     
     /// Whether self-guided tour map is available
     public var selfGuidedTourMap: Bool
-    
+
+    /// Remote audio-tour recording URL (API `audio_tour_url`).
+    ///
+    /// Only populated in years where BMorg ships an audio tour. A locally bundled
+    /// or downloaded `.m4a` may exist independently of this value, so the audio-tour
+    /// UI resolves a local file first and falls back to this URL.
+    public var audioTourUrl: URL?
+
     public init(
         uid: String,
         name: String,
@@ -143,7 +151,8 @@ public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistabl
         gpsLatitude: Double? = nil,
         gpsLongitude: Double? = nil,
         guidedTours: Bool = false,
-        selfGuidedTourMap: Bool = false
+        selfGuidedTourMap: Bool = false,
+        audioTourUrl: URL? = nil
     ) {
         self.uid = uid
         self.name = name
@@ -165,6 +174,7 @@ public struct ArtObject: DataObject, Codable, FetchableRecord, MutablePersistabl
         self.gpsLongitude = gpsLongitude
         self.guidedTours = guidedTours
         self.selfGuidedTourMap = selfGuidedTourMap
+        self.audioTourUrl = audioTourUrl
     }
 }
 
@@ -214,6 +224,13 @@ public extension ArtObject {
     /// Whether this art installation offers any kind of tours
     var hasTours: Bool {
         guidedTours || selfGuidedTourMap
+    }
+
+    /// Whether this art installation has a remote audio-tour recording.
+    /// Mirrors the SQL predicate used by `ArtFilter.hasAudioTour`.
+    var hasAudioTour: Bool {
+        guard let audioTourUrl else { return false }
+        return !audioTourUrl.absoluteString.isEmpty
     }
     
     /// Whether this art installation has contact information

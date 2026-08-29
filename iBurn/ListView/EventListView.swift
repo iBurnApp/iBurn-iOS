@@ -66,8 +66,7 @@ struct EventListView: View {
                             case .browse:
                                 ForEach(viewModel.browseSections, id: \.hour) { section in
                                     ForEach(section.rows, id: \.object.uid) { row in
-                                        let isFirstInSection = row.object.uid == section.rows.first?.object.uid
-                                        rowButton(for: row, scrollAnchorHour: isFirstInSection ? section.hour : nil)
+                                        rowButton(for: row)
                                             .padding(Self.browseRowInsets)
                                         Divider()
                                     }
@@ -94,8 +93,11 @@ struct EventListView: View {
                     .overlay(alignment: .trailing) {
                         if case .browse = viewModel.mode, !viewModel.browseSections.isEmpty {
                             EventHourIndexView(sections: viewModel.browseSections) { hour in
+                                guard let anchorUID = viewModel.browseSections
+                                    .first(where: { $0.hour == hour })?
+                                    .rows.first?.object.uid else { return }
                                 withAnimation(.easeOut(duration: 0.15)) {
-                                    proxy.scrollTo(hour, anchor: .top)
+                                    proxy.scrollTo(anchorUID, anchor: .top)
                                 }
                             }
                         }
@@ -173,26 +175,26 @@ struct EventListView: View {
 
     // MARK: - Row Builder
 
-    /// Wraps the tappable row with a conditional `.id(hour)` anchor so
-    /// `ScrollViewReader` can target the first row of each section.
-    @ViewBuilder
-    private func rowButton(
-        for row: ListRow<EventObjectOccurrence>,
-        scrollAnchorHour: Int?
-    ) -> some View {
-        let button = Button {
+    /// The tappable row. Deliberately NO explicit `.id()` modifier: rows are
+    /// identified solely by their ForEach identity (`\.object.uid`), which
+    /// `ScrollViewReader.scrollTo` can target directly for the hour scrub strip
+    /// (hour → first-row uid resolved from `browseSections` at scroll time).
+    ///
+    /// History: the strip's anchor was previously a synthesized explicit id on
+    /// first-in-section rows — first `.id(hour)`, then `.id(day+hour)`, then
+    /// `.id(uid)`. The LazyVStack persists across day switches AND filter
+    /// changes, and any identity layered on top of the row's own let a data
+    /// change resurrect or orphan a cached row view (stale occurrence label +
+    /// stale tap closure that fails showDetail's visibleRows guard = dead tap).
+    /// Content identity only, applied exactly once, leaves nothing to collide.
+    private func rowButton(for row: ListRow<EventObjectOccurrence>) -> some View {
+        Button {
             onSelect(row.object)
         } label: {
             eventRow(for: row)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-
-        if let hour = scrollAnchorHour {
-            button.id(hour)
-        } else {
-            button
-        }
     }
 
     private func eventRow(for row: ListRow<EventObjectOccurrence>) -> some View {
@@ -201,7 +203,7 @@ struct EventListView: View {
             subtitle: viewModel.distanceAttributedString(for: row.object),
             rightSubtitle: row.object.timeDescription(now: viewModel.now),
             hostName: row.object.hostName,
-            hostAddress: BRCEmbargo.allowEmbargoedData() ? row.object.hostAddress : nil,
+            hostAddress: BRCEmbargo.canShowLocation(for: row.object) ? row.object.hostAddress : nil,
             isFavorite: row.isFavorite,
             thumbnailColors: row.thumbnailColors,
             onFavoriteTap: {
@@ -216,9 +218,11 @@ struct EventListView: View {
     // MARK: - Helpers
 
     private var filterIconName: String {
-        let hasActiveFilters = viewModel.filter.onlyFavorites
-            || !viewModel.filter.includeExpired
-            || viewModel.filter.eventTypeCodes != nil
+        // Filled icon = any control differs from its default, matching the filter
+        // sheet's Reset-button visibility. Defaults: hide expired (includeExpired
+        // false), all favorites, all types, 6h duration cap — so a nil-vs-non-nil
+        // duration check (or the old `!includeExpired`) would always read active.
+        let hasActiveFilters = !viewModel.filter.matchesSheetDefaults(.eventListDefaults)
         return hasActiveFilters
             ? "line.3.horizontal.decrease.circle.fill"
             : "line.3.horizontal.decrease.circle"

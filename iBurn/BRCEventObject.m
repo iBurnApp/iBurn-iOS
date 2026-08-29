@@ -197,19 +197,24 @@ NSString * const kBRCEventArtEdgeName = @"art";
     return colors.primaryColor;
 }
 
-+ (EKEventStore*)eventStore {
-    EKEventStore *store = [[EKEventStore alloc] init];
+/** Returns a usable store, or nil when we lack permission. Only passes that *add* to
+ the calendar should pass YES: nothing can be in the calendar unless access was granted
+ when it was written, so a removal pass with no access has nothing to do and must not
+ pop the permission prompt. */
++ (EKEventStore*)eventStorePromptingIfNeeded:(BOOL)promptIfNeeded {
     EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
     if (status == EKAuthorizationStatusNotDetermined) {
         NSLog(@"Not authorized to modify calendar");
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [BRCPermissions promptForEvents:^{
-                
-            }];
-        });
+        if (promptIfNeeded) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [BRCPermissions promptForEvents:^{
+
+                }];
+            });
+        }
         return nil;
     }
-    return store;
+    return [[EKEventStore alloc] init];
 }
 
 - (BRCDataObject*) hostWithTransaction:(YapDatabaseReadTransaction*)readTransaction {
@@ -237,7 +242,7 @@ NSString * const kBRCEventArtEdgeName = @"art";
 
 - (void) scheduleNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata {
     NSParameterAssert(metadata.isFavorite);
-    EKEventStore *store = [[self class] eventStore];
+    EKEventStore *store = [[self class] eventStorePromptingIfNeeded:YES];
     if (!store) {
         return;
     }
@@ -291,7 +296,8 @@ NSString * const kBRCEventArtEdgeName = @"art";
 
 - (void) cancelNotification:(YapDatabaseReadWriteTransaction*)transaction metadata:(BRCEventMetadata*)metadata  {
     NSParameterAssert(!metadata.isFavorite);
-    EKEventStore *store = [[self class] eventStore];
+    // Unfavoriting must never pop the permission prompt.
+    EKEventStore *store = [[self class] eventStorePromptingIfNeeded:NO];
     if (!store) {
         return;
     }

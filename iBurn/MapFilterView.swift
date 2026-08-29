@@ -24,11 +24,14 @@ class MapFilterViewModel: ObservableObject {
     @Published var showCampsAlways: Bool
     @Published var showActiveEvents: Bool
     @Published var showFavorites: Bool
-    @Published var showTodaysFavoritesOnly: Bool
     @Published var showVisited: Bool
     @Published var showWantToVisit: Bool
     @Published var showUnvisited: Bool
     @Published var eventTypes: [MapEventTypeContainer]
+    @Published var showNearbyCard: Bool
+    @Published var nearbyCardShowArt: Bool
+    @Published var nearbyCardShowCamps: Bool
+    @Published var nearbyCardShowEvents: Bool
     @Published var showCampBoundaries: Bool {
         didSet {
             if !showCampBoundaries {
@@ -63,7 +66,6 @@ class MapFilterViewModel: ObservableObject {
         self.showCampsAlways = UserSettings.showCampsOnMap
         self.showActiveEvents = UserSettings.showActiveEventsOnMap
         self.showFavorites = UserSettings.showFavoritesOnMap
-        self.showTodaysFavoritesOnly = UserSettings.showTodaysFavoritesOnlyOnMap
         self.showVisited = UserSettings.showVisitedOnMap
         self.showWantToVisit = UserSettings.showWantToVisitOnMap
         self.showUnvisited = UserSettings.showUnvisitedOnMap
@@ -72,7 +74,15 @@ class MapFilterViewModel: ObservableObject {
         self.showCampBoundaries = UserSettings.showCampBoundaries
         self.showCampBoundariesAlways = UserSettings.showCampBoundariesAlways
         self.showBigCampNames = UserSettings.showBigCampNames
-        
+
+        // The nearby card is the one thing here that isn't a map layer; it lives in the
+        // preference service rather than UserSettings.
+        let preferences = PreferenceServiceFactory.shared
+        self.showNearbyCard = preferences.getValue(Preferences.NearbyCard.enabled)
+        self.nearbyCardShowArt = preferences.getValue(Preferences.NearbyCard.showArt)
+        self.nearbyCardShowCamps = preferences.getValue(Preferences.NearbyCard.showCamps)
+        self.nearbyCardShowEvents = preferences.getValue(Preferences.NearbyCard.showEvents)
+
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
         self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> MapEventTypeContainer? in
@@ -99,7 +109,6 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showCampsOnMap = showCampsAlways
         UserSettings.showActiveEventsOnMap = showActiveEvents
         UserSettings.showFavoritesOnMap = showFavorites
-        UserSettings.showTodaysFavoritesOnlyOnMap = showTodaysFavoritesOnly
         UserSettings.showVisitedOnMap = showVisited
         UserSettings.showWantToVisitOnMap = showWantToVisit
         UserSettings.showUnvisitedOnMap = showUnvisited
@@ -108,7 +117,15 @@ class MapFilterViewModel: ObservableObject {
         UserSettings.showCampBoundaries = showCampBoundaries
         UserSettings.showCampBoundariesAlways = showCampBoundariesAlways
         UserSettings.showBigCampNames = showBigCampNames
-        
+
+        // Nearby card: the view model observes these, so the card updates behind this
+        // screen as soon as they're written.
+        let preferences = PreferenceServiceFactory.shared
+        preferences.setValue(showNearbyCard, for: Preferences.NearbyCard.enabled)
+        preferences.setValue(nearbyCardShowArt, for: Preferences.NearbyCard.showArt)
+        preferences.setValue(nearbyCardShowCamps, for: Preferences.NearbyCard.showCamps)
+        preferences.setValue(nearbyCardShowEvents, for: Preferences.NearbyCard.showEvents)
+
         // Save selected event types
         let selectedTypes = eventTypes
             .filter { $0.isSelected }
@@ -147,6 +164,21 @@ struct MapFilterView: View {
                 Toggle("Events", isOn: $viewModel.showActiveEvents)
             }
             
+            // Nearby Card Section
+            Section(header: Text("Nearby Card"), footer:
+                Text("The card at the top of the map lists what's within about 100 m of you.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            ) {
+                Toggle("Show Nearby Card", isOn: $viewModel.showNearbyCard)
+                Toggle("Art", isOn: $viewModel.nearbyCardShowArt)
+                    .disabled(!viewModel.showNearbyCard)
+                Toggle("Camps", isOn: $viewModel.nearbyCardShowCamps)
+                    .disabled(!viewModel.showNearbyCard)
+                Toggle("Events", isOn: $viewModel.nearbyCardShowEvents)
+                    .disabled(!viewModel.showNearbyCard)
+            }
+
             // Camp Display Section
             Section(header: Text("Camp Display")) {
                 Toggle("Show Camp Boundaries (Zoomed)", isOn: $viewModel.showCampBoundaries)
@@ -159,11 +191,10 @@ struct MapFilterView: View {
             Section(header: Text("Favorites"), footer:
                 Group {
                     if viewModel.showFavorites {
-                        if viewModel.showTodaysFavoritesOnly {
-                            Text("Showing only today's favorited events on the map")
-                        } else {
-                            Text("Showing all favorited items on the map")
-                        }
+                        // Favorited events are always narrowed to today; a week of them
+                        // pins the whole city at once. See
+                        // `PlayaDBAnnotationDataSource.favoriteEventFilter`.
+                        Text("Showing favorited art and camps, and today's favorited events")
                     } else {
                         Text("Favorites are hidden from the map")
                     }
@@ -172,8 +203,6 @@ struct MapFilterView: View {
                 .foregroundColor(.secondary)
             ) {
                 Toggle("Show Favorites", isOn: $viewModel.showFavorites)
-                Toggle("Today's Favorites Only", isOn: $viewModel.showTodaysFavoritesOnly)
-                    .disabled(!viewModel.showFavorites)
             }
             
             // TODO: Visit status filtering is temporarily disabled - needs proper implementation
@@ -228,7 +257,11 @@ struct MapFilterView: View {
 class MapFilterViewController: UIHostingController<MapFilterView> {
     private let viewModel: MapFilterViewModel
     private let onFilterChanged: (() -> Void)?
-    
+
+    /// True once Done or Cancel has decided what happens to the edits, so the swipe-dismiss
+    /// hook below knows it has nothing left to do.
+    private var didResolveExplicitly = false
+
     init(onFilterChanged: (() -> Void)? = nil) {
         self.onFilterChanged = onFilterChanged
         self.viewModel = MapFilterViewModel(
@@ -236,11 +269,37 @@ class MapFilterViewController: UIHostingController<MapFilterView> {
         )
         super.init(rootView: MapFilterView(viewModel: viewModel))
         viewModel.onDismiss = { [weak self] in
+            self?.didResolveExplicitly = true
             self?.dismiss(animated: true)
         }
     }
-    
+
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    /// Wires up the swipe-to-dismiss hook. Called by whoever presents this screen, because
+    /// the presentation controller belongs to the *presented* container — the navigation
+    /// controller this is wrapped in — not to this view controller.
+    func installSwipeDismissHandler(on presented: UIViewController) {
+        presented.presentationController?.delegate = self
+    }
+}
+
+// MARK: - Swipe-to-dismiss
+
+extension MapFilterViewController: UIAdaptivePresentationControllerDelegate {
+
+    /// Swiping the sheet down applies the edits, rather than silently throwing them away.
+    ///
+    /// Every toggle here reads as a live switch — the section footer even narrates the
+    /// current selection ("Showing only today's favorited events on the map") — so a filter
+    /// that was flipped and then swiped away looks applied and isn't. Cancel is still the way
+    /// to discard, and it resolves the screen explicitly, so it never reaches this method
+    /// (UIKit only calls it for interactive dismissals).
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        guard !didResolveExplicitly else { return }
+        didResolveExplicitly = true
+        viewModel.saveSettings()
     }
 }

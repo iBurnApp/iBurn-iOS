@@ -37,7 +37,13 @@ enum PreferenceServiceFactory {
 public class BRCPreferenceService: NSObject {
     /// Shared instance for Objective-C access
     @objc public static let shared = BRCPreferenceService()
-    
+
+    /// `Preferences.FeatureFlags.useSwiftUILists`, exposed for Objective-C callers
+    /// (e.g. `BRCAppDelegate`) that must skip work only the legacy UIKit/Yap stack needs.
+    @objc public static var useSwiftUILists: Bool {
+        PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useSwiftUILists)
+    }
+
     private let service: PreferenceServiceImpl
     
     private override init() {

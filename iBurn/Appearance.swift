@@ -213,15 +213,23 @@ extension Appearance {
         }
     }
 
+    /// Clears the bar background so the map shows through it.
+    ///
+    /// This only makes sense on iOS 26, where the system paints Liquid Glass behind the
+    /// bar's own contents. Below 26 there is nothing behind a clear bar, so the title,
+    /// buttons and search field end up floating directly on the map with no material at
+    /// all — so older systems get the same translucent bar as every other screen.
     @objc public static func applyTransparentNavigationBarAppearance(_ navBar: UINavigationBar, colors: BRCImageColors, animated: Bool) {
+        guard #available(iOS 26, *) else {
+            applyNavigationBarAppearance(navBar, colors: colors, animated: animated)
+            return
+        }
         let appearance = makeTransparentNavigationBarAppearance(colors: colors)
         let applyTheme = {
             navBar.standardAppearance = appearance
             navBar.scrollEdgeAppearance = appearance
             navBar.compactAppearance = appearance
-            if #available(iOS 15.0, *) {
-                navBar.compactScrollEdgeAppearance = appearance
-            }
+            navBar.compactScrollEdgeAppearance = appearance
             navBar.tintColor = colors.primaryColor
             navBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
         }
@@ -231,7 +239,7 @@ extension Appearance {
             applyTheme()
         }
     }
-    
+
     @objc public static func applyTabBarAppearance(_ tabBar: UITabBar, colors: BRCImageColors) {
         let appearance = makeTabBarAppearance(colors: colors)
         tabBar.standardAppearance = appearance
@@ -243,12 +251,17 @@ extension Appearance {
         tabBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
     }
 
+    /// The tab bar half of `applyTransparentNavigationBarAppearance`, and clear for the
+    /// same iOS 26-only reason: below 26 a clear tab bar leaves the tab items sitting on
+    /// bare map, so those systems keep the standard translucent bar.
     @objc public static func applyTransparentTabBarAppearance(_ tabBar: UITabBar, colors: BRCImageColors) {
+        guard #available(iOS 26, *) else {
+            applyTabBarAppearance(tabBar, colors: colors)
+            return
+        }
         let appearance = makeTransparentTabBarAppearance(colors: colors)
         tabBar.standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            tabBar.scrollEdgeAppearance = appearance
-        }
+        tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = colors.primaryColor
         tabBar.unselectedItemTintColor = colors.detailColor
         tabBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled

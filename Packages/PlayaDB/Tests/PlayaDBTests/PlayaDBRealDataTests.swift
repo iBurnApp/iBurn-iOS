@@ -5,7 +5,7 @@ import MapKit
 import GRDB
 @testable import PlayaDB
 @testable import PlayaAPI
-import iBurn2025APIData
+import iBurn2026APIData
 
 final class PlayaDBRealDataTests: XCTestCase {
     var playaDB: PlayaDB!
@@ -38,10 +38,10 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     private func loadAllRealData() throws -> (art: Data, camp: Data, event: Data, mv: Data) {
         (
-            art: try iBurn2025APIData.DataFile.art.loadData(),
-            camp: try iBurn2025APIData.DataFile.camp.loadData(),
-            event: try iBurn2025APIData.DataFile.event.loadData(),
-            mv: try iBurn2025APIData.DataFile.mv.loadData()
+            art: try iBurn2026APIData.DataFile.art.loadData(),
+            camp: try iBurn2026APIData.DataFile.camp.loadData(),
+            event: try iBurn2026APIData.DataFile.event.loadData(),
+            mv: try iBurn2026APIData.DataFile.mv.loadData()
         )
     }
 
@@ -51,11 +51,11 @@ final class PlayaDBRealDataTests: XCTestCase {
     }
 
     func testImportRealDataFromiBurnBundle() async throws {
-        // Given: Load real data from iBurn2025APIData bundle
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
-        let mvData = try iBurn2025APIData.DataFile.mv.loadData()
+        // Given: Load real data from iBurn2026APIData bundle
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
+        let mvData = try iBurn2026APIData.DataFile.mv.loadData()
 
         // When: Import data into PlayaDB
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData, mvData: mvData)
@@ -104,9 +104,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testRealDataHasGPSCoordinates() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
         
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
         
@@ -120,6 +120,8 @@ final class PlayaDBRealDataTests: XCTestCase {
         let eventsWithGPS = eventObjects.filter { $0.hasGPSLocation }
         
         // Then: Real data should have many objects with GPS coordinates
+        // Location data is embargoed until gates open each year, so skip until locations ship
+        try XCTSkipIf(artWithGPS.isEmpty && campsWithGPS.isEmpty, "Location data embargoed: no GPS in bundled data yet")
         XCTAssertGreaterThan(artWithGPS.count, 10, "Should have art objects with GPS coordinates")
         XCTAssertGreaterThan(campsWithGPS.count, 50, "Should have camp objects with GPS coordinates")
         XCTAssertGreaterThan(eventsWithGPS.count, 50, "Should have event objects with GPS coordinates from host locations")
@@ -129,9 +131,9 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     func testSearchPerformanceWithRealData() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
         
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
         
@@ -149,9 +151,9 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     func testSpatialQueryWithRealData() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
         
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
         
@@ -168,6 +170,8 @@ final class PlayaDBRealDataTests: XCTestCase {
         let queryTime = Date().timeIntervalSince(startTime)
         
         // Then: Should find objects efficiently
+        // Location data is embargoed until gates open each year, so skip until locations ship
+        try XCTSkipIf(objectsInRegion.isEmpty, "Location data embargoed: no GPS in bundled data yet")
         XCTAssertGreaterThan(objectsInRegion.count, 0, "Should find objects in BRC region")
         XCTAssertLessThan(queryTime, 0.5, "Spatial query should be fast with R-Tree index")
         
@@ -176,9 +180,9 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     func testEventOccurrencesWithRealData() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
         
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
         
@@ -186,7 +190,7 @@ final class PlayaDBRealDataTests: XCTestCase {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "America/Los_Angeles")
-        let thursday = formatter.date(from: "2025-08-28")!
+        let thursday = formatter.date(from: "2026-09-03")!
         
         let thursdayEvents = try await playaDB.fetchEvents(on: thursday)
         
@@ -206,9 +210,9 @@ final class PlayaDBRealDataTests: XCTestCase {
     
     func testFavoritesWithRealData() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -452,9 +456,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_OrderedByNamePerformance() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -479,9 +483,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_InRegionPerformance() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -504,6 +508,8 @@ final class PlayaDBRealDataTests: XCTestCase {
         let queryTime = Date().timeIntervalSince(startTime)
 
         // Then: Should be fast with R-Tree optimization
+        // Location data is embargoed until gates open each year, so skip until locations ship
+        try XCTSkipIf(results.isEmpty, "Location data embargoed: no GPS in bundled data yet")
         XCTAssertGreaterThan(results.count, 0, "Should find objects in region")
         XCTAssertLessThan(queryTime, 0.1, "Spatial query should complete in under 100ms")
 
@@ -512,9 +518,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_ComposedQueryPerformance() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -549,9 +555,9 @@ final class PlayaDBRealDataTests: XCTestCase {
     /*
     func testQueryExtensions_FavoritesPerformance() async throws {
         // Given: Import real data and mark favorites
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -584,9 +590,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_EventTimingPerformance() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -613,9 +619,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_ContactInfoPerformance() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -642,9 +648,9 @@ final class PlayaDBRealDataTests: XCTestCase {
 
     func testQueryExtensions_CrossModelConsistency() async throws {
         // Given: Import real data
-        let artData = try iBurn2025APIData.DataFile.art.loadData()
-        let campData = try iBurn2025APIData.DataFile.camp.loadData()
-        let eventData = try iBurn2025APIData.DataFile.event.loadData()
+        let artData = try iBurn2026APIData.DataFile.art.loadData()
+        let campData = try iBurn2026APIData.DataFile.camp.loadData()
+        let eventData = try iBurn2026APIData.DataFile.event.loadData()
 
         try await playaDB.importFromData(artData: artData, campData: campData, eventData: eventData)
 
@@ -674,6 +680,8 @@ final class PlayaDBRealDataTests: XCTestCase {
         }
 
         // Then: Both queries should work and be consistent
+        // Location data is embargoed until gates open each year, so skip until locations ship
+        try XCTSkipIf(artResults.isEmpty && campResults.isEmpty, "Location data embargoed: no GPS in bundled data yet")
         XCTAssertGreaterThan(artResults.count, 0, "Should have art results")
         XCTAssertGreaterThan(campResults.count, 0, "Should have camp results")
 

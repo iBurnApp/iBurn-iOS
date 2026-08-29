@@ -7,7 +7,8 @@ let package = Package(
     name: "PlayaAPI",
     platforms: [
         .iOS(.v16),
-        .macOS(.v13)
+        .macOS(.v13),
+        .watchOS(.v10)
     ],
     products: [
         .library(
@@ -36,7 +37,7 @@ let package = Package(
             dependencies: [
                 "PlayaAPI", 
                 "PlayaAPITestHelpers",
-                .product(name: "iBurn2025APIData", package: "iBurn-Data")
+                .product(name: "iBurn2026APIData", package: "iBurn-Data")
             ]
         ),
     ]

@@ -4,7 +4,7 @@ import GRDB
 
 /// Composite object that combines an EventObject with a specific EventOccurrence
 /// This provides backward compatibility with existing code that expects individual event objects with start/end dates
-public struct EventObjectOccurrence: DataObject {
+public struct EventObjectOccurrence: DataObject, Equatable {
     // MARK: - Component Objects
     
     /// The base event data
@@ -26,6 +26,25 @@ public struct EventObjectOccurrence: DataObject {
 
     /// Host name for display in list cells
     public var hostName: String? { host?.name }
+
+    // MARK: - Equatable
+    // Manual conformance: `host` is an existential (any PlaceDataObject), so
+    // synthesis is unavailable. Hosts are compared by concrete value so a host
+    // edit (e.g. camp address change) still counts as a change for observation
+    // deduplication.
+    public static func == (lhs: EventObjectOccurrence, rhs: EventObjectOccurrence) -> Bool {
+        guard lhs.event == rhs.event, lhs.occurrence == rhs.occurrence else { return false }
+        switch (lhs.host, rhs.host) {
+        case (nil, nil):
+            return true
+        case let (l as CampObject, r as CampObject):
+            return l == r
+        case let (l as ArtObject, r as ArtObject):
+            return l == r
+        default:
+            return false
+        }
+    }
 
     /// Host address for display in list cells
     public var hostAddress: String? { host?.address }
@@ -274,20 +293,48 @@ public extension EventObjectOccurrence {
         return !hasEnded(now) && (isStartingSoon(now) || isHappeningRightNow(now)) && !isEndingSoon(now)
     }
     
-    /// Format start and end time as string (e.g. "10:00AM - 4:00PM")
+    /// Format start and end time as string (e.g. "10:00 AM - 4:00 PM")
+    ///
+    /// Rendered in Black Rock City's timezone, not the device's: an event's schedule is a
+    /// fact about the playa, and a phone that never left home (or is still on the airplane's
+    /// timezone) would otherwise print a start time hours away from the one on the poster.
     var startAndEndString: String {
+        let formatter = DateFormatter.playaTimeOnly
+        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+    }
+
+    /// Format start date as weekday string, in Black Rock City's timezone.
+    ///
+    /// The timezone matters more here than for the time: a 9pm Thursday event read on a
+    /// device three hours east is a *Friday* event, which is the wrong day to show up.
+    var startWeekdayString: String {
+        DateFormatter.playaDayOfWeek.string(from: startDate)
+    }
+}
+
+// MARK: - Playa-time formatters
+
+extension DateFormatter {
+    /// Black Rock City runs on US Pacific time; the app's `TimeZone.burningManTimeZone`
+    /// is the same zone, expressed as the fixed PDT offset the event always falls in.
+    static let playaTimeZone = TimeZone(identifier: "America/Los_Angeles") ?? .current
+
+    /// e.g. "4:19 PM"
+    static let playaTimeOnly: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
-    }
-    
-    /// Format start date as weekday string
-    var startWeekdayString: String {
+        formatter.timeZone = playaTimeZone
+        return formatter
+    }()
+
+    /// e.g. "Monday"
+    static let playaDayOfWeek: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
-        return formatter.string(from: startDate)
-    }
+        formatter.timeZone = playaTimeZone
+        return formatter
+    }()
 }
 
 // MARK: - GRDB Joined Row

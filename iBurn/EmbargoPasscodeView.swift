@@ -18,7 +18,7 @@ struct EmbargoPasscodeView: View {
                     .padding(.top)
 
                 if !viewModel.isDataUnlocked {
-                    Text("Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization. \n\nDon't worry, the app will automatically unlock itself after gates open at 12:01am Sunday and you're on playa.")
+                    Text("Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nThe app unlocks itself once you're on playa and those dates have passed — camps from 12:01am the Sunday before, art once gates open. Until you arrive, locations stay hidden unless you have the passcode below.\n\nOne exception, at the Burning Man organization's request: the camp boundary outlines on the map are not unlocked by the passcode. They appear once you're on playa and gates have opened.")
                         .font(.body)
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)

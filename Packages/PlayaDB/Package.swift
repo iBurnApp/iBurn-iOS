@@ -7,7 +7,8 @@ let package = Package(
     name: "PlayaDB",
     platforms: [
         .iOS(.v16),
-        .macOS(.v13)
+        .macOS(.v13),
+        .watchOS(.v10)
     ],
     products: [
         .library(
@@ -16,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.6.1")),
+        .package(url: "https://github.com/groue/GRDB.swift", .upToNextMajor(from: "7.11.1")),
         .package(path: "../PlayaAPI"),
         .package(path: "../../Submodules/iBurn-Data"),
     ],
@@ -34,7 +35,7 @@ let package = Package(
                 "PlayaDB",
                 "PlayaAPI",
                 .product(name: "PlayaAPITestHelpers", package: "PlayaAPI"),
-                .product(name: "iBurn2025APIData", package: "iBurn-Data")
+                .product(name: "iBurn2026APIData", package: "iBurn-Data")
             ]
         ),
     ]

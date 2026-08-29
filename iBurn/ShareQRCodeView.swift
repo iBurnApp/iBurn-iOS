@@ -18,6 +18,8 @@ struct ShareQRCodeView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var qrCodeImage: UIImage?
     private let dataObject: BRCDataObject?
+    /// Subtitle shown when there is no location text (map pins only).
+    private let emptyLocationPlaceholder: String?
 
     // Convenience init for BRCDataObject
     init(dataObject: BRCDataObject, themeColors: BRCImageColors? = nil) {
@@ -26,6 +28,7 @@ struct ShareQRCodeView: View {
         self._shareURL = State(initialValue: URL(string: "https://iburnapp.com")!)
         self.themeColors = themeColors ?? BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
         self.dataObject = dataObject
+        self.emptyLocationPlaceholder = nil
     }
 
     // New init for BRCMapPoint
@@ -35,8 +38,19 @@ struct ShareQRCodeView: View {
         self._shareURL = State(initialValue: mapPoint.generateShareURL() ?? URL(string: "https://iburnapp.com")!)
         self.themeColors = Appearance.currentColors
         self.dataObject = nil
+        self.emptyLocationPlaceholder = "Custom Map Pin"
     }
-    
+
+    /// Init for PlayaDB-backed objects, whose share URL is built (and embargo-filtered) by the caller.
+    init(title: String, locationText: String?, shareURL: URL, themeColors: BRCImageColors) {
+        self.title = title
+        self.locationText = locationText
+        self._shareURL = State(initialValue: shareURL)
+        self.themeColors = themeColors
+        self.dataObject = nil
+        self.emptyLocationPlaceholder = nil
+    }
+
     private var accentColor: Color {
         // Use the theme's primary color
         Color(themeColors.primaryColor)
@@ -65,9 +79,8 @@ struct ShareQRCodeView: View {
                         Text(location)
                             .font(.subheadline)
                             .foregroundColor(secondaryTextColor)
-                    } else if locationText == nil {
-                        // For map points, show "Custom Map Pin" subtitle
-                        Text("Custom Map Pin")
+                    } else if let placeholder = emptyLocationPlaceholder {
+                        Text(placeholder)
                             .font(.subheadline)
                             .foregroundColor(secondaryTextColor)
                     }
@@ -226,7 +239,20 @@ class ShareQRCodeHostingController: UIHostingController<ShareQRCodeView> {
     init(mapPoint: BRCMapPoint) {
         let shareView = ShareQRCodeView(mapPoint: mapPoint)
         super.init(rootView: shareView)
-        
+
+        setupModal()
+    }
+
+    // Init for a pre-built share URL (PlayaDB-backed detail screens)
+    init(title: String, locationText: String?, shareURL: URL, themeColors: BRCImageColors) {
+        let shareView = ShareQRCodeView(
+            title: title,
+            locationText: locationText,
+            shareURL: shareURL,
+            themeColors: themeColors
+        )
+        super.init(rootView: shareView)
+
         setupModal()
     }
     

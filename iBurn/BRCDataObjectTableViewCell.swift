@@ -10,6 +10,17 @@ import Foundation
 import PlayaDB
 
 extension BRCDataObjectTableViewCell {
+    /// The PlayaDB uid for a legacy Yap object.
+    ///
+    /// `BRCRecurringEventObject.eventObjects()` splits one API event into per-occurrence Yap
+    /// objects keyed `"<apiUID>-<index>"`, while PlayaDB stores a single row under the bare API
+    /// uid. Passing the raw Yap uniqueID to `fetchEvent(uid:)` therefore returns nil and any
+    /// dual-write silently no-ops. Art and camps use the same uid in both databases.
+    static func playaDBUID(for object: BRCDataObject) -> String {
+        guard object is BRCEventObject else { return object.uniqueID }
+        return FavoriteSyncServiceImpl.apiEventUID(fromYapUID: object.uniqueID)
+    }
+
     class func cell(at indexPath: IndexPath,
                     tableView: UITableView,
                     dataObject: DataObject,
@@ -28,9 +39,9 @@ extension BRCDataObjectTableViewCell {
                 metadata.isFavorite = isFavorite
                 dataObject.object.replace(metadata, transaction: transaction)
             }
-            // Sync to PlayaDB
-            let uid = dataObject.object.uniqueID
+            // Sync to PlayaDB (uid normalized: Yap events are per-occurrence, PlayaDB is not)
             let obj = dataObject.object
+            let uid = BRCDataObjectTableViewCell.playaDBUID(for: obj)
             Task { @MainActor in
                 let db = BRCAppDelegate.shared.dependencies.playaDB
                 do {

@@ -37,32 +37,49 @@
     return [bundledPasscodeHash isEqualToString:hashString];
 }
 
+// Every verdict below comes from BRCEmbargoService (EmbargoService.swift), which
+// applies the shared per-tier rule:
+//
+//     camp: passcodeUnlocked || now >= campLocationUnlock
+//     art:  passcodeUnlocked || (inRegion && now >= eventStart)
+//
+// For the art tier a date alone never unlocks anything: the device clock is
+// user-settable, so the old "after festival start" check (which also latched the
+// passcode flag) was defeated by moving Settings ▸ Date & Time forward. The camp
+// tier was relaxed to a date-only unlock on 2026-08-22 so the week-early camp
+// address release is usable while planning from home. This class stays as the
+// Objective-C façade the app already calls; only the answers changed.
 + (BOOL)allowEmbargoedData
 {
-    if ([[NSUserDefaults standardUserDefaults] enteredEmbargoPasscode]) {
-        return YES;
-    }
-    //Data is not embargoed after start of festival or if the passcode has been entered
-    NSDate *now = [NSDate present];
-    NSDate *festivalStartDate = [BRCEventObject festivalStartDate];
-    NSTimeInterval timeLeftInterval = [now timeIntervalSinceDate:festivalStartDate];
-    if (timeLeftInterval >= 0) {
-        [[NSUserDefaults standardUserDefaults] setEnteredEmbargoPasscode:YES];
-        return YES;
-    }
-    return NO;
+    return [BRCEmbargoService allowEmbargoedData];
+}
+
++ (BOOL)canShowCampLocations
+{
+    return [BRCEmbargoService canShowCampLocations];
+}
+
++ (BOOL)canShowArtLocations
+{
+    return [BRCEmbargoService canShowArtLocations];
 }
 
 + (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
 {
-    if (![BRCEmbargo allowEmbargoedData]) {
-        if ([dataObject isKindOfClass:[BRCCampObject class]] || [dataObject isKindOfClass:[BRCEventObject class]] ||
-            [dataObject isKindOfClass:[BRCArtObject class]]) {
-            return NO;
+    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
+        return [BRCEmbargo canShowArtLocations];
+    }
+    if ([dataObject isKindOfClass:[BRCEventObject class]]) {
+        // An event at an art installation would leak the art location, so it
+        // stays on the art tier; everything else unlocks with camps.
+        BRCEventObject *event = (BRCEventObject *)dataObject;
+        if (event.hostedByArtUniqueID.length > 0) {
+            return [BRCEmbargo canShowArtLocations];
         }
-        if ([dataObject isKindOfClass:[BRCArtObject class]]) {
-            return NO;
-        }
+        return [BRCEmbargo canShowCampLocations];
+    }
+    if ([dataObject isKindOfClass:[BRCCampObject class]]) {
+        return [BRCEmbargo canShowCampLocations];
     }
     return YES;
 }

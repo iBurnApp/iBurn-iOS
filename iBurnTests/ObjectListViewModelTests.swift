@@ -36,6 +36,7 @@ private final class TestDataProvider: ObjectListDataProvider {
     private(set) var favorites: Set<String> = []
 
     var continuations: [String: AsyncStream<[ListRow<TestObject>]>.Continuation] = [:]
+    private var lastYielded: [String: [TestObject]] = [:]
 
     func observeObjects(filter: TestFilter) -> AsyncStream<[ListRow<TestObject>]> {
         lastObservedFilters.append(filter)
@@ -45,7 +46,10 @@ private final class TestDataProvider: ObjectListDataProvider {
     }
 
     func yield(_ objects: [TestObject], tag: String = "main") {
-        let rows = objects.map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) }
+        lastYielded[tag] = objects
+        let rows = objects.map { object in
+            ListRow(object: object, metadata: metadata(for: object), thumbnailColors: nil)
+        }
         continuations[tag]?.yield(rows)
     }
 
@@ -60,6 +64,16 @@ private final class TestDataProvider: ObjectListDataProvider {
         } else {
             favorites.insert(object.uid)
         }
+        // Mirror the real GRDB-backed provider: the observation stream re-delivers
+        // rows with fresh metadata after a favorite change.
+        for (tag, objects) in lastYielded {
+            yield(objects, tag: tag)
+        }
+    }
+
+    private func metadata(for object: TestObject) -> ObjectMetadata? {
+        guard favorites.contains(object.uid) else { return nil }
+        return ObjectMetadata(objectType: "test", objectId: object.uid, isFavorite: true)
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: TestObject) -> AttributedString? {

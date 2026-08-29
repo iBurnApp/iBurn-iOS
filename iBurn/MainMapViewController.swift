@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import YapDatabase
 import CoreLocation
 import BButton
 import CocoaLumberjack
@@ -17,9 +16,7 @@ import EventKitUI
 import SwiftUI
 import PlayaDB
 
-public class MainMapViewController: BaseMapViewController, ListButtonHelper {
-    let uiConnection: YapDatabaseConnection
-    let writeConnection: YapDatabaseConnection
+public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIGestureRecognizerDelegate {
     /// This contains the buttons for finding the nearest POIs e.g. bathrooms
     let sidebarButtons: SidebarButtonsView
     let geocoder = PlayaGeocoder.shared
@@ -29,6 +26,14 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     private let dependencies: DependencyContainer
     /// Compact on-map card showing art/camps/events within ~100m of the user.
     private lazy var nearbyCardController = NearbyCardHostingController(dependencies: dependencies)
+    /// Live only while the "card hidden" hint is on screen.
+    private weak var nearbyCardTooltip: UIVisualEffectView?
+    /// Prototype: drives the tab-accessory search when the bottom layout is selected.
+    private lazy var bottomSearchController = MapBottomSearchController(
+        host: self,
+        resultsController: globalSearchHostingController
+    )
+    private var searchLayout: MapSearchLayout = .current
     var userMapViewAdapter: UserMapViewAdapter? {
         return mapViewAdapter as? UserMapViewAdapter
     }
@@ -46,8 +51,6 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
     public init() {
         let dependencies = BRCAppDelegate.shared.dependencies
         self.dependencies = dependencies
-        uiConnection = BRCDatabaseManager.shared.uiConnection
-        writeConnection = BRCDatabaseManager.shared.readWriteConnection
         sidebarButtons = SidebarButtonsView()
 
         // Set up PlayaDB-backed global search
@@ -117,34 +120,254 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         super.viewDidLoad()
         // TODO: make sidebar buttons work
         setupSidebarButtons()
-        setupSearchButton()
         setupListButton()
         setupFilterButton()
         setupNearbyCard()
+        installDropPersonRecognizer()
+        applySearchLayout()
         definesPresentationContext = true
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(searchLayoutDidChange),
+            name: .mapSearchLayoutDidChange,
+            object: nil
+        )
     }
 
-    /// Embeds the nearby card as a proper child view controller, bottom-centered. The
-    /// hosting controller uses intrinsic content sizing, so the card/FAB defines its own
+    // MARK: - Prototype search layout
+
+    @objc private func searchLayoutDidChange() {
+        guard isViewLoaded else { return }
+        bottomSearchController.deactivate()
+        bottomSearchController.removeAccessory(animated: false)
+        applySearchLayout()
+        if isVisible {
+            installBottomAccessoryIfNeeded()
+        }
+    }
+
+    /// Attaches the search affordance for the active layout.
+    private func applySearchLayout() {
+        searchLayout = .current
+
+        // Only the classic layout hangs search off the navigation item; the bottom
+        // layouts own their own field and would otherwise show two search bars.
+        navigationItem.searchController = searchLayout == .navigationBar ? globalSearchController : nil
+    }
+
+    private func installBottomAccessoryIfNeeded() {
+        guard searchLayout == .bottomAccessory else { return }
+        bottomSearchController.installAccessory()
+    }
+
+    /// Embeds the nearby card as a proper child view controller, top-centered. The
+    /// hosting controller uses intrinsic content sizing, so the card defines its own
     /// frame and the rest of the map stays interactive around it.
+    ///
+    /// The card lives at the top now that search owns the bottom of the screen — the two
+    /// were fighting for the same corner, and the card is the thing you read rather than
+    /// reach for.
     private func setupNearbyCard() {
         addChild(nearbyCardController)
+        nearbyCardController.onCardHidden = { [weak self] action in
+            // Hiding the card is also how you put the person away: with the card possibly
+            // gone there'd be nothing left on screen tied to the dropped spot.
+            self?.clearDroppedPerson()
+            // Only a real "the card is switched off now" needs the hint about where it went.
+            // Retiring a dropped pin leaves the card's own setting exactly as it was.
+            if action.disablesCard {
+                self?.showNearbyCardHiddenTooltip()
+            }
+        }
+        userMapViewAdapter?.onDroppedPersonRemoved = { [weak self] in
+            self?.nearbyCardController.viewModel.clearSourceLocationOverride()
+        }
+
+        // The hosting view goes inside a container that hands touches outside the card
+        // back to the map. See `NearbyCardTouchContainer`.
+        let container = NearbyCardTouchContainer()
+        container.backgroundColor = .clear
+        container.interactiveRect = { [weak self] in
+            guard let self else { return .zero }
+            return self.nearbyCardController.interactiveRect(in: container.bounds)
+        }
+
         let card = nearbyCardController.view!
-        view.addSubview(card)
         card.translatesAutoresizingMaskIntoConstraints = false
-        card.autoAlignAxis(toSuperviewAxis: .vertical)
-        let bottom = card.autoPinEdge(toSuperviewMargin: .bottom)
-        bottom.constant = -12
+        container.addSubview(card)
+        card.autoPinEdgesToSuperviewEdges()
+
+        view.addSubview(container)
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.autoAlignAxis(toSuperviewAxis: .vertical)
+        container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12).isActive = true
+
         nearbyCardController.didMove(toParent: self)
     }
-    
+
+    // MARK: - Dropped person marker
+
+    /// Identifies our recognizer on the map view, the same way the style-label tap does, so
+    /// a second `viewDidLoad` (or a rebuilt adapter) can't stack recognizers up.
+    private static let dropPersonRecognizerName = "iBurn.dropPersonLongPress"
+
+    /// Long-press anywhere on the main map to stand the person there.
+    ///
+    /// `MLNMapView` has no long-press of its own — the only long press in the app is the
+    /// per-annotation-view one that starts a user pin drag — so this is added directly to the
+    /// map view, following `MapViewAdapter.installStyleLabelTapRecognizer()`.
+    ///
+    /// Scoped to this screen alone rather than to `MapViewAdapter`: the nearby card is the
+    /// thing the drop re-sources, and it only exists here. Detail maps and the "show on map"
+    /// list maps keep their plain behaviour.
+    private func installDropPersonRecognizer() {
+        let existing = mapView.gestureRecognizers ?? []
+        guard !existing.contains(where: { $0.name == Self.dropPersonRecognizerName }) else { return }
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleMapLongPress(_:)))
+        longPress.name = Self.dropPersonRecognizerName
+        // Long enough not to fire during the pause at the start of a slow pan, short enough
+        // to feel like a deliberate press rather than a wait.
+        longPress.minimumPressDuration = 0.45
+        // The delegate is what keeps this off the user's own pins, whose drag/edit UX owns
+        // the same press. See `DropPersonGate`.
+        longPress.delegate = self
+        mapView.addGestureRecognizer(longPress)
+    }
+
+    @objc private func handleMapLongPress(_ sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began, let adapter = userMapViewAdapter else { return }
+        let coordinate = mapView.convert(sender.location(in: mapView), toCoordinateFrom: mapView)
+        guard CLLocationCoordinate2DIsValid(coordinate) else { return }
+        dropPerson(at: coordinate, adapter: adapter)
+    }
+
+    private func dropPerson(at coordinate: CLLocationCoordinate2D, adapter: UserMapViewAdapter) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        adapter.dropPerson(at: coordinate)
+
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        nearbyCardController.viewModel.setSourceLocationOverride(location)
+
+        // The address arrives asynchronously; both sinks re-check the coordinate, so a
+        // second drop while this one is in flight can't relabel the new spot.
+        geocoder.asyncReverseLookup(coordinate) { [weak self] address in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.nearbyCardController.viewModel.setSourceLocationAddress(address, for: coordinate)
+                self.userMapViewAdapter?.updateDroppedPersonTitle(address, for: coordinate)
+            }
+        }
+    }
+
+    /// Vetoes the drop when the press belongs to a user pin instead. Scoped by recognizer
+    /// name so this delegate can never change the behaviour of anything else on the map.
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer.name == Self.dropPersonRecognizerName else { return true }
+        let hitView = mapView.hitTest(gestureRecognizer.location(in: mapView), with: nil)
+        return DropPersonGate.shouldDropPerson(
+            target: DropPersonGate.target(forHitView: hitView),
+            isEditingUserPin: userMapViewAdapter?.isEditingUserPin ?? false
+        )
+    }
+
+    /// Takes the person off the map and puts the card back on the device's own location.
+    private func clearDroppedPerson() {
+        // `notifyHost: false` — we're already the host, and are about to clear the override
+        // ourselves; letting the callback fire too would just do it twice.
+        userMapViewAdapter?.removeDroppedPerson(notifyHost: false)
+        nearbyCardController.viewModel.clearSourceLocationOverride()
+    }
+
+    // MARK: - Nearby card tooltip
+
+    /// Transient hint shown after the nearby card's close button hides it. The card is the
+    /// only entry point to its own setting, so dismissing it without saying where it went
+    /// leaves no way back.
+    ///
+    /// Added straight to `view` rather than inside a full-screen container so it can only
+    /// take touches within its own bounds; the map stays live around it.
+    private func showNearbyCardHiddenTooltip() {
+        dismissNearbyCardTooltip(animated: false)
+
+        let tooltip = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        tooltip.layer.cornerRadius = 18
+        tooltip.layer.cornerCurve = .continuous
+        tooltip.clipsToBounds = true
+        tooltip.alpha = 0
+
+        let label = UILabel()
+        label.text = NSLocalizedString("Nearby card hidden — turn it back on in Map Filter.",
+                                       comment: "shown after the user closes the on-map nearby card")
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = Appearance.currentColors.primaryColor
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        tooltip.contentView.addSubview(label)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(tooltip)
+        tooltip.translatesAutoresizingMaskIntoConstraints = false
+        tooltip.autoAlignAxis(toSuperviewAxis: .vertical)
+        // The label is constrained to the effect view itself, not to `contentView`:
+        // `contentView` is laid out by `UIVisualEffectView` rather than by Auto Layout, so
+        // pinning to it leaves the effect view with no intrinsic size and the tooltip
+        // renders as an invisible zero-height box.
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: tooltip.topAnchor, constant: 10),
+            label.bottomAnchor.constraint(equalTo: tooltip.bottomAnchor, constant: -10),
+            label.leadingAnchor.constraint(equalTo: tooltip.leadingAnchor, constant: 14),
+            label.trailingAnchor.constraint(equalTo: tooltip.trailingAnchor, constant: -14),
+            tooltip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            tooltip.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -32),
+        ])
+        // The map's own chrome (Liquid Glass buttons, the playa-address bar) sits at the
+        // same place; keep the hint above it for the few seconds it is on screen.
+        view.bringSubviewToFront(tooltip)
+        tooltip.layer.zPosition = 100
+
+        tooltip.addGestureRecognizer(
+            UITapGestureRecognizer(target: self, action: #selector(nearbyCardTooltipTapped))
+        )
+        nearbyCardTooltip = tooltip
+
+        UIView.animate(withDuration: 0.2) { tooltip.alpha = 1 }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self, weak tooltip] in
+            guard let self, let tooltip, self.nearbyCardTooltip === tooltip else { return }
+            self.dismissNearbyCardTooltip(animated: true)
+        }
+    }
+
+    @objc private func nearbyCardTooltipTapped() {
+        dismissNearbyCardTooltip(animated: true)
+    }
+
+    private func dismissNearbyCardTooltip(animated: Bool) {
+        guard let tooltip = nearbyCardTooltip else { return }
+        nearbyCardTooltip = nil
+        guard animated else {
+            tooltip.removeFromSuperview()
+            return
+        }
+        UIView.animate(withDuration: 0.2, animations: { tooltip.alpha = 0 }) { _ in
+            tooltip.removeFromSuperview()
+        }
+    }
+
     private func setupSidebarButtons() {
         view.addSubview(sidebarButtons)
-        let bottom = sidebarButtons.autoPinEdge(toSuperviewMargin: .bottom)
-        bottom.constant = -50
-        sidebarButtons.autoPinEdge(toSuperviewMargin: .left)
-        sidebarButtons.autoSetDimensions(to: CGSize(width: 40, height: 150))
+        sidebarButtons.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            sidebarButtons.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 12),
+            // Pinned to the safe area rather than layout margins so the tab accessory,
+            // which grows the safe area when installed, lifts the column automatically.
+            // The nearby card has vacated the bottom, but MapLibre's attribution still
+            // sits down there and has to stay legible.
+            sidebarButtons.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
+            sidebarButtons.widthAnchor.constraint(equalToConstant: SidebarButtonsView.buttonDiameter),
+            sidebarButtons.heightAnchor.constraint(equalToConstant: SidebarButtonsView.columnHeight),
+        ])
     }
     
     func setupListButton() {
@@ -170,8 +393,16 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
             self.filteredDataSource.updateFilters()
             // Update map layers based on new filter settings
             self.mapLayerManager.updateAllLayers()
+            // The camp toggles add and remove pins, and "Show Camp Names" decides both
+            // whether a camp pin has to label itself and whether it is drawn at all, so all
+            // three have to be re-resolved on Done — otherwise the change doesn't land until
+            // the user happens to pan the map.
+            self.userMapViewAdapter?.refreshRegionAnnotations()
+            self.mapViewAdapter.reloadAnnotations()
+            self.mapViewAdapter.updatePinLabelVisibility()
         }
         let nav = UINavigationController(rootViewController: filterVC)
+        filterVC.installSwipeDismissHandler(on: nav)
         present(nav, animated: true)
     }
     
@@ -189,10 +420,15 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper {
         geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             self?.geocodeNavigationBar()
         }
+        installBottomAccessoryIfNeeded()
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // The accessory belongs to the shared tab bar controller, so it has to come
+        // down when the map goes away or it would follow the user onto other tabs.
+        bottomSearchController.deactivate()
+        bottomSearchController.removeAccessory()
         if let navBar = navigationController?.navigationBar {
             Appearance.applyNavigationBarAppearance(navBar, colors: Appearance.currentColors, animated: animated)
         }
@@ -221,7 +457,10 @@ private extension MainMapViewController {
             Task { @MainActor in
                 if let point = await UserGuidance.findNearest(userLocation: location, mapPointType: mapPointType, playaDB: playaDB) {
                     DDLogInfo("Found closest point: \(point)")
-                    self.mapView.selectAnnotation(point, animated: true, completionHandler: nil)
+                    // Hand it to the adapter rather than selecting it here: the object
+                    // `UserGuidance` built from the database is not the instance drawn on
+                    // the map, and selecting it does nothing.
+                    self.userMapViewAdapter?.revealUserMapPoint(point)
                 } else if mapPointType == .userBike || mapPointType == .userHome {
                     self.addUserMapPoint(type: mapPointType)
                 }
@@ -230,23 +469,31 @@ private extension MainMapViewController {
         sidebarButtons.placePinAction = { [weak self] sender in
             self?.addUserMapPoint(type: .userStar)
         }
-        sidebarButtons.searchAction = { [weak self] sender in
-            self?.searchButtonPressed(sender)
-        }
     }
     
     func addUserMapPoint(type: BRCMapPointType) {
-        var coordinate = BRCLocations.blackRockCityCenter
-        if let userLocation = self.mapView.userLocation?.location {
-            coordinate = userLocation.coordinate
+        // One placement at a time. "Find my bike" answers from the database, so two quick
+        // taps both used to see "no bike yet" and both placed one; the second alert can't
+        // even present over the first.
+        guard let adapter = userMapViewAdapter, !adapter.hasUnsavedPlacement else {
+            DDLogInfo("Ignoring placement request: a pin is already waiting to be named")
+            return
         }
-        // don't drop user-location pins if youre not at BM
-        if !BRCLocations.burningManRegion.contains(coordinate) ||
-            !CLLocationCoordinate2DIsValid(coordinate) {
-            coordinate = BRCLocations.blackRockCityCenter
+        // On playa the pin lands on the user; off playa it lands in the middle of whatever
+        // they've panned to, so it's on screen and draggable. See
+        // `BRCLocations.userMapPointCoordinate(forUserLocation:viewportCenter:)`.
+        let coordinate = BRCLocations.userMapPointCoordinate(
+            forUserLocation: self.mapView.userLocation?.location,
+            viewportCenter: self.mapView.centerCoordinate
+        )
+        // Last line of defense before MapLibre: a non-finite coordinate becomes a NaN
+        // `CALayer.position` and takes the app down with `CALayerInvalidGeometry`.
+        guard BRCLocations.isUsable(coordinate) else {
+            DDLogWarn("Refusing to place a user map point at an invalid coordinate: \(coordinate)")
+            return
         }
         let mapPoint = BRCUserMapPoint(title: nil, coordinate: coordinate, type: type)
-        userMapViewAdapter?.editMapPoint(mapPoint)
+        adapter.editMapPoint(mapPoint)
     }
 }
 

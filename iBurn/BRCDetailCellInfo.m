@@ -76,12 +76,11 @@
     [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(hometown)) displayName:@"Hometown" cellType:BRCDetailCellInfoTypeText]];
     
     
-    if ([BRCEmbargo allowEmbargoedData]) {
-        [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
-        
-        [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(frontage)) displayName:@"Frontage" cellType:BRCDetailCellInfoTypeText]];
-    }
-    
+    // Filtered per-object by embargo tier in infoArrayForObject:metadata:
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(location)) displayName:@"GPS Coordinates" cellType:BRCDetailCellInfoTypeCoordinates]];
+
+    [defaultArray addObject:[[BRCDetailCellInfo alloc] initWithKey:NSStringFromSelector(@selector(frontage)) displayName:@"Frontage" cellType:BRCDetailCellInfoTypeText]];
+
     return defaultArray;
 }
 
@@ -92,6 +91,14 @@
     [defaultArray enumerateObjectsUsingBlock:^(BRCDetailCellInfo *cellInfo, NSUInteger idx, BOOL *stop) {
         // Skip Official Location for events - we'll add it manually at the right position
         if ([object isKindOfClass:[BRCEventObject class]] && [cellInfo.key isEqualToString:NSStringFromSelector(@selector(playaLocation))]) {
+            return;
+        }
+
+        // GPS coordinates and frontage reveal placement, so they follow the
+        // per-object embargo tier (camps unlock a week before art).
+        if (([cellInfo.key isEqualToString:NSStringFromSelector(@selector(location))] ||
+             [cellInfo.key isEqualToString:NSStringFromSelector(@selector(frontage))]) &&
+            ![BRCEmbargo canShowLocationForObject:object]) {
             return;
         }
         

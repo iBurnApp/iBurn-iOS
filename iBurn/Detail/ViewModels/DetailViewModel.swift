@@ -37,6 +37,8 @@ class DetailViewModel: ObservableObject {
     @Published var userNotes: String
     @Published var firstViewed: Date?
     @Published var lastViewed: Date?
+    /// Visit status raw value for PlayaDB subjects (legacy subjects read `legacyMetadata`).
+    @Published var playaVisitStatus: Int = 0
     @Published var extractedImageColors: BRCImageColors?
     @Published var cells: [DetailCell] = []
     @Published var isLoading = false
@@ -55,7 +57,11 @@ class DetailViewModel: ObservableObject {
     private let coordinator: DetailActionCoordinator
 
     private let rowAssets: RowAssetsLoader?
-    
+
+    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase.
+    /// Lazy so BRCDatabaseManager is only touched on first use; injectable for tests.
+    lazy var favoriteSyncService: FavoriteSyncService = FavoriteSyncServiceFactory.shared
+
     // MARK: - Private Properties
     private var preloadedImages: [String: UIImage] = [:]
     private var cancellables = Set<AnyCancellable>()
@@ -177,6 +183,7 @@ class DetailViewModel: ObservableObject {
             self.userNotes = md.userNotes ?? ""
             self.firstViewed = md.firstViewed
             self.lastViewed = md.lastViewed
+            self.playaVisitStatus = md.visitStatus
         } else {
             self.isFavorite = false
             self.userNotes = ""
@@ -251,6 +258,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -266,6 +274,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -278,6 +287,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -290,6 +300,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -302,6 +313,7 @@ class DetailViewModel: ObservableObject {
                 userNotes = md.userNotes ?? ""
                 firstViewed = md.firstViewed
                 lastViewed = md.lastViewed
+                playaVisitStatus = md.visitStatus
             } catch {
                 self.error = error
             }
@@ -427,22 +439,26 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(art)
                 isFavorite = try await playaDB.isFavorite(art)
-                syncFavoriteToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, isFavorite: isFavorite)
+                syncFavoriteToYapDB(type: .art, uid: art.uid, isFavorite: isFavorite)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(camp)
                 isFavorite = try await playaDB.isFavorite(camp)
-                syncFavoriteToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, isFavorite: isFavorite)
+                syncFavoriteToYapDB(type: .camp, uid: camp.uid, isFavorite: isFavorite)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
+                // A bare EventObject names no particular showing, so its heart means the
+                // whole series — PlayaDB toggles every occurrence, and the bare uid fans
+                // the mirror out to every Yap occurrence to match.
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
-                syncFavoriteToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
+                syncFavoriteToYapDB(type: .event, uid: event.uid, isFavorite: isFavorite)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ)
                 isFavorite = try await playaDB.isFavorite(occ)
-                syncFavoriteToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, isFavorite: isFavorite, isEvent: true)
+                // The occurrence's composite identity: only this showing changed.
+                syncFavoriteToYapDB(type: .event, uid: occ.favoriteIdentity, isFavorite: isFavorite)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(mv)
@@ -468,22 +484,22 @@ class DetailViewModel: ObservableObject {
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
                 userNotes = notes
-                syncNotesToYapDB(uid: art.uid, yapCollection: BRCArtObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .art, uid: art.uid, notes: notes)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
                 userNotes = notes
-                syncNotesToYapDB(uid: camp.uid, yapCollection: BRCCampObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .camp, uid: camp.uid, notes: notes)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
-                syncNotesToYapDB(uid: event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .event, uid: event.uid, notes: notes)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
                 userNotes = notes
-                syncNotesToYapDB(uid: occ.event.uid, yapCollection: BRCEventObject.yapCollection, notes: notes)
+                syncNotesToYapDB(type: .event, uid: occ.event.uid, notes: notes)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: mv)
@@ -499,13 +515,43 @@ class DetailViewModel: ObservableObject {
 
     func updateVisitStatus(_ status: BRCVisitStatus) async {
         do {
-            guard case .legacy(let obj) = subject, let dataService else {
-                return
+            let playaStatus = VisitStatus(rawValue: status.rawValue) ?? .unvisited
+            switch subject {
+            case .legacy(let obj):
+                guard let dataService else { return }
+                // Writes Yap and dual-writes PlayaDB (see DetailDataService.syncVisitStatusToPlayaDB,
+                // which normalizes per-occurrence event uids "<apiUID>-<index>" to the bare API uid) —
+                // same routing as updateFavoriteStatus/updateUserNotes for legacy subjects, where
+                // `self.playaDB` is nil and the data service owns the PlayaDB handle.
+                try await dataService.updateVisitStatus(for: obj, visitStatus: status)
+                legacyMetadata?.visitStatus = status.rawValue
+            case .art(let art):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: art)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .art, uid: art.uid, visitStatus: status.rawValue)
+            case .camp(let camp):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: camp)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .camp, uid: camp.uid, visitStatus: status.rawValue)
+            case .event(let event):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: event)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .event, uid: event.uid, visitStatus: status.rawValue)
+            case .eventOccurrence(let occ):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: occ)
+                playaVisitStatus = status.rawValue
+                syncVisitStatusToYapDB(type: .event, uid: occ.event.uid, visitStatus: status.rawValue)
+            case .mutantVehicle(let mv):
+                guard let playaDB else { throw DetailError.invalidData }
+                try await playaDB.setVisitStatus(playaStatus, for: mv)
+                playaVisitStatus = status.rawValue
             }
-            try await dataService.updateVisitStatus(for: obj, visitStatus: status)
-            legacyMetadata?.visitStatus = status.rawValue
             self.cells = generateCells()
-            
+
         } catch {
             self.error = error
         }
@@ -513,28 +559,33 @@ class DetailViewModel: ObservableObject {
 
     // MARK: - YapDB Sync (backward compat during migration)
 
-    private func syncFavoriteToYapDB(uid: String, yapCollection: String, isFavorite: Bool, isEvent: Bool = false) {
-        Task.detached {
-            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-                let metadata = object.metadata(with: transaction).metadataCopy()
-                metadata.isFavorite = isFavorite
-                object.replace(metadata, transaction: transaction)
-                if isEvent, let event = object as? BRCEventObject {
-                    event.refreshCalendarEntry(transaction)
-                }
-            }
+    /// Fire-and-forget mirror into legacy YapDatabase via the shared FavoriteSyncService.
+    /// For events this fans out to every per-occurrence Yap object ("<apiUID>-<index>")
+    /// and refreshes each one's calendar entry (EKEvent created/removed).
+    private func syncFavoriteToYapDB(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorFavorite(type: type, uid: uid, isFavorite: isFavorite)
         }
     }
 
-    private func syncNotesToYapDB(uid: String, yapCollection: String, notes: String) {
-        Task.detached {
-            BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
-                guard let object = transaction.object(forKey: uid, inCollection: yapCollection) as? BRCDataObject else { return }
-                let metadata = object.metadata(with: transaction).metadataCopy()
-                metadata.userNotes = notes
-                object.replace(metadata, transaction: transaction)
-            }
+    /// Fire-and-forget visit-status mirror into legacy YapDatabase (event uids fan out
+    /// to every per-occurrence object; no calendar side effects).
+    private func syncVisitStatusToYapDB(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorVisitStatus(type: type, uid: uid, visitStatus: visitStatus)
+        }
+    }
+
+    /// Fire-and-forget notes mirror into legacy YapDatabase. Routed through
+    /// `FavoriteSyncService` so event uids fan out to every per-occurrence Yap object
+    /// ("<apiUID>-<index>"); writing the bare PlayaDB uid straight into
+    /// `BRCEventObject.yapCollection` matched no key at all. No calendar side effects.
+    private func syncNotesToYapDB(type: FavoriteSyncObjectType, uid: String, notes: String) {
+        let service = favoriteSyncService
+        Task {
+            await service.mirrorNotes(type: type, uid: uid, notes: notes)
         }
     }
 
@@ -626,19 +677,72 @@ class DetailViewModel: ObservableObject {
         case .legacy(let legacyObject):
             // Show QR code share screen instead of direct share sheet
             coordinator.handle(.showShareScreen(legacyObject))
-        case .art(let art):
-            coordinator.handle(.share(["Art: \(art.name)\nID: \(art.uid)"]))
-        case .camp(let camp):
-            coordinator.handle(.share(["Camp: \(camp.name)\nID: \(camp.uid)"]))
-        case .event(let event):
-            coordinator.handle(.share(["Event: \(event.name)\nID: \(event.uid)"]))
-        case .eventOccurrence(let occ):
-            coordinator.handle(.share(["Event: \(occ.name)\nID: \(occ.event.uid)"]))
         case .mutantVehicle(let mv):
+            // Mutant vehicles have no deep link type on iburnapp.com yet.
             coordinator.handle(.share(["Mutant Vehicle: \(mv.name)\nID: \(mv.uid)"]))
+        case .art, .camp, .event, .eventOccurrence:
+            Task { @MainActor in
+                guard let payload = await shareURLPayload(),
+                      let url = ShareURLBuilderFactory.shared.url(for: payload) else {
+                    coordinator.handle(.share(["\(subject.title)\nID: \(subject.uid)"]))
+                    return
+                }
+                coordinator.handle(.showShareURLScreen(
+                    title: subject.title,
+                    locationText: payload.address,
+                    url: url,
+                    themeColors: getThemeBRCColors()
+                ))
+            }
         }
     }
-    
+
+    /// Share payload for the current PlayaDB subject, embargo-filtered.
+    ///
+    /// Location fields are only populated when `BRCEmbargo` allows that object's tier, so a
+    /// locked build never puts coordinates or a playa address into a shared link.
+    func shareURLPayload() async -> ShareURLPayload? {
+        switch subject {
+        case .art(let art):
+            return .art(art, canShowLocation: BRCEmbargo.canShowArtLocations())
+        case .camp(let camp):
+            return .camp(camp, canShowLocation: BRCEmbargo.canShowCampLocations())
+        case .event(let event):
+            let occurrence = resolvedEventOccurrences.first
+            return .event(
+                event,
+                startDate: occurrence?.startDate,
+                endDate: occurrence?.endDate,
+                host: await resolvedShareHost(for: event),
+                canShowLocation: BRCEmbargo.canShowLocation(for: event)
+            )
+        case .eventOccurrence(let occ):
+            return .event(occ, canShowLocation: BRCEmbargo.canShowLocation(for: occ))
+        case .legacy, .mutantVehicle:
+            return nil
+        }
+    }
+
+    /// Host camp/art for an `EventObject`, using the already-resolved name when available.
+    private func resolvedShareHost(for event: EventObject) async -> ShareURLHost? {
+        if let campID = event.hostedByCamp, !campID.isEmpty {
+            if let resolvedHostName {
+                return .camp(uid: campID, name: resolvedHostName)
+            }
+            let name = try? await playaDB?.fetchCamp(uid: campID)?.name
+            return .camp(uid: campID, name: name ?? nil)
+        }
+        if let artID = event.locatedAtArt, !artID.isEmpty {
+            if let resolvedHostName {
+                return .art(uid: artID, name: resolvedHostName)
+            }
+            let name = try? await playaDB?.fetchArt(uid: artID)?.name
+            return .art(uid: artID, name: name ?? nil)
+        }
+        return nil
+    }
+
+
     /// Extract theme colors following the same logic as BRCDetailViewController
     func getThemeColors() -> ImageColors {
         ImageColors(getThemeBRCColors())
@@ -845,7 +949,7 @@ class DetailViewModel: ObservableObject {
             hasImage = true
         }
 
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowArtLocations()
         if canShowLocation, let annotation = PlayaObjectAnnotation(art: art), !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(art.name)"))
         }
@@ -910,7 +1014,7 @@ class DetailViewModel: ObservableObject {
             hasImage = true
         }
 
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowCampLocations()
         if canShowLocation, let annotation = PlayaObjectAnnotation(camp: camp), !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(camp.name)"))
         }
@@ -1020,7 +1124,7 @@ class DetailViewModel: ObservableObject {
         }
 
         // Map before title if no host image
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowLocation(for: event)
         let annotation = eventAnnotation(for: event)
         if canShowLocation, let annotation, !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(event.name)"))
@@ -1159,7 +1263,7 @@ class DetailViewModel: ObservableObject {
         }
 
         // Map before title if no host image
-        let canShowLocation = BRCEmbargo.allowEmbargoedData()
+        let canShowLocation = BRCEmbargo.canShowLocation(for: occ)
         let annotation = eventAnnotation(for: occ)
         if canShowLocation, let annotation, !hasImage {
             cellTypes.append(.mapAnnotation(annotation, title: "Map - \(occ.name)"))
@@ -1857,6 +1961,7 @@ class DetailViewModel: ObservableObject {
             cells.append(.travelTime(distance))
         }
         cells.append(.userNotes(userNotes))
+        cells.append(.visitStatus(BRCVisitStatus(rawValue: playaVisitStatus) ?? .unvisited))
         if firstViewed != nil || lastViewed != nil {
             cells.append(.viewHistory(firstViewed: firstViewed, lastViewed: lastViewed))
         }

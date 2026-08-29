@@ -3,6 +3,11 @@ import PlayaDB
 
 struct NearbyView: View {
     @StateObject private var viewModel: NearbyViewModel
+
+    /// Shared with the map's nearby card, so a change here also re-queries the card.
+    @ObservedObject private var filterStore: NearbyEventFilterStore
+
+    @State private var showingFilterSheet = false
     @Environment(\.themeColors) var themeColors
 
     let onSelectArt: (ArtObject) -> Void
@@ -20,6 +25,7 @@ struct NearbyView: View {
         onShowTimeShift: @escaping (NearbyViewModel) -> Void = { _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        _filterStore = ObservedObject(wrappedValue: viewModel.filterStore)
         self.onSelectArt = onSelectArt
         self.onSelectCamp = onSelectCamp
         self.onSelectEvent = onSelectEvent
@@ -53,11 +59,29 @@ struct NearbyView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingFilterSheet = true }) {
+                        Image(systemName: filterIconName)
+                            .foregroundColor(themeColors.primaryColor)
+                    }
+                    .accessibilityLabel("Filter Nearby Events")
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { onShowMap(viewModel.allAnnotations) }) {
                         Image(systemName: "map")
                             .foregroundColor(themeColors.primaryColor)
                     }
                 }
+            }
+            .sheet(isPresented: $showingFilterSheet) {
+                EventFilterSheet(
+                    filter: $filterStore.filter,
+                    defaultFilter: .nearbyDefaults,
+                    // Nearby's time gate is its own now-window (evaluated at the warped
+                    // date when the user is time-shifted), so an expired-events toggle
+                    // would be a control with no visible effect.
+                    showsExpiredToggle: false,
+                    title: "Filter Nearby Events"
+                )
             }
 
             // Loading overlay
@@ -100,6 +124,16 @@ struct NearbyView: View {
         }
     }
 
+    // MARK: - Helpers
+
+    /// Filled icon = at least one control differs from Nearby's defaults, matching the
+    /// sheet's Reset-button visibility. Same rule the Events tab uses.
+    private var filterIconName: String {
+        filterStore.hasNonDefaultFilters
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
+    }
+
     // MARK: - Header Controls
 
     private var headerControls: some View {
@@ -120,6 +154,11 @@ struct NearbyView: View {
             }
             .pickerStyle(.segmented)
 
+            // Dropped-pin source, when the map handed one over
+            if let label = viewModel.sourceLocationLabel {
+                droppedPinInfoView(label)
+            }
+
             // Time shift info
             if let config = viewModel.timeShiftConfig, config.isActive {
                 timeShiftInfoView(config)
@@ -137,6 +176,30 @@ struct NearbyView: View {
         } else {
             return Text("Within \(Int(distance))m") + Text("")
         }
+    }
+
+    /// Says the list is measured from the person dropped on the map, not from the device,
+    /// and offers the one-tap way back. Without this the distances and ordering would be
+    /// silently wrong for anyone who forgot they left a pin standing.
+    private func droppedPinInfoView(_ label: String) -> some View {
+        HStack(spacing: 6) {
+            // Same mark as the marker standing on the map. See `DroppedPersonMarker`.
+            Image(systemName: DroppedPersonMarker.glyphSymbolName)
+                .font(.caption)
+            Text("Near \(label)")
+                .font(.caption)
+                .lineLimit(1)
+            Spacer(minLength: 8)
+            Button("Use My Location") {
+                viewModel.clearSourceLocationOverride()
+            }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.plain)
+            .foregroundColor(themeColors.secondaryColor)
+        }
+        .foregroundColor(themeColors.primaryColor)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
     }
 
     private func timeShiftInfoView(_ config: TimeShiftConfiguration) -> some View {
@@ -203,7 +266,7 @@ struct NearbyView: View {
                 subtitle: viewModel.distanceString(for: .event(event)),
                 rightSubtitle: event.object.timeDescription(now: viewModel.now),
                 hostName: event.object.hostName,
-                hostAddress: BRCEmbargo.allowEmbargoedData() ? event.object.hostAddress : nil,
+                hostAddress: BRCEmbargo.canShowLocation(for: event.object) ? event.object.hostAddress : nil,
                 isFavorite: event.isFavorite,
                 thumbnailColors: item.thumbnailColors,
                 onFavoriteTap: { Task { await viewModel.toggleFavorite(.event(event)) } }

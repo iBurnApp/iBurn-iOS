@@ -14,11 +14,24 @@ public final class LocationStorage: NSObject {
     
     static var shared: LocationStorage?
     
+    /// Creates `shared` (if needed) and begins recording breadcrumbs.
+    ///
+    /// Called from `BRCAppDelegate` at launch. `start()` is invoked here because nothing else
+    /// on the launch path does: previously breadcrumbs only began recording after the user
+    /// visited More → Location History, which is the one screen that used to call `start()`.
+    /// `start()` still honors `UserDefaults.isLocationHistoryDisabled`, so a paused user
+    /// stays paused.
     @objc(setup:) public class func setup() throws {
+        if let existing = shared {
+            existing.start()
+            return
+        }
         let databaseURL = try FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent("LocationHistory.sqlite")
-        self.shared = try LocationStorage(path: databaseURL.path)
+        let storage = try LocationStorage(path: databaseURL.path)
+        self.shared = storage
+        storage.start()
     }
     
     let dbQueue: DatabaseQueue

@@ -75,10 +75,19 @@
 }
 
 - (CLLocationCoordinate2D) coordinate {
+    // A zero in either component means "never set" for this model, and NaN/inf means
+    // something upstream handed us garbage (a degenerate map viewport, a corrupt decode).
+    // Both have to read as invalid here: MapLibre projects this straight into a
+    // CALayer position, where a NaN is a fatal CALayerInvalidGeometry exception.
     if (_latitude == 0 || _longitude == 0) {
         return kCLLocationCoordinate2DInvalid;
     }
-    return CLLocationCoordinate2DMake(_latitude, _longitude);
+    CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake(_latitude, _longitude);
+    if (!isfinite(coordinate.latitude) || !isfinite(coordinate.longitude) ||
+        !CLLocationCoordinate2DIsValid(coordinate)) {
+        return kCLLocationCoordinate2DInvalid;
+    }
+    return coordinate;
 }
 
 - (CLLocation*) location {

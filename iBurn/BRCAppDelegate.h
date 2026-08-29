@@ -11,13 +11,11 @@
 @import CoreLocation;
 
 @class BRCDataImporter;
-@class FavoritesViewController;
 @class MainMapViewController;
-@class EventListViewController;
 @class TabController;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, UITabBarControllerDelegate, CLLocationManagerDelegate>
+@interface BRCAppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic, strong) TabController *tabBarController;
@@ -26,8 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 
 @property (nonatomic, strong) MainMapViewController *mapViewController;
-@property (nonatomic, strong) FavoritesViewController *favoritesViewController;
-@property (nonatomic, strong) EventListViewController *eventsViewController;
 
 /** Don't use this unless you really have to... */
 @property (nonatomic, class, readonly) BRCAppDelegate *shared;

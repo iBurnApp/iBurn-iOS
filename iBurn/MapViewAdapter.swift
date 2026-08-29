@@ -8,14 +8,12 @@
 
 import UIKit
 import MapLibre
-import YapDatabase
 import BButton
 import CocoaLumberjack
 import SafariServices
 import EventKitUI
 import PlayaDB
 import SwiftUI
-import PlayaDB
 
 public class MapViewAdapter: NSObject {
     
@@ -34,6 +32,10 @@ public class MapViewAdapter: NSObject {
     public weak var parent: UIViewController?
     public var onStyleLoaded: ((MLNStyle) -> Void)?
 
+    /// Zoom at or below which a pin's name label is unreadable clutter and stays hidden.
+    /// Overridable because the user-facing map keeps labels a little further out.
+    var pinLabelHiddenAtOrBelowZoom: Double { 14 }
+
     /// key is annotation ObjectIdentifier
     var annotationViews: [ObjectIdentifier: MLNAnnotationView] = [:]
     var labelViews: [LabelAnnotationView] = []
@@ -42,9 +44,9 @@ public class MapViewAdapter: NSObject {
 
     /// for checking if annotations overlap
     private var overlappingAnnotations: [CLLocationCoordinate2DBox: [any OffsettableAnnotation]] = [:]
-    
-    /// Dictionary tracking all annotations currently on the map by stable keys
-    private var annotationsByID: [AnyHashable: MLNAnnotation] = [:]
+
+    /// Which annotation is on the map under which stable key. See `MapAnnotationRegistry`.
+    private(set) var registry = MapAnnotationRegistry()
 
     /// For PlayaDB annotations, the host can provide routing for callout actions.
     public var onPlayaInfoTapped: ((AnyDataObjectID) -> Void)?
@@ -55,41 +57,50 @@ public class MapViewAdapter: NSObject {
         self.dataSource = dataSource
         super.init()
         self.mapView.delegate = self
-    }
-    
-    // MARK: - Helper Methods
-    
-    /// Generate unique key for an annotation
-    private func keyForAnnotation(_ annotation: MLNAnnotation) -> AnyHashable? {
-        if let data = annotation as? DataObjectAnnotation {
-            let className = String(describing: type(of: data.object))
-            return AnyHashable("\(className):\(data.object.uniqueID)")
-        } else if let playa = annotation as? PlayaObjectAnnotation {
-            return AnyHashable(playa.id)
-        } else if let mapPoint = annotation as? BRCMapPoint {
-            let className = String(describing: type(of: mapPoint))
-            return AnyHashable("\(className):\(mapPoint.yapKey)")
+        installStyleLabelTapRecognizer()
+        // Which camps the style layer already names decides which pins draw their own name,
+        // so start reading the geojson now and re-apply the verdict when it lands. Until
+        // then pins assume the layer has them, which is true of all but a handful of camps.
+        CampStyleLabelIndex.shared.load { [weak self] in
+            self?.updatePinLabelVisibility()
         }
-        return nil // Non-trackable annotations
     }
 
+    // MARK: - Annotation eligibility
+
+    /// Whether this adapter is willing to put `annotation` on its map.
+    ///
+    /// Base adapters show everything they are handed: a detail map, or a list's "show on
+    /// map", is an *explicit* selection, and the one pin the user asked for must never be
+    /// filtered out from under them. `UserMapViewAdapter` — the only adapter fed by a
+    /// browse-everything query — overrides this to drop camp pins the style layer already
+    /// labels. Declared here rather than in an extension so it can be overridden at all.
+    func shouldDisplay(_ annotation: MLNAnnotation) -> Bool { true }
+
     // MARK: - Public API
-    
+
     @objc public func reloadAnnotations() {
-        // Only remove annotations that came from the data source
+        // `shouldDisplay` is applied here rather than inside `addAnnotations` so that
+        // `self.annotations` tracks exactly what the data source wanted on the map.
+        let incoming = (dataSource?.allAnnotations() ?? []).filter { shouldDisplay($0) }
+        willReplaceDataSourceAnnotations(with: incoming)
+        // Only remove annotations that came from the data source. Removal is
+        // identity-checked (see `MapAnnotationRegistry.remove`), so an instance that was
+        // de-duplicated away at add time can't deregister the key of the pin that really
+        // is on the map.
         removeAnnotations(self.annotations)
-        // Don't clear the entire dictionary - removeAnnotations already handles cleanup
-        self.annotations = dataSource?.allAnnotations() ?? []
-        addAnnotations(self.annotations)
+        self.annotations = incoming
+        addAnnotations(incoming)
     }
-    
+
+    /// Hook for subclasses, called with the pin set that is about to replace the current
+    /// one, before anything is added or removed. `UserMapViewAdapter` uses it to hand a
+    /// pin it placed itself over to the database's copy of that same pin.
+    func willReplaceDataSourceAnnotations(with annotations: [MLNAnnotation]) {}
+
     @objc public func removeAnnotations(_ annotations: [MLNAnnotation]) {
-        annotations.forEach { annotation in
-            // Remove from tracking dictionary
-            if let key = keyForAnnotation(annotation) {
-                annotationsByID.removeValue(forKey: key)
-            }
-            
+        let removed = registry.remove(annotations)
+        removed.forEach { annotation in
             // Clean up overlap tracking for offsettable annotations
             if let data = annotation as? any OffsettableAnnotation {
                 let originalCoordinate = data.originalCoordinate
@@ -98,46 +109,46 @@ public class MapViewAdapter: NSObject {
                 overlappingAnnotations[.init(originalCoordinate)] = overlapping
             }
         }
-        mapView.removeAnnotations(annotations)
+        mapView.removeAnnotations(removed)
     }
-    
+
     /// Adds annotations in a way that avoid overlap and de-duplicates
     @objc public func addAnnotations(_ annotations: [MLNAnnotation]) {
-        // Single pass: filter, track, and offset
-        let newAnnotations = annotations.filter { annotation in
-            guard let key = keyForAnnotation(annotation) else {
-                return true // Non-trackable always added
+        // Drop unusable coordinates *before* the registry sees them, so the registry never
+        // claims a key for a pin the map isn't drawing (which would then block the good
+        // copy of that pin from ever being added). MapLibre projects an annotation's
+        // coordinate straight into a `CALayer.position`, and a NaN there is a fatal
+        // `CALayerInvalidGeometry`, not a misplaced pin.
+        let placeable = annotations.filter { annotation in
+            guard BRCLocations.isUsable(annotation.coordinate) else {
+                DDLogWarn("Skipping annotation with invalid coordinate \(annotation.coordinate): \(String(describing: annotation.title ?? nil))")
+                return false
             }
-            
-            if annotationsByID[key] != nil {
-                return false // Already on map
-            }
-            
-            // Track it
-            annotationsByID[key] = annotation
-            
-            // Handle overlap offset for annotations that support it.
-            if let data = annotation as? any OffsettableAnnotation {
-                let originalCoordinate = data.originalCoordinate
-                var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
-                overlapping.append(data)
-                
-                // Sort by stable ID for consistent ordering
-                overlapping.sort { $0.stableID < $1.stableID }
-                overlappingAnnotations[.init(originalCoordinate)] = overlapping
-                
-                // Re-offset ALL annotations in this group if there's overlap
-                if overlapping.count > 1 {
-                    for (index, overlappingAnnotation) in overlapping.enumerated() {
-                        let percentage = Double(index) / Double(overlapping.count) + 0.18
-                        overlappingAnnotation.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
-                    }
-                }
-            }
-            
             return true
         }
-        
+        let newAnnotations = registry.add(placeable)
+
+        // Handle overlap offset for annotations that support it. An offset divides by
+        // cos(latitude), so it is only computed for coordinates that survived the filter.
+        for case let data as any OffsettableAnnotation in newAnnotations {
+            let originalCoordinate = data.originalCoordinate
+            guard BRCLocations.isUsable(originalCoordinate) else { continue }
+            var overlapping = overlappingAnnotations[.init(originalCoordinate)] ?? []
+            overlapping.append(data)
+
+            // Sort by stable ID for consistent ordering
+            overlapping.sort { $0.stableID < $1.stableID }
+            overlappingAnnotations[.init(originalCoordinate)] = overlapping
+
+            // Re-offset ALL annotations in this group if there's overlap
+            if overlapping.count > 1 {
+                for (index, overlappingAnnotation) in overlapping.enumerated() {
+                    let percentage = Double(index) / Double(overlapping.count) + 0.18
+                    overlappingAnnotation.coordinate = originalCoordinate.offset(by: .offset(radius: 20, percentage: percentage))
+                }
+            }
+        }
+
         mapView.addAnnotations(newAnnotations)
     }
 }
@@ -159,6 +170,8 @@ extension MapViewAdapter: MLNMapViewDelegate {
             "Burner Express Bus Depot": "bus",
             "Station 3": "firstAid",
             "Station 9": "firstAid",
+            "ESD Station 3": "firstAid",
+            "ESD Station 9": "firstAid",
             "Playa Info": "info",
             "Ranger Station Berlin": "ranger",
             "Ranger Station Tokyo": "ranger",
@@ -166,6 +179,8 @@ extension MapViewAdapter: MLNMapViewDelegate {
             "Ice Nine Arctica": "ice",
             "Arctica Center Camp": "ice",
             "Ice Cubed Arctica 3": "ice",
+            "Arctica Outpost": "ice",
+            "Recycle Camp": "recycle",
             "The Temple": "temple",
             "toilet": "toilet",
             "Artery": "artery",
@@ -210,6 +225,7 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             labelAnnotationView.imageView.image = image
             labelAnnotationView.label.text = data.title
+            labelAnnotationView.campUID = campUID(for: annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         } else if let data = annotation as? PlayaObjectAnnotation {
@@ -220,15 +236,25 @@ extension MapViewAdapter: MLNMapViewDelegate {
                 labelAnnotationView = LabelAnnotationView(reuseIdentifier: LabelAnnotationView.reuseIdentifier)
             }
             labelAnnotationView.imageView.image = image
-            labelAnnotationView.label.text = data.title
+            // Favourited event pins carry no text — see `PinLabelVisibility.pinDrawsOwnLabel`.
+            labelAnnotationView.label.text = PinLabelVisibility.pinDrawsOwnLabel(
+                objectType: data.id.objectType,
+                isFavorite: data.isFavorite
+            ) ? data.title : nil
+            labelAnnotationView.campUID = campUID(for: annotation)
             labelViews.append(labelAnnotationView)
             annotationView = labelAnnotationView
         }
-        
+
         if let annotationView = annotationView {
             let identifier = ObjectIdentifier(annotation)
             annotationViews[identifier] = annotationView
         }
+
+        // Pins arrive between region changes (the region path fetches asynchronously, and
+        // the observation path fires on database writes), so a fresh view has to be told
+        // the current rule rather than waiting for the next pan to be corrected.
+        updatePinLabelVisibility()
 
         return annotationView
     }
@@ -292,10 +318,131 @@ extension MapViewAdapter: MLNMapViewDelegate {
         }
     }
     
-    public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {        
-        let labelIsHidden = mapView.zoomLevel <= 14
-        labelViews.forEach { (view) in
-            view.label.isHidden = labelIsHidden
+    public func mapView(_ mapView: MLNMapView, regionDidChangeAnimated animated: Bool) {
+        updatePinLabelVisibility()
+    }
+}
+
+// MARK: - Pin labels
+
+extension MapViewAdapter {
+
+    /// Applies the current zoom's rules to every live `LabelAnnotationView`.
+    ///
+    /// Beyond the plain "too far out to read" cut, camp pins have a second rule: the
+    /// `camp-labels-big` style layer draws camp names at each camp's polygon centroid, which
+    /// is the exact coordinate the camp's pin sits on. The layer wins wherever it has a
+    /// label — the pin is then a bare glyph at any zoom — and camps it has no feature for
+    /// keep labelling themselves. See `PinLabelVisibility`.
+    ///
+    /// Call after anything that can change that verdict — zoom, embargo, the Map Filter — and
+    /// once the label index finishes loading.
+    func updatePinLabelVisibility() {
+        let zoomLevel = mapView.zoomLevel
+        let hiddenAtOrBelowZoom = pinLabelHiddenAtOrBelowZoom
+        let styleDrawsCampNames = CampLayerVisibility.current(zoomLevel: zoomLevel).campNamesDrawnByStyleLayer
+        let styleLabeledCampUIDs = CampStyleLabelIndex.shared.labeledCampUIDs
+        for view in labelViews {
+            view.label.isHidden = PinLabelVisibility.labelIsHidden(
+                zoomLevel: zoomLevel,
+                hiddenAtOrBelowZoom: hiddenAtOrBelowZoom,
+                campUID: view.campUID,
+                styleDrawsCampNames: styleDrawsCampNames,
+                styleLabeledCampUIDs: styleLabeledCampUIDs
+            )
+        }
+    }
+
+    /// The camp uid behind this annotation, or nil when it isn't a camp. Both object graphs
+    /// key camps by the API's `uid`, which is what `camp_labels.geojson` carries.
+    func campUID(for annotation: MLNAnnotation) -> String? {
+        if let playa = annotation as? PlayaObjectAnnotation {
+            return playa.id.objectType == .camp ? playa.id.uid : nil
+        }
+        if let data = annotation as? DataObjectAnnotation {
+            return (data.object as? BRCCampObject)?.uniqueID
+        }
+        return nil
+    }
+}
+
+// MARK: - Tapping a style label
+
+extension MapViewAdapter {
+
+    /// Half-width of the square queried around a tap, in points. 22 makes a 44×44 target —
+    /// the HIG minimum — around text that is only 9–14pt tall at the zooms it is drawn at.
+    private static let styleLabelTapRadius: CGFloat = 22
+
+    /// Identifies our recognizer on a map view. `DetailMapViewRepresentable` builds a fresh
+    /// adapter around the *same* `MLNMapView` on every SwiftUI update, so without this the
+    /// recognizers would stack up one per update.
+    private static let styleLabelTapRecognizerName = "iBurn.campStyleLabelTap"
+
+    /// Makes the camp names drawn by `camp-labels-big` behave like the pins they replaced:
+    /// tap one, get that camp's detail screen.
+    ///
+    /// The recognizer is deliberately last in line. `MLNMapView` refuses its own single tap
+    /// when the tap hits no annotation *and* nothing is selected
+    /// (`-gestureRecognizerShouldBegin:`), which is exactly the case this handler wants, so
+    /// requiring every built-in tap recognizer to fail first — the pattern `MLNMapView.h`
+    /// documents — leaves annotation selection, callout dismissal and double-tap zoom
+    /// untouched and only fires on taps the map itself declined.
+    func installStyleLabelTapRecognizer() {
+        let existing = mapView.gestureRecognizers ?? []
+        guard !existing.contains(where: { $0.name == Self.styleLabelTapRecognizerName }) else { return }
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleStyleLabelTap(_:)))
+        tap.name = Self.styleLabelTapRecognizerName
+        for recognizer in existing where recognizer is UITapGestureRecognizer {
+            tap.require(toFail: recognizer)
+        }
+        mapView.addGestureRecognizer(tap)
+    }
+
+    @objc private func handleStyleLabelTap(_ sender: UITapGestureRecognizer) {
+        guard sender.state == .ended,
+              let uid = campUID(forStyleLabelAt: sender.location(in: mapView)) else { return }
+        showCampDetail(uid: uid)
+    }
+
+    /// The uid of the camp whose style label sits under `point`, or nil for empty map.
+    ///
+    /// The zoom/settings/embargo verdict is re-checked rather than trusted from the render:
+    /// `visibleFeatures` reads the tiles MapLibre has already built, and a tile built while
+    /// the layer was visible outlives the layer being hidden. Without this check a tap on
+    /// stale text could open a camp whose location is still embargoed.
+    func campUID(forStyleLabelAt point: CGPoint) -> String? {
+        guard CampLayerVisibility.current(zoomLevel: mapView.zoomLevel).campNamesDrawnByStyleLayer,
+              mapView.style?.layer(withIdentifier: CampLayerVisibility.labelsLayerIdentifier) != nil else {
+            return nil
+        }
+        let radius = Self.styleLabelTapRadius
+        let rect = CGRect(x: point.x - radius,
+                          y: point.y - radius,
+                          width: radius * 2,
+                          height: radius * 2)
+        let features = mapView.visibleFeatures(
+            in: rect,
+            styleLayerIdentifiers: [CampLayerVisibility.labelsLayerIdentifier]
+        )
+        return features.lazy.compactMap { $0.attribute(forKey: "uid") as? String }.first
+    }
+
+    /// Routes through the host's `onPlayaInfoTapped` so navigation stays owned by the screen,
+    /// exactly as the callout's info button does; the direct push is the fallback for hosts
+    /// (detail maps) that never wired one.
+    private func showCampDetail(uid: String) {
+        let id = AnyDataObjectID(objectType: .camp, uid: uid)
+        if let onPlayaInfoTapped {
+            onPlayaInfoTapped(id)
+            return
+        }
+        guard let parentVC = parent else { return }
+        Task { @MainActor in
+            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
+            guard let camp = try? await playaDB.fetchCamp(uid: uid) else { return }
+            let vc = DetailViewControllerFactory.create(with: camp, playaDB: playaDB)
+            parentVC.navigationController?.pushViewController(vc, animated: true)
         }
     }
 }

@@ -174,14 +174,50 @@ public protocol PlayaDB {
     /// Get all favorited objects
     func getFavorites() async throws -> [any DataObject]
     
-    /// Toggle the favorite status of an object
+    /// Toggle the favorite status of an object.
+    ///
+    /// Event favorites are **per occurrence**: passing an `EventObjectOccurrence` affects
+    /// only that showing (see ``EventFavoriteKey``). Passing a bare `EventObject` — which
+    /// names no particular showing — means the whole series, and toggles every occurrence
+    /// together.
     func toggleFavorite(_ object: any DataObject) async throws
 
-    /// Set the favorite status of an object to a specific value
+    /// Set the favorite status of an object to a specific value.
+    /// Same per-occurrence vs. series distinction as `toggleFavorite`.
     func setFavorite(_ isFavorite: Bool, for object: any DataObject) async throws
+
+    /// Favorites (or unfavorites) every occurrence of one event at once.
+    ///
+    /// This is what "favorite all showings of this event" does — the offer made after a
+    /// single occurrence is favorited. Returns the number of rows actually changed, so a
+    /// caller can tell a no-op from real work.
+    @discardableResult
+    func setFavorite(_ isFavorite: Bool, forEventSeries eventUID: String) async throws -> Int
+
+    /// The occurrences of one event that are currently favorited, oldest first.
+    /// Empty when none are.
+    func favoriteOccurrences(forEventUID uid: String) async throws -> [EventObjectOccurrence]
 
     /// Check if an object is favorited
     func isFavorite(_ object: any DataObject) async throws -> Bool
+
+    /// Batch favorite lookup for a heterogeneous set of objects, in one read.
+    ///
+    /// Returns the *favorite identity* of whichever `objects` are favorited — an
+    /// `EventObjectOccurrence.favoriteIdentity` composite for event occurrences, the
+    /// object's own uid for everything else. Two showings of the same event therefore get
+    /// separate keys, and only the favorited ones come back.
+    ///
+    /// Use this when results come from one-shot fetches that return bare objects
+    /// (e.g. global search) rather than `ListRow`s, which already carry metadata.
+    func favoriteIdentifiers(among objects: [any DataObject]) async throws -> Set<String>
+
+    /// Set the visit status of an object. Setting the same value again is a
+    /// no-op (no write), and `.unvisited` never materializes a metadata row.
+    func setVisitStatus(_ status: VisitStatus, for object: any DataObject) async throws
+
+    /// Get all objects with the given visit status
+    func fetchObjects(visitStatus: VisitStatus) async throws -> [any DataObject]
 
     /// Update user notes for an object (nil/empty clears notes).
     func setUserNotes(_ notes: String?, for object: any DataObject) async throws
@@ -201,11 +237,33 @@ public protocol PlayaDB {
     /// Clear all recently viewed history
     func clearAllRecentlyViewed() async throws
 
-    /// Fetch favorited events with their occurrences (for schedule optimization)
+    /// Every favorited event *occurrence*, oldest first — exactly the showings the user
+    /// favorited, not every showing of an event with one favorited showing.
     func fetchFavoriteEvents() async throws -> [EventObjectOccurrence]
 
     /// Batch fetch objects of any type by their UIDs (4 queries total, one per type)
     func fetchObjects(byUIDs uids: [String]) async throws -> [any DataObject]
+
+    // MARK: - Favorite Sync
+
+    /// Snapshot of all favorite/visit states that have ever been explicitly set
+    /// (rows with a non-nil favorite or visit stamp), for last-writer-wins sync.
+    /// Ordered by objectType then objectId for determinism.
+    func favoriteSyncSnapshot() async throws -> [FavoriteSyncItem]
+
+    /// Merge incoming favorite/visit states using per-field last-writer-wins:
+    /// the favorite and visit-status fields merge independently, each on its
+    /// own dedicated stamp. Same-state fields are skipped and rows where no
+    /// field applies are never written, so applying a peer's snapshot never
+    /// re-fires observations. Returns the items for which at least one field
+    /// was applied.
+    @discardableResult
+    func applyFavoriteSync(_ items: [FavoriteSyncItem]) async throws -> [FavoriteSyncItem]
+
+    /// Observe the favorite sync snapshot reactively (same query as
+    /// `favoriteSyncSnapshot()`).
+    @discardableResult
+    func observeFavoriteSyncState(onChange: @escaping ([FavoriteSyncItem]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
 
     // MARK: - Thumbnail Colors
 
@@ -226,47 +284,89 @@ public protocol PlayaDB {
     /// Save (insert or update) a user map pin.
     func saveUserMapPin(_ pin: UserMapPin) async throws
 
-    /// Delete a user map pin by id.
+    /// Delete a user map pin by id. This is a soft delete: the row is kept as a
+    /// tombstone (`isDeleted`) so the deletion can propagate through sync.
     func deleteUserMapPin(id: String) async throws
 
-    /// Fetch all user map pins.
+    /// Fetch all user map pins, tombstones excluded.
     func fetchUserMapPins() async throws -> [UserMapPin]
 
-    /// Observe all user map pins reactively.
+    /// Observe all user map pins reactively, tombstones excluded.
     @discardableResult
     func observeUserMapPins(onChange: @escaping ([UserMapPin]) -> Void) -> PlayaDBObservationToken
+
+    // MARK: - Calendar Entries
+
+    /// Save (insert or replace) the EventKit identifier for one event occurrence.
+    /// Upsert on (`eventId`, `occurrenceKey`).
+    func saveCalendarEntry(_ entry: EventCalendarEntry) async throws
+
+    /// Fetch all calendar entries for an event, ordered by occurrence key.
+    func fetchCalendarEntries(eventId: String) async throws -> [EventCalendarEntry]
+
+    /// Delete every calendar entry belonging to an event.
+    func deleteCalendarEntries(eventId: String) async throws
+
+    /// Delete the calendar entry for one occurrence — what unfavoriting a single showing
+    /// of a recurring event removes.
+    func deleteCalendarEntry(eventId: String, occurrenceKey: String) async throws
+
+    /// Fetch every calendar entry, ordered by event id then occurrence key.
+    func fetchAllCalendarEntries() async throws -> [EventCalendarEntry]
+
+    // MARK: - User Map Pin Sync
+
+    /// Snapshot of every pin row **including tombstones**, for last-writer-wins
+    /// sync. Ordered by id for determinism.
+    func userMapPinSyncSnapshot() async throws -> [UserMapPin]
+
+    /// Merge incoming pins using last-writer-wins on `modifiedDate`. Older or
+    /// equally-stamped incoming rows lose, tombstones for unknown pins are
+    /// ignored, and rows that would be unchanged are never written — so
+    /// applying a peer's snapshot cannot re-fire local observations. Returns the
+    /// rows that were actually written.
+    @discardableResult
+    func applyUserMapPinSync(_ pins: [UserMapPin]) async throws -> [UserMapPin]
+
+    /// Observe the pin sync snapshot reactively (same query as
+    /// `userMapPinSyncSnapshot()`).
+    @discardableResult
+    func observeUserMapPinSyncState(
+        onChange: @escaping ([UserMapPin]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) -> PlayaDBObservationToken
 
     // MARK: - Data Import
     
     /// Import data from the PlayaAPI
     func importFromPlayaAPI() async throws
     
-    /// Import data from provided JSON data (for testing)
-    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws
-    
+    /// Import data from provided JSON data. `updateData` is the accompanying update.json;
+    /// when provided, its per-type timestamps are stored as each type's `lastUpdated` so
+    /// later imports can detect whether bundled data is newer than what's in the database.
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?, updateData: Data?) async throws
+
+    /// Whether the data described by `bundleUpdateData` (an update.json payload) is newer
+    /// than what has been imported. Returns true when the database has never been seeded,
+    /// when a data type in the bundle has no imported counterpart, or when the bundle's
+    /// timestamp for any type is newer than the stored `lastUpdated`.
+    func needsImport(bundleUpdateData: Data) async throws -> Bool
+
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
 
     /// Observe update info changes reactively
     @discardableResult
     func observeUpdateInfo(onChange: @escaping ([UpdateInfo]) -> Void, onError: @escaping (Error) -> Void) -> PlayaDBObservationToken
-    
-    // MARK: - Reactive Data Access
-    
-    /// All art objects (reactive)
-    var allArt: [ArtObject] { get }
 
-    /// All camps (reactive)
-    var allCamps: [CampObject] { get }
+    // MARK: - Distribution
 
-    /// All events with their occurrences (reactive)
-    var allEvents: [EventObjectOccurrence] { get }
-
-    /// All mutant vehicles (reactive)
-    var allMutantVehicles: [MutantVehicleObject] { get }
-    
-    /// All favorited objects metadata (reactive)
-    var favorites: [ObjectMetadata] { get }
+    /// Compacts the database and folds the write-ahead log back into the main file,
+    /// so the `.sqlite` can be shipped on its own without its `-wal`/`-shm` sidecars.
+    ///
+    /// Only meaningful for on-disk databases; harmless on in-memory ones. Intended for
+    /// the seed tool — the app never needs to call this.
+    func compactForDistribution() async throws
 }
 
 // MARK: - Observation Convenience
@@ -304,6 +404,11 @@ public extension PlayaDB {
         observeMutantVehicles(filter: filter, onChange: onChange, onError: { _ in })
     }
 
+    /// Convenience overload for importFromData without update.json metadata
+    func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?) async throws {
+        try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: mvData, updateData: nil)
+    }
+
     /// Convenience overload for importFromData without MV data
     func importFromData(artData: Data, campData: Data, eventData: Data) async throws {
         try await importFromData(artData: artData, campData: campData, eventData: eventData, mvData: nil)
@@ -316,6 +421,19 @@ public extension PlayaDB {
 /// This is a global factory function to avoid protocol metatype issues
 public func createPlayaDB() throws -> PlayaDB {
     try PlayaDBImpl()
+}
+
+/// Create an in-memory PlayaDB instance. Nothing persists and no connection is
+/// opened to the on-disk database — intended for SwiftUI previews and tests.
+public func createInMemoryPlayaDB() throws -> PlayaDB {
+    try PlayaDBImpl(dbPath: ":memory:")
+}
+
+/// Create a PlayaDB backed by a database file at an explicit path, rather than the
+/// app's Documents directory. Used by the seed tool, which builds a database outside
+/// any app container, and by tests that need a real file on disk.
+public func createPlayaDB(atPath path: String) throws -> PlayaDB {
+    try PlayaDBImpl(dbPath: path)
 }
 
 public extension PlayaDB {

@@ -11,7 +11,8 @@
 static NSString *const kBRCSelectedEventsTypesKey    = @"kBRCSelectedEventsTypesKey";
 static NSString *const kBRCShowExpiredEventsKey      = @"kBRCShowExpiredEventsKey";
 static NSString *const kBRCRecentLocationKey         = @"kBRCRecentLocationKey";
-static NSString *const kBRCEntered2025EmbargoPasscodeKey = @"kBRCEntered2025EmbargoPasscodeKey";
+static NSString *const kBRCEntered2026EmbargoPasscodeKey = @"kBRCEntered2026EmbargoPasscodeKey";
+static NSString *const kBRCEntered2026BurningManRegionKey = @"kBRCEntered2026BurningManRegionKey";
 static NSString *const kBRCHasViewedOnboardingKey = @"kBRCHasViewedOnboardingKey";
 static NSString *const kBRCShowAllDayEventsKey = @"kBRCShowAllDayEventsKey";
 
@@ -71,12 +72,23 @@ NSString *const kBRCSortEventsByStartTimeKey = @"kBRCSortEventsByStartTimeKey";
 
 - (BOOL)enteredEmbargoPasscode
 {
-    return [self boolForKey:kBRCEntered2025EmbargoPasscodeKey];
+    return [self boolForKey:kBRCEntered2026EmbargoPasscodeKey];
 }
 
 - (void)setEnteredEmbargoPasscode:(BOOL)enteredEmbargoPasscode
 {
-    [self setBool:enteredEmbargoPasscode forKey:kBRCEntered2025EmbargoPasscodeKey];
+    [self setBool:enteredEmbargoPasscode forKey:kBRCEntered2026EmbargoPasscodeKey];
+    [self synchronize];
+}
+
+- (BOOL)enteredBurningManRegion
+{
+    return [self boolForKey:kBRCEntered2026BurningManRegionKey];
+}
+
+- (void)setEnteredBurningManRegion:(BOOL)enteredBurningManRegion
+{
+    [self setBool:enteredBurningManRegion forKey:kBRCEntered2026BurningManRegionKey];
     [self synchronize];
 }
 

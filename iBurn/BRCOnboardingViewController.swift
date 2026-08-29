@@ -33,10 +33,15 @@ import Onboard
         let thirdPage = OnboardingContentViewController.content(withTitle: "Search", body: "Find whatever your heart desires.\n\n\n...especially bacon and coffee.", image: nil, buttonText: nil, action: nil)
         let fourthPage = OnboardingContentViewController.content(withTitle: "Nearby", body: "Quickly find cool new things going on around you.\n\n\n...or just find the closest toilet.", image: nil, buttonText: nil, action: nil)
         let lastPage = OnboardingContentViewController.content(withTitle: "Thank you!", body: "If you enjoy using iBurn, please spread the word.", image: nil, buttonText: "🔥 Ok let's burn!", action: completionBlock)
-        let bundle = Bundle.main
-        let moviePath = bundle.path(forResource: "onboarding_loop_final", ofType: "mp4")
-        let movieURL = URL(fileURLWithPath: moviePath ?? "")
-        super.init(backgroundVideoURL: movieURL, contents: [firstPage, secondPage, thirdPage, fourthPage, lastPage])
+        let contents = [firstPage, secondPage, thirdPage, fourthPage, lastPage]
+        if let movieURL = Bundle.main.url(forResource: "onboarding_loop_final", withExtension: "mp4") {
+            super.init(backgroundVideoURL: movieURL, contents: contents)
+        } else {
+            // The video ships as a resource in the iBurn folder; if it goes missing
+            // fall back to a plain background instead of a black screen.
+            assertionFailure("onboarding_loop_final.mp4 is missing from the app bundle")
+            super.init(backgroundImage: nil, contents: contents)
+        }
         shouldFadeTransitions = true
         fadePageControlOnLastPage = true
         stopMoviePlayerWhenDisappear = true
@@ -61,6 +66,7 @@ import Onboard
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard let moviePlayerController = moviePlayerController else { return }
         // fill frame w/ video
         moviePlayerController.videoGravity = convertToAVLayerVideoGravity(AVLayerVideoGravity.resizeAspectFill.rawValue)
         // loop video http://stackoverflow.com/a/26401680

@@ -14,8 +14,26 @@ import YapDatabase
 class DetailDataService: DetailDataServiceProtocol {
     private let playaDB: PlayaDB?
 
-    init(playaDB: PlayaDB? = nil) {
+    /// PlayaDB-native calendar sync. When present *and*
+    /// `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on, it owns the EKEvents for
+    /// favorited events and the legacy in-transaction `refreshCalendarEntry` is skipped,
+    /// so exactly one stack writes calendar entries. Nil (tests/previews) keeps the
+    /// legacy path.
+    private let calendarService: EventCalendarService?
+
+    init(playaDB: PlayaDB? = nil, calendarService: EventCalendarService? = nil) {
         self.playaDB = playaDB
+        self.calendarService = calendarService
+    }
+
+    /// The calendar service to use for this write, or nil when the legacy Yap calendar
+    /// path owns the entry.
+    private var playaDBCalendarService: EventCalendarService? {
+        guard let calendarService,
+              PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.usePlayaDBCalendarSync) else {
+            return nil
+        }
+        return calendarService
     }
 
     func updateFavoriteStatus(for object: BRCDataObject, isFavorite: Bool) async throws {
@@ -26,16 +44,26 @@ class DetailDataService: DetailDataServiceProtocol {
         let newMetadata = metadata.metadataCopy()
         newMetadata.isFavorite = isFavorite
 
+        let calendarService = playaDBCalendarService
+
         await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
 
-                if let event = object as? BRCEventObject {
+                if calendarService == nil, let event = object as? BRCEventObject {
                     event.refreshCalendarEntry(transaction)
                 }
             } completionBlock: {
                 continuation.resume()
             }
+        }
+
+        // Post-commit, matching the FavoriteSyncService hook: the new service reads
+        // PlayaDB, not the transaction. Yap event uids are per-occurrence
+        // ("<apiUID>-<index>"); the service keys off the bare API uid.
+        if let calendarService, object is BRCEventObject {
+            let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: object.uniqueID)
+            await calendarService.reconcile(eventUID: apiUID, isFavorite: isFavorite)
         }
 
         syncFavoriteToPlayaDB(for: object, isFavorite: isFavorite)
@@ -68,7 +96,7 @@ class DetailDataService: DetailDataServiceProtocol {
         let newMetadata = metadata.metadataCopy()
         newMetadata.visitStatus = visitStatus.rawValue
         
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             BRCDatabaseManager.shared.readWriteConnection.asyncReadWrite { transaction in
                 object.replace(newMetadata, transaction: transaction)
             } completionBlock: {
@@ -78,6 +106,8 @@ class DetailDataService: DetailDataServiceProtocol {
                 }
             }
         }
+
+        syncVisitStatusToPlayaDB(for: object, visitStatus: visitStatus)
     }
     
     func getMetadata(for object: BRCDataObject) -> BRCObjectMetadata? {
@@ -235,13 +265,43 @@ class DetailDataService: DetailDataServiceProtocol {
             do {
                 if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
                     try await playaDB.setFavorite(isFavorite, for: art)
+                } else if object is BRCEventObject {
+                    // Yap event uniqueIDs are per-occurrence ("<apiUID>-<index>");
+                    // PlayaDB stores events under the bare API uid, so strip the suffix.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setFavorite(isFavorite, for: event)
+                    }
                 } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
                     try await playaDB.setFavorite(isFavorite, for: camp)
-                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
-                    try await playaDB.setFavorite(isFavorite, for: event)
                 }
             } catch {
                 print("PlayaDB favorite sync failed for \(uid): \(error)")
+            }
+        }
+    }
+
+    private func syncVisitStatusToPlayaDB(for object: BRCDataObject, visitStatus: BRCVisitStatus) {
+        guard let playaDB else { return }
+        let uid = object.uniqueID
+        let status = VisitStatus(rawValue: visitStatus.rawValue) ?? .unvisited
+
+        Task {
+            do {
+                if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
+                    try await playaDB.setVisitStatus(status, for: art)
+                } else if object is BRCEventObject {
+                    // Same per-occurrence uid mapping as favorite sync above:
+                    // Yap event uniqueIDs are "<apiUID>-<index>", PlayaDB keys by bare API uid.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setVisitStatus(status, for: event)
+                    }
+                } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
+                    try await playaDB.setVisitStatus(status, for: camp)
+                }
+            } catch {
+                print("PlayaDB visit status sync failed for \(uid): \(error)")
             }
         }
     }
@@ -254,10 +314,14 @@ class DetailDataService: DetailDataServiceProtocol {
             do {
                 if object is BRCArtObject, let art = try await playaDB.fetchArt(uid: uid) {
                     try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
+                } else if object is BRCEventObject {
+                    // Same per-occurrence uid mapping as favorite sync above.
+                    let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: uid)
+                    if let event = try await playaDB.fetchEvent(uid: apiUID) {
+                        try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
+                    }
                 } else if object is BRCCampObject, let camp = try await playaDB.fetchCamp(uid: uid) {
                     try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
-                } else if object is BRCEventObject, let event = try await playaDB.fetchEvent(uid: uid) {
-                    try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 }
             } catch {
                 print("PlayaDB notes sync failed for \(uid): \(error)")

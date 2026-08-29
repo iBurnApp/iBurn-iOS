@@ -88,8 +88,10 @@ public final class BRCDataSorter: NSObject {
                     camps.sort { $0.distance(from: from) < $1.distance(from: from) }
                     art.sort { $0.distance(from: from) < $1.distance(from: from) }
                 case .title:
-                    camps.sort { $0.title < $1.title }
-                    art.sort { $0.title < $1.title }
+                    // Finder-style: case-insensitive and numeric-aware, so lowercase
+                    // names aren't banished below every capitalized one.
+                    camps.sort { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+                    art.sort { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
                 }
                 
                 queue.async(execute: { () -> Void in

@@ -1,3 +1,4 @@
+import CoreLocation
 import SwiftUI
 import UIKit
 import PlayaDB
@@ -10,13 +11,41 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
     private var pagingDataSource: DetailPagingDataSource?
     private var geocoderTimer: Timer?
 
-    init(dependencies: DependencyContainer) {
+    /// - Parameter locationOverride: transient "look from here" spot handed over by the
+    ///   map card's "See all" when the user has the person marker dropped. Nil for every
+    ///   other entry point. Nothing about it is persisted.
+    init(dependencies: DependencyContainer, locationOverride: CLLocation? = nil) {
         self.playaDB = dependencies.playaDB
-        let vm = dependencies.makeNearbyViewModel()
+        let vm = dependencies.makeNearbyViewModel(locationOverride: locationOverride)
         self.viewModel = vm
         super.init(rootView: NearbyView(viewModel: vm))
-        self.rootView = NearbyView(
-            viewModel: vm,
+        self.rootView = makeRootView()
+        self.title = "Nearby"
+        observeEmbargoDidClear()
+        geocodeSourceLocation(locationOverride)
+    }
+
+    /// Labels the dropped-pin banner with the offline reverse geocoder's playa address.
+    ///
+    /// The result is applied through the view model's coordinate-checked setter, so a lookup
+    /// still in flight when the user clears the override can't relabel the screen.
+    private func geocodeSourceLocation(_ location: CLLocation?) {
+        guard let location else { return }
+        let coordinate = location.coordinate
+        PlayaGeocoder.shared.asyncReverseLookup(coordinate) { [weak self] address in
+            Task { @MainActor in
+                self?.viewModel.setSourceLocationAddress(address, for: coordinate)
+            }
+        }
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> NearbyView {
+        NearbyView(
+            viewModel: viewModel,
             onSelectArt: { [weak self] art in
                 self?.showDetail(.art(art))
             },
@@ -33,11 +62,23 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
                 self?.showTimeShift(vm)
             }
         )
-        self.title = "Nearby"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal host addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     // MARK: - View Lifecycle
@@ -45,9 +86,7 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         geocodeNavigationBar()
-        geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            self?.geocodeNavigationBar()
-        }
+        geocoderTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(geocoderTimerDidFire), userInfo: nil, repeats: true)
         geocoderTimer?.tolerance = 1
     }
 
@@ -55,6 +94,10 @@ class NearbyListHostingController: UIHostingController<NearbyView> {
         super.viewWillDisappear(animated)
         geocoderTimer?.invalidate()
         geocoderTimer = nil
+    }
+
+    @objc private func geocoderTimerDidFire() {
+        geocodeNavigationBar()
     }
 
     // MARK: - Navigation

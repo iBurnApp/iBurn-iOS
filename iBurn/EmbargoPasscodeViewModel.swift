@@ -29,10 +29,11 @@ class EmbargoPasscodeViewModel: ObservableObject {
         countdownTimer?.invalidate()
     }
     
+    /// The app's real verdict, not a bare clock check: locations unlock by
+    /// passcode, or by being at Burning Man once the tier's date has arrived.
+    /// See `EmbargoService`.
     private func checkDataUnlocked() -> Bool {
-        let now = Date.present
-        let timeLeftInterval = now.timeIntervalSince(festivalStartDate)
-        return timeLeftInterval >= 0 || UserDefaults.enteredEmbargoPasscode
+        BRCEmbargo.allowEmbargoedData()
     }
     
     func startCountdownTimer() {
@@ -82,8 +83,11 @@ class EmbargoPasscodeViewModel: ObservableObject {
         if parts.isEmpty && festivalStartDate.timeIntervalSince(now) > 0 {
             countdownString = "0 seconds"
             return
-        } else if parts.isEmpty && festivalStartDate.timeIntervalSince(now) <= 0 {
-            countdownString = "Location Data Unlocked!"
+        } else if festivalStartDate.timeIntervalSince(now) <= 0 {
+            // Gates are open but this device still isn't unlocked: it hasn't been
+            // to Black Rock City and no passcode was entered. Saying "unlocked"
+            // here would be a lie, so say what is actually true.
+            countdownString = "Gates are open.\nLocations unlock when you arrive on playa."
             return
         }
         
@@ -92,9 +96,15 @@ class EmbargoPasscodeViewModel: ObservableObject {
     
     func unlockButtonPressed() {
         if BRCEmbargo.isEmbargoPasscodeString(passcode) {
+            let wasUnlocked = UserDefaults.enteredEmbargoPasscode
             UserDefaults.enteredEmbargoPasscode = true
             isDataUnlocked = true
             countdownTimer?.invalidate()
+            // Live-refresh everything that captured the embargo flag (map observations,
+            // SwiftUI list rows) instead of waiting for the next app launch.
+            if !wasUnlocked {
+                BRCEmbargoNotifier.postDidClear()
+            }
         } else {
             shouldShowUnlockError = true
         }

@@ -1,3 +1,4 @@
+import Combine
 import CoreLocation
 import Foundation
 import MapKit
@@ -22,12 +23,37 @@ final class NearbyViewModel: ObservableObject {
     @Published var timeShiftConfig: TimeShiftConfiguration? {
         didSet {
             UserSettings.nearbyTimeShiftConfig = timeShiftConfig
+            // Most recent explicit action wins: warping to a *place* is the user asking to
+            // look from there, so it retires an earlier dropped pin rather than being
+            // silently outranked by it. Warping in time only leaves the pin alone.
+            if timeShiftConfig?.location != nil {
+                sourceLocationOverride = nil
+                sourceLocationAddress = nil
+            }
+            now = effectiveDate
             restartObservations()
         }
     }
 
+    /// Transient "look from here" location handed in by the map's dropped person marker.
+    ///
+    /// Never persisted — unlike `timeShiftConfig`, which round-trips through
+    /// `UserSettings.nearbyTimeShiftConfig`. It arrives as an init argument from the card's
+    /// "See all" and dies with the screen.
+    @Published private(set) var sourceLocationOverride: CLLocation?
+
+    /// Reverse-geocoded playa address for `sourceLocationOverride`, once it lands.
+    @Published private(set) var sourceLocationAddress: String?
+
     @Published var isLoading: Bool = true
-    @Published var now: Date = .present
+
+    /// The date every timing readout on this screen is measured against.
+    ///
+    /// This is `effectiveDate`, NOT wall-clock now: the list is *filtered* at the warped
+    /// date, so labeling the rows against real time made a warped list read as a pile of
+    /// events that don't start for hours. Kept as stored published state (rather than a
+    /// computed property) so the refresh timer can tick it and re-render the rows.
+    @Published private(set) var now: Date = .present
 
     // MARK: - Dependencies
 
@@ -36,6 +62,11 @@ final class NearbyViewModel: ObservableObject {
     private let campProvider: CampDataProvider
     private let eventProvider: EventDataProvider
     private let locationProvider: LocationProvider
+
+    /// Shared with the map's nearby card — see `NearbyEventFilterStore`.
+    let filterStore: NearbyEventFilterStore
+    private var filterSubscription: AnyCancellable?
+    private var embargoSubscription: AnyCancellable?
 
     // MARK: - Location State
 
@@ -54,11 +85,37 @@ final class NearbyViewModel: ObservableObject {
 
     // MARK: - Computed
 
+    /// Where this screen is looking from, in precedence order:
+    ///
+    /// 1. `sourceLocationOverride` — the person the user dropped on the map;
+    /// 2. the Warp configuration's location, when one was chosen;
+    /// 3. the device's own fix.
+    ///
+    /// The two explicit choices can't both be live: setting either one clears the other
+    /// (see `timeShiftConfig`'s `didSet` and `setSourceLocationOverride`), so the order
+    /// above only decides which is *stored*, never which of two live choices wins.
     var currentLocation: CLLocation? {
+        if let sourceLocationOverride {
+            return sourceLocationOverride
+        }
         if let config = timeShiftConfig, let location = config.location {
             return location
         }
         return rawLocation
+    }
+
+    /// True while some explicit choice — a dropped pin or a warp location — has taken the
+    /// screen off the device's fix. That is exactly when a GPS update must not re-query.
+    var isSourcePinned: Bool {
+        sourceLocationOverride != nil || timeShiftConfig?.location != nil
+    }
+
+    /// Banner text while a dropped pin is driving the screen.
+    var sourceLocationLabel: String? {
+        guard sourceLocationOverride != nil else { return nil }
+        let place = sourceLocationAddress?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let place, !place.isEmpty else { return DroppedPersonAnnotation.fallbackTitle }
+        return place
     }
 
     var effectiveDate: Date {
@@ -85,21 +142,58 @@ final class NearbyViewModel: ObservableObject {
         artProvider: ArtDataProvider,
         campProvider: CampDataProvider,
         eventProvider: EventDataProvider,
-        locationProvider: LocationProvider
+        locationProvider: LocationProvider,
+        // `nil` → the shared store. Not a `= .shared` default argument: default arguments
+        // are evaluated in a nonisolated context, and `shared` is main-actor isolated.
+        filterStore: NearbyEventFilterStore? = nil,
+        /// Transient "look from here" spot, handed in by the map card's "See all" when the
+        /// user has a person dropped. Nil for every other entry point into this screen.
+        sourceLocationOverride: CLLocation? = nil
     ) {
         self.playaDB = playaDB
         self.artProvider = artProvider
         self.campProvider = campProvider
         self.eventProvider = eventProvider
         self.locationProvider = locationProvider
+        self.filterStore = filterStore ?? .shared
 
         self.selectedFilter = UserSettings.nearbyFilter
         self.timeShiftConfig = UserSettings.nearbyTimeShiftConfig
+        // Safe next to a restored `timeShiftConfig` with a location: property observers
+        // don't fire for assignments made inside the declaring type's initializer, so the
+        // `didSet` that normally retires an override doesn't run here. A restored warp
+        // location is stale state; a freshly dropped pin is a live user action, and the
+        // precedence in `currentLocation` is what settles that.
+        self.sourceLocationOverride = sourceLocationOverride
         self.rawLocation = locationProvider.currentLocation
+        self.now = timeShiftConfig?.date ?? .present
 
+        observeFilterChanges()
+        observeEmbargoClear()
         startLocationUpdates()
         startRefreshTimer()
         restartObservations()
+    }
+
+    /// Unlocking only flips a `UserDefaults` flag, so the embargo guards in the
+    /// observation starters never re-evaluate on their own — restart them on the
+    /// unlock notification or newly visible locations wait for a relaunch.
+    private func observeEmbargoClear() {
+        embargoSubscription = NotificationCenter.default
+            .publisher(for: .BRCEmbargoDidClear)
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.restartObservations() }
+            }
+    }
+
+    /// The duration cap and type toggles are applied in SQL, so a filter change has to
+    /// restart the event observation rather than re-filter what's already in memory.
+    private func observeFilterChanges() {
+        filterSubscription = filterStore.$filter
+            .dropFirst()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.startEventObservation() }
+            }
     }
 
     deinit {
@@ -109,6 +203,31 @@ final class NearbyViewModel: ObservableObject {
         locationTask?.cancel()
         timerTask?.cancel()
         loadingGateTask?.cancel()
+    }
+
+    // MARK: - Dropped-pin source override
+
+    /// Points the screen at `location` (or back at the device when nil) and re-queries.
+    /// Purely in-memory: nothing here touches `UserSettings`.
+    func setSourceLocationOverride(_ location: CLLocation?) {
+        guard !isSameSourceLocation(sourceLocationOverride, location) else { return }
+        sourceLocationOverride = location
+        sourceLocationAddress = nil
+        lastObservedLocation = currentLocation
+        restartObservations()
+    }
+
+    /// Attaches the reverse-geocoded address for the drop at `coordinate`, ignoring results
+    /// that arrive after the user has moved or removed the person.
+    func setSourceLocationAddress(_ address: String?, for coordinate: CLLocationCoordinate2D) {
+        guard let current = sourceLocationOverride?.coordinate,
+              current.isSameCoordinate(as: coordinate) else { return }
+        sourceLocationAddress = address
+    }
+
+    /// Back to sourcing from the device (or from an active warp location, if there is one).
+    func clearSourceLocationOverride() {
+        setSourceLocationOverride(nil)
     }
 
     // MARK: - Sections
@@ -155,12 +274,19 @@ final class NearbyViewModel: ObservableObject {
         }
     }
 
-    /// Events happening at the effective date, sorted by start time
-    private var happeningEvents: [ListRow<EventObjectOccurrence>] {
+    /// Events happening at the effective date or starting within the next 30 minutes,
+    /// starting-soonest first, then most-recently-started. Window and ordering both live
+    /// outside this type so the map's nearby card shows exactly the same set in the same
+    /// order — see `isInNearbyWindow` and `NearbyEventOrdering`.
+    ///
+    /// Long-running "amenity listing" occurrences are excluded upstream by the SQL duration
+    /// cap in `filterStore.observationFilter(region:)`, not here.
+    var happeningEvents: [ListRow<EventObjectOccurrence>] {
         let date = effectiveDate
-        return eventItems
-            .filter { $0.object.startDate <= date && $0.object.endDate > date }
-            .sorted { $0.object.startDate < $1.object.startDate }
+        return NearbyEventOrdering.sorted(
+            eventItems.filter { $0.object.isInNearbyWindow(now: date) },
+            now: date
+        )
     }
 
     private func distanceTo(_ location: CLLocation?, from reference: CLLocation) -> CLLocationDistance {
@@ -170,8 +296,16 @@ final class NearbyViewModel: ObservableObject {
 
     // MARK: - Distance Display
 
+    /// Walk/bike estimate, or nil while the item's embargo tier still hides its placement.
+    ///
+    /// A distance is derived from the embargoed coordinates, so it has to be withheld along
+    /// with the address. Returning nil drops the distance line from the row entirely —
+    /// `ObjectRowView` renders nothing for a nil subtitle. The providers apply the same
+    /// gate (plus the implausible-distance clamp) in `PlayaDistanceString`; the guard here
+    /// keeps the intent legible at the call site.
     func distanceString(for item: NearbyItem) -> AttributedString? {
-        switch item {
+        guard item.canShowLocation else { return nil }
+        return switch item {
         case .art(let r): artProvider.distanceAttributedString(from: currentLocation, to: r.object)
         case .camp(let r): campProvider.distanceAttributedString(from: currentLocation, to: r.object)
         case .event(let r): eventProvider.distanceAttributedString(from: currentLocation, to: r.object)
@@ -228,7 +362,9 @@ final class NearbyViewModel: ObservableObject {
 
     private func startArtObservation() {
         artTask?.cancel()
-        guard let region = searchRegion else {
+        // A region-sourced result leaks embargoed placement by presence and rank alone,
+        // so locked tiers contribute nothing — same rule as `MapRegionAnnotationFilter`.
+        guard let region = searchRegion, BRCEmbargo.canShowArtLocations() else {
             artItems = []
             markReceived("art")
             return
@@ -247,7 +383,7 @@ final class NearbyViewModel: ObservableObject {
 
     private func startCampObservation() {
         campTask?.cancel()
-        guard let region = searchRegion else {
+        guard let region = searchRegion, BRCEmbargo.canShowCampLocations() else {
             campItems = []
             markReceived("camp")
             return
@@ -271,13 +407,16 @@ final class NearbyViewModel: ObservableObject {
             markReceived("event")
             return
         }
-        // Fetch all events in region; client-side filter for "happening now" at effectiveDate
-        let filter = EventFilter(region: region, includeExpired: true)
+        // The user's filter (duration cap, event types, favorites) applied in SQL; the
+        // now-window stays client-side so it can be evaluated at `effectiveDate`.
+        let filter = filterStore.observationFilter(region: region)
         eventTask = Task { [weak self] in
             guard let self else { return }
             for await items in self.eventProvider.observeObjects(filter: filter) {
                 await MainActor.run {
-                    self.eventItems = items
+                    // Per-occurrence tier: an event's presence here places its host, so a
+                    // locked host hides the event (art-located events ride the art tier).
+                    self.eventItems = BRCEmbargo.visibleNearbyEvents(items)
                     self.markReceived("event")
                 }
             }
@@ -328,15 +467,16 @@ final class NearbyViewModel: ObservableObject {
                     if let last = self.lastObservedLocation {
                         if location.distance(from: last) > 50 {
                             self.lastObservedLocation = location
-                            // Only restart if not using time-shifted location
-                            if self.timeShiftConfig?.location == nil {
+                            // Only restart while the screen is actually following the
+                            // device — a dropped pin or a warp location pins it in place.
+                            if !self.isSourcePinned {
                                 self.restartObservations()
                             }
                         }
                     } else {
                         self.lastObservedLocation = location
-                        // First location — start observations if not already running with time shift
-                        if self.timeShiftConfig?.location == nil {
+                        // First location — start observations unless the screen is pinned
+                        if !self.isSourcePinned {
                             self.restartObservations()
                         }
                     }
@@ -353,7 +493,7 @@ final class NearbyViewModel: ObservableObject {
                 try? await Task.sleep(nanoseconds: 60_000_000_000)
                 guard let self else { return }
                 await MainActor.run {
-                    self.now = .present
+                    self.now = self.effectiveDate
                 }
             }
         }

@@ -335,4 +335,68 @@ class EventObjectOccurrenceTests: XCTestCase {
         )
         XCTAssertTrue(futureEvent.shouldShowOnMap(now)) // Starting soon
     }
+
+    // MARK: - Playa-time formatting
+
+    /// Both display strings are rendered in Black Rock City's timezone, whatever the device
+    /// is set to: a phone still on Eastern time would otherwise put a Thursday 9pm event on
+    /// Friday, and print its start three hours off the printed schedule.
+    func testStartStringsUsePlayaTimeRegardlessOfDeviceTimeZone() throws {
+        // Thursday 2026-09-03, 21:00 Pacific == Friday 2026-09-04 04:00 UTC.
+        var components = DateComponents()
+        components.year = 2026
+        components.month = 9
+        components.day = 4
+        components.hour = 4
+        var utcCalendar = Calendar(identifier: .gregorian)
+        let utc = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        utcCalendar.timeZone = utc
+        let start = try XCTUnwrap(utcCalendar.date(from: components))
+
+        let event = EventObject(
+            uid: "tz-test",
+            name: "Late Night",
+            year: 2026,
+            eventTypeLabel: "Party",
+            eventTypeCode: "prty"
+        )
+        let occurrence = EventObjectOccurrence(
+            event: event,
+            occurrence: EventOccurrence(
+                id: 7,
+                eventId: event.uid,
+                startTime: start,
+                endTime: start.addingTimeInterval(2 * 3600)
+            )
+        )
+
+        // Playa-time Thursday, even though it is already Friday in UTC.
+        let expectedWeekday = DateFormatter.playaDayOfWeek.string(from: start)
+        XCTAssertEqual(occurrence.startWeekdayString, expectedWeekday)
+        XCTAssertEqual(DateFormatter.playaDayOfWeek.timeZone,
+                       TimeZone(identifier: "America/Los_Angeles"))
+        XCTAssertEqual(DateFormatter.playaTimeOnly.timeZone,
+                       TimeZone(identifier: "America/Los_Angeles"))
+
+        // 21:00–23:00 playa time, whatever the host machine's timezone is.
+        var playaCalendar = Calendar(identifier: .gregorian)
+        playaCalendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        XCTAssertEqual(playaCalendar.component(.hour, from: start), 21)
+        XCTAssertEqual(playaCalendar.component(.weekday, from: start), 5, "Thursday")
+
+        // Built here rather than reused from the package so the assertion is independent of
+        // the code under test; locale-agnostic, because only the timezone is at issue.
+        let reference = DateFormatter()
+        reference.dateStyle = .none
+        reference.timeStyle = .short
+        reference.timeZone = playaCalendar.timeZone
+        let end = start.addingTimeInterval(2 * 3600)
+        XCTAssertEqual(occurrence.startAndEndString,
+                       "\(reference.string(from: start)) - \(reference.string(from: end))")
+
+        reference.timeZone = utc
+        XCTAssertNotEqual(occurrence.startAndEndString,
+                          "\(reference.string(from: start)) - \(reference.string(from: end))",
+                          "Device/UTC time would put this event three hours off the schedule")
+    }
 }

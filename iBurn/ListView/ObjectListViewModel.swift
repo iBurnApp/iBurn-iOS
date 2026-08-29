@@ -49,6 +49,7 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
         locationProvider: LocationProvider,
         filterStorageKey: String,
         initialFilter: Filter,
+        initialItems: [ListRow<Object>] = [],
         effectiveFilterForObservation: @escaping (Filter) -> Filter,
         favoritesFilterForObservation: @escaping (Filter) -> Filter = { $0 },
         matchesSearch: @escaping (Object, String) -> Bool,
@@ -63,6 +64,9 @@ final class ObjectListViewModel<Object: DisplayableObject, Filter: Codable & Fav
 
         self.filter = Self.loadFilter(key: filterStorageKey) ?? initialFilter
         self.currentLocation = locationProvider.currentLocation
+        // Rows visible on the first rendered frame — SwiftUI previews snapshot
+        // before the observation stream's first async emission lands.
+        self.items = initialItems
 
         startObserving()
         startLocationUpdates()

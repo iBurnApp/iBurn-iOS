@@ -7,9 +7,28 @@ import MapKit
 extension QueryInterfaceRequest where RowDecoder: DataObjectColumnProviding {
     private static var columns: RowDecoder.ColumnSet.Type { RowDecoder.columnSet }
 
-    /// Order by name
+    /// Order by name, the way a human reads a list.
+    ///
+    /// Plain `ORDER BY name` uses SQLite's BINARY collation, which sorts by UTF-8 code
+    /// point and therefore puts every capitalized name ahead of every lowercase one
+    /// ("Zebra" before "apple"). `localizedStandardCompare` is the Finder-style
+    /// comparison — case- and diacritic-insensitive, and numeric-aware so "Camp 2"
+    /// precedes "Camp 10". It matches `GlobalSearchViewModel.sortedByName`, so browse
+    /// lists and search results now agree.
+    ///
+    /// GRDB registers its built-in collations on every connection it opens (see
+    /// `Database.setUp`), so this works on databases restored from the pre-baked seed
+    /// too. The trade-off is that the `name` indexes are BINARY-collated and cannot
+    /// serve this ORDER BY; SQLite sorts these few-thousand-row result sets in memory,
+    /// which is not measurable here.
+    ///
+    /// `uid` breaks ties so equal-comparing names (case variants, differing diacritics)
+    /// keep a stable order across fetches.
     public func orderedByName() -> Self {
-        order(Self.columns.name.asc)
+        order(
+            Self.columns.name.collating(.localizedStandardCompare).asc,
+            Self.columns.uid.asc
+        )
     }
 
     /// Filter by year
@@ -90,6 +109,21 @@ extension QueryInterfaceRequest where RowDecoder == ArtObject {
             """
         )
     }
+
+    /// Filters on the presence of an audio-tour recording.
+    ///
+    /// Empty strings count as absent. The importer itself can never write one
+    /// (`LenientURL` yields either a valid URL or nil), so this is defence in depth
+    /// against hand-written or externally seeded rows.
+    public func hasAudioTour(_ hasAudio: Bool) -> Self {
+        // Parenthesized explicitly: predicates are combined with AND, and the
+        // `false` branch is a disjunction that must not bind loosely.
+        if hasAudio {
+            return filter(sql: "(art_objects.audio_tour_url IS NOT NULL AND art_objects.audio_tour_url != '')")
+        } else {
+            return filter(sql: "(art_objects.audio_tour_url IS NULL OR art_objects.audio_tour_url = '')")
+        }
+    }
 }
 
 // MARK: - Event Occurrence Queries
@@ -125,11 +159,25 @@ extension QueryInterfaceRequest where RowDecoder == EventOccurrence {
 
 extension QueryInterfaceRequest where RowDecoder: TableRecord {
     /// Full-text search using FTS5.
+    ///
+    /// Uses **prefix** matching on every token (`temp* gard*`) rather than whole-token
+    /// matching. Live search feeds this a partial query on each keystroke, and whole-token
+    /// matching is all-or-nothing: "tem" matches nothing until the exact indexed token is
+    /// typed. Prefixing every token (not just the last) keeps earlier words incremental too
+    /// — "cent cam" still finds "Center Camp" — and matches how users type multi-word
+    /// queries, none of which they expect to have to finish.
+    ///
+    /// The FTS tables are tokenized with `porter`, so indexed terms are stems. A prefix of
+    /// the word is (for English suffix stemming) also a prefix of its stem, so prefix
+    /// queries survive stemming: "templ*" matches the stem "templ" indexed for "Temple"
+    /// and "Temples" alike. `prefix='2 3 4'` on the FTS tables (see
+    /// `PlayaDBImpl.setupFTS5Tables`) makes the short prefixes typed first index-served
+    /// rather than a full-table term scan.
     public func matching(searchText: String?) -> Self {
         guard let searchText = searchText, !searchText.isEmpty else {
             return self
         }
-        let pattern = FTS5Pattern(matchingAllTokensIn: searchText)
+        let pattern = FTS5Pattern(matchingAllPrefixesIn: searchText)
         let tableName = RowDecoder.databaseTableName
         let ftsTableName = "\(tableName)_fts"
         return filter(

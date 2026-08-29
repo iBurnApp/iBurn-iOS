@@ -3,7 +3,7 @@ import CoreLocation
 import GRDB
 
 /// Event object with complete API field mapping
-public struct EventObject: DataObject, Codable, FetchableRecord, MutablePersistableRecord {
+public struct EventObject: DataObject, Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "event_objects"
@@ -242,7 +242,7 @@ public extension EventObject {
 }
 
 /// Event occurrence model
-public struct EventOccurrence: Codable, FetchableRecord, MutablePersistableRecord {
+public struct EventOccurrence: Codable, Equatable, FetchableRecord, MutablePersistableRecord {
     // MARK: - Table Configuration
     
     public static let databaseTableName = "event_occurrences"

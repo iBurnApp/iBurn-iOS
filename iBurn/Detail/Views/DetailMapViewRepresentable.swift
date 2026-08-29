@@ -33,10 +33,21 @@ struct DetailMapViewRepresentable: UIViewRepresentable {
         self.onTap = onTap
     }
     
+    /// Matches the rounding the rest of the detail screen's inset content uses, so the
+    /// preview reads as a card rather than as a hole cut in the page.
+    static let cornerRadius: CGFloat = 14
+
     func makeUIView(context: Context) -> MLNMapView {
         let mapView = MLNMapView.brcMapView()
         mapView.isUserInteractionEnabled = false
         mapView.delegate = context.coordinator
+
+        // Rounded here rather than at the two call sites: `.mapView` and `.mapAnnotation`
+        // are the same preview and must not drift apart. `masksToBounds` clips MapLibre's
+        // own render layer along with everything else.
+        mapView.layer.cornerRadius = Self.cornerRadius
+        mapView.layer.cornerCurve = .continuous
+        mapView.layer.masksToBounds = true
 
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         mapView.addGestureRecognizer(tapGesture)

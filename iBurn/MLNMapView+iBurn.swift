@@ -53,7 +53,20 @@ extension MLNMapView {
             print("Error loading map tiles! \(error)")
         }
         
+        // MapLibre parks its attribution ⓘ in the bottom-trailing corner of every map,
+        // which under the iOS 26 tab bar is exactly where the floating action button sits.
+        // The app credits its map data elsewhere (Credits screen, and the acknowledgements
+        // in Settings), so the on-map ⓘ is redundant rather than load-bearing, and the
+        // corner goes to the button.
+        attributionButton.isHidden = true
+
         showsUserLocation = true
+        // Which way you're facing is half of "where am I" on a flat, landmark-poor playa,
+        // and the puck only grew the arrow in follow-with-heading before — a mode you had
+        // to opt into and that also rotates the map. This shows the arrow in every tracking
+        // mode instead; MapLibre documents it as not rotating the camera, and it's a no-op
+        // in the follow-with-heading/course modes that draw their own.
+        showsUserHeadingIndicator = true
         minimumZoomLevel = 12
         backgroundColor = UIColor.brc_mapBackgroundColor
         translatesAutoresizingMaskIntoConstraints = false

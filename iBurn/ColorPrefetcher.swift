@@ -1,6 +1,5 @@
 import Foundation
 import UIKit
-import UIImageColors
 import PlayaDB
 import CocoaLumberjack
 
@@ -51,7 +50,7 @@ enum ColorPrefetcher {
                 let fileName = "\(uid).jpg"
                 guard let fileURL = BRCMediaDownloader.localMediaURL(fileName),
                       let image = UIImage(contentsOfFile: fileURL.path),
-                      let extracted = image.getColors(quality: .high)?.brc_ImageColors
+                      let extracted = image.brc_extractColors()
                 else { return }
 
                 let tc = ThumbnailColors(objectId: uid, brcColors: extracted)

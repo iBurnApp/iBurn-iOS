@@ -39,19 +39,27 @@ public struct ArtFilter: Hashable, Codable {
     /// Only show favorited art pieces
     public var onlyFavorites: Bool
 
+    /// Filter on the presence of an audio-tour recording.
+    ///
+    /// `nil` (the default) applies no filter, `true` returns only art with a
+    /// non-empty `audio_tour_url`, `false` only art without one. Evaluated in SQL.
+    public var hasAudioTour: Bool?
+
     /// Create a new art filter
     public init(
         year: Int? = nil,
         region: MKCoordinateRegion? = nil,
         searchText: String? = nil,
         onlyWithEvents: Bool = false,
-        onlyFavorites: Bool = false
+        onlyFavorites: Bool = false,
+        hasAudioTour: Bool? = nil
     ) {
         self.year = year
         self.regionStorage = region.map(FilterRegion.init)
         self.searchText = searchText
         self.onlyWithEvents = onlyWithEvents
         self.onlyFavorites = onlyFavorites
+        self.hasAudioTour = hasAudioTour
     }
 
     /// Filter that matches all art objects (no filtering)

@@ -1,5 +1,5 @@
 {
-  "originHash" : "2276d0db205b7ac099d9ff15889524a39f5c1405fa46ab58d7244d57c83b160b",
+  "originHash" : "85d5d0a7275d3b2936980ab5be2eeddb9db284e1186a7e4f811f307013d791c6",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/groue/GRDB.swift.git",
       "state" : {
-        "revision" : "8ba1bc9a96afc731a000fd4136dd13a5a46297bd",
-        "version" : "7.6.1"
+        "revision" : "b83108d10f42680d78f23fe4d4d80fc88dab3212",
+        "version" : "7.11.1"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/maplibre/maplibre-gl-native-distribution",
       "state" : {
-        "revision" : "c058a28015c1fcb733edae754b09ee9cb8c1984b",
-        "version" : "6.18.0"
+        "revision" : "f843f76a4bb79c83f4f817a090c62f255bb52fea",
+        "version" : "6.18.0-patch0"
       }
     },
     {

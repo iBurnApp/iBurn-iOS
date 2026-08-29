@@ -187,4 +187,92 @@ final class CodableTests: XCTestCase {
         XCTAssertTrue(decoded.guidedTours)
         XCTAssertFalse(decoded.selfGuidedTourMap)
     }
+
+    // MARK: - Audio Tour Tests
+
+    func testAudioTourURL_DecodesFromSnakeCaseField() throws {
+        let jsonData = """
+        {
+            "uid": "test-id",
+            "name": "Test Art",
+            "year": 2025,
+            "guided_tours": false,
+            "self_guided_tour_map": false,
+            "images": [],
+            "audio_tour_url": "https://iburn-data.iburnapp.com/2016/audio_tour/a2Id0000000cbObEAI.mp3"
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try decoder.decode(Art.self, from: jsonData)
+
+        XCTAssertEqual(
+            decoded.audioTourUrl?.absoluteString,
+            "https://iburn-data.iburnapp.com/2016/audio_tour/a2Id0000000cbObEAI.mp3"
+        )
+        XCTAssertTrue(decoded.hasAudioTour)
+    }
+
+    func testAudioTourURL_AbsentFieldDecodesAsNil() throws {
+        // 2026-shaped payload: the field is simply not present.
+        let jsonData = """
+        {
+            "uid": "test-id",
+            "name": "Test Art",
+            "year": 2026,
+            "guided_tours": false,
+            "self_guided_tour_map": false,
+            "images": []
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try decoder.decode(Art.self, from: jsonData)
+
+        XCTAssertNil(decoded.audioTourUrl)
+        XCTAssertFalse(decoded.hasAudioTour)
+    }
+
+    func testAudioTourURL_NullAndGarbageValuesDecodeLeniently() throws {
+        let nullData = """
+        {
+            "uid": "test-id",
+            "name": "Test Art",
+            "year": 2025,
+            "guided_tours": false,
+            "self_guided_tour_map": false,
+            "images": [],
+            "audio_tour_url": null
+        }
+        """.data(using: .utf8)!
+
+        let garbageData = """
+        {
+            "uid": "test-id",
+            "name": "Test Art",
+            "year": 2025,
+            "guided_tours": false,
+            "self_guided_tour_map": false,
+            "images": [],
+            "audio_tour_url": "coming soon"
+        }
+        """.data(using: .utf8)!
+
+        XCTAssertNil(try decoder.decode(Art.self, from: nullData).audioTourUrl)
+        XCTAssertNil(try decoder.decode(Art.self, from: garbageData).audioTourUrl,
+                     "A malformed audio tour URL must resolve to nil rather than fail the whole import")
+    }
+
+    func testAudioTourURL_RoundTrips() throws {
+        let audioURL = try XCTUnwrap(URL(string: "https://example.com/audio/tour.m4a"))
+        let art = Art(
+            uid: "test-id",
+            name: "Test Art",
+            year: 2025,
+            audioTourUrl: audioURL
+        )
+
+        let encoded = try encoder.encode(art)
+        let decoded = try decoder.decode(Art.self, from: encoded)
+
+        XCTAssertEqual(decoded.audioTourUrl, audioURL)
+    }
 }

@@ -6,6 +6,7 @@
 //  Copyright © 2025 Burning Man Earth. All rights reserved.
 //
 
+import CoreLocation
 import Foundation
 import PlayaDB
 
@@ -34,26 +35,56 @@ class DependencyContainer {
     /// Art/camp thumbnail image downloader
     private let thumbnailImageDownloader: ThumbnailImageDownloader
 
+    /// Syncs favorites with the paired Apple Watch over WatchConnectivity.
+    private var watchSyncManager: PeerSyncManager?
+
+    /// Re-posts `.BRCEmbargoDidClear` when the clock crosses a tier's unlock
+    /// instant (the camp tier is date-only since 2026-08-22), so an app that was
+    /// merely suspended across midnight stops saying "Location Restricted"
+    /// without being killed. See `EmbargoUnlockScheduler`.
+    private let embargoUnlockScheduler: EmbargoUnlockScheduling
+
+    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
+    /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
+    private(set) lazy var favoriteSyncService: FavoriteSyncService = {
+        FavoriteSyncServiceFactory.shared
+    }()
+
+    /// Owns the device-calendar (EventKit) entries for favorited events, bookkeeping
+    /// their identifiers in PlayaDB. Used when
+    /// `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on (the default); the legacy
+    /// Yap path takes over when it is off. Lazy so EventKit and BRCDatabaseManager are
+    /// only touched once a favorite actually changes.
+    private(set) lazy var eventCalendarService: EventCalendarService = {
+        EventCalendarServiceFactory.makeService(playaDB: playaDB)
+    }()
+
+    /// Offers "favorite the other showings too?" after a single occurrence of a recurring
+    /// event is favorited. Listens app-wide rather than per screen — see the type's docs.
+    private(set) lazy var favoriteSeriesToastPresenter: FavoriteSeriesToastPresenter = {
+        FavoriteSeriesToastPresenter(playaDB: playaDB, favoriteSync: favoriteSyncService)
+    }()
+
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
     private(set) lazy var artDataProvider: ArtDataProvider = {
-        ArtDataProvider(playaDB: playaDB)
+        ArtDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for Camp objects
     private(set) lazy var campDataProvider: CampDataProvider = {
-        CampDataProvider(playaDB: playaDB)
+        CampDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for Event objects
     private(set) lazy var eventDataProvider: EventDataProvider = {
-        EventDataProvider(playaDB: playaDB)
+        EventDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// Data provider for MutantVehicle objects
     private(set) lazy var mutantVehicleDataProvider: MutantVehicleDataProvider = {
-        MutantVehicleDataProvider(playaDB: playaDB)
+        MutantVehicleDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
     }()
 
     /// AI search service (nil if device doesn't support Apple Intelligence)
@@ -65,8 +96,23 @@ class DependencyContainer {
 
     /// Initialize the dependency container
     /// - Parameter preferenceService: The preference service to use (defaults to shared instance)
+    /// - Parameter embargoUnlockScheduler: Watches for a tier's unlock instant arriving
+    ///   (defaults to the shipping scheduler)
     /// - Throws: PlayaDB creation errors
-    init(preferenceService: PreferenceService = PreferenceServiceFactory.shared, playaDB: PlayaDB? = nil) throws {
+    init(
+        preferenceService: PreferenceService = PreferenceServiceFactory.shared,
+        playaDB: PlayaDB? = nil,
+        embargoUnlockScheduler: EmbargoUnlockScheduling = EmbargoUnlockSchedulerFactory.makeScheduler()
+    ) throws {
+        self.embargoUnlockScheduler = embargoUnlockScheduler
+        // Restore a pre-populated PlayaDB from the bundled seed before the database
+        // is opened. No-op for existing installs or when the seed is absent, in which
+        // case the JSON import path (playaDBSeeder.seedIfNeeded, below) takes over.
+        // Skipped when a PlayaDB is injected (tests/previews provide their own store).
+        if playaDB == nil {
+            PlayaDBSeeder.restoreBundledSeedIfNeeded()
+        }
+
         // Create PlayaDB once using factory method, or use injected instance
         self.playaDB = try playaDB ?? createPlayaDB()
 
@@ -94,13 +140,75 @@ class DependencyContainer {
             _ = await thumbTask.value
             await ColorPrefetcher.prefetchMissingColors(playaDB: playaDB)
         }
+
+        // Sync favorites and user map pins with the paired Apple Watch.
+        // Favorites applied from the watch are mirrored into the legacy
+        // YapDatabase so legacy surfaces (and event calendar entries) stay in
+        // agreement; pins need no mirror — PlayaDB is already their source of
+        // truth and FilteredMapDataSource observes them straight onto the map.
+        // The callback arrives on a background queue; hop to the main actor
+        // before touching self.
+        let watchSyncManager = PeerSyncManager(playaDB: self.playaDB, onFavoritesApplied: { [weak self] applied in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                for item in applied {
+                    guard let type = FavoriteSyncObjectType(objectTypeRawValue: item.objectType) else { continue }
+                    // Applied items don't say which field changed, so mirror both.
+                    // Each mirror is a no-op when the Yap value already matches,
+                    // so this is cheap and idempotent.
+                    await self.favoriteSyncService.mirrorFavorite(
+                        type: type,
+                        uid: item.objectId,
+                        isFavorite: item.isFavorite
+                    )
+                    await self.favoriteSyncService.mirrorVisitStatus(
+                        type: type,
+                        uid: item.objectId,
+                        visitStatus: item.visitStatus
+                    )
+                }
+            }
+        }, embargoUnlockedProvider: {
+            // The phone's full verdict under the strict rule: the passcode, or
+            // being at Burning Man on or after gates open. The watch treats this
+            // latch the way it treats a passcode — it bypasses its own region
+            // check — which is right: a phone that legitimately unlocked should
+            // unlock the watch on its wrist, whichever way it got there. The
+            // watch has no passcode UI of its own, so this is its only path
+            // besides taking its own playa fix.
+            BRCEmbargo.allowEmbargoedData()
+        })
+        watchSyncManager.start()
+        self.watchSyncManager = watchSyncManager
+
+        // Push the unlock the moment the passcode is accepted rather than
+        // waiting for the next favorite change or app launch.
+        NotificationCenter.default.addObserver(
+            forName: .BRCEmbargoDidClear,
+            object: nil,
+            queue: .main
+        ) { [weak watchSyncManager] _ in
+            watchSyncManager?.embargoUnlockStateDidChange()
+        }
+
+        // Watch for the camp/art unlock instants arriving while the app is alive
+        // or suspended — region entry and passcode entry are no longer the only
+        // ways a tier can become visible.
+        self.embargoUnlockScheduler.start()
+
+        // Every heart in the app posts through PlayaDB, so one listener covers them all.
+        self.favoriteSeriesToastPresenter.start()
     }
 
     // MARK: - Factory Methods
 
     /// Create a GlobalSearchViewModel with injected dependencies
     func makeGlobalSearchViewModel() -> GlobalSearchViewModel {
-        GlobalSearchViewModel(playaDB: playaDB, aiSearchService: aiSearchService)
+        GlobalSearchViewModel(
+            playaDB: playaDB,
+            aiSearchService: aiSearchService,
+            locationProvider: locationProvider
+        )
     }
 
     /// Create a GlobalSearchHostingController for use as UISearchController.searchResultsController
@@ -188,13 +296,17 @@ class DependencyContainer {
     }
 
     /// Create a NearbyViewModel with injected dependencies
-    func makeNearbyViewModel() -> NearbyViewModel {
+    /// - Parameter locationOverride: transient "look from here" spot (the map's dropped
+    ///   person marker). Nil — the default — leaves the screen sourcing from the device.
+    ///   Never persisted; it only lives as long as the view model does.
+    func makeNearbyViewModel(locationOverride: CLLocation? = nil) -> NearbyViewModel {
         NearbyViewModel(
             playaDB: playaDB,
             artProvider: artDataProvider,
             campProvider: campDataProvider,
             eventProvider: eventDataProvider,
-            locationProvider: locationProvider
+            locationProvider: locationProvider,
+            sourceLocationOverride: locationOverride
         )
     }
 
@@ -248,4 +360,36 @@ class DependencyContainer {
             }
         )
     }
+}
+
+// MARK: - Watch Sync Mapping
+
+private extension FavoriteSyncObjectType {
+    /// Maps a `FavoriteSyncItem.objectType` (a `DataObjectType` rawValue) to the
+    /// legacy mirror's object kind. Returns nil for unknown types.
+    init?(objectTypeRawValue: String) {
+        guard let type = DataObjectType(rawValue: objectTypeRawValue) else { return nil }
+        switch type {
+        case .art: self = .art
+        case .camp: self = .camp
+        case .event: self = .event
+        case .mutantVehicle: self = .mutantVehicle
+        }
+    }
+}
+
+// MARK: - Preview Support
+
+/// Shared in-memory PlayaDB for SwiftUI previews. Preview data providers override
+/// their observe methods with mock data, so this exists only to satisfy the
+/// initializer without opening extra connections to the real on-disk database.
+@MainActor
+enum PreviewPlayaDB {
+    static let shared: PlayaDB = {
+        do {
+            return try createInMemoryPlayaDB()
+        } catch {
+            fatalError("Failed to create in-memory preview PlayaDB: \(error)")
+        }
+    }()
 }

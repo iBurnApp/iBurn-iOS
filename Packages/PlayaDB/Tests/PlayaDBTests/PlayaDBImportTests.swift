@@ -304,6 +304,132 @@ final class PlayaDBImportTests: XCTestCase {
         XCTAssertEqual(eventUpdateInfo?.totalCount, eventCount, "Event update info count should match fetched count")
     }
     
+    // MARK: - Needs Import (Bundle Staleness) Tests
+
+    private func updateJSON(art: String, camps: String, events: String, mv: String? = nil) -> Data {
+        var entries = [
+            "\"art\": {\"file\": \"art.json\", \"updated\": \"\(art)\"}",
+            "\"camps\": {\"file\": \"camp.json\", \"updated\": \"\(camps)\"}",
+            "\"events\": {\"file\": \"event.json\", \"updated\": \"\(events)\"}"
+        ]
+        if let mv {
+            entries.append("\"mv\": {\"file\": \"mv.json\", \"updated\": \"\(mv)\"}")
+        }
+        return Data("{\(entries.joined(separator: ", "))}".utf8)
+    }
+
+    func testNeedsImportTrueForEmptyDatabase() async throws {
+        let updateData = updateJSON(
+            art: "2026-07-03T12:40:06-07:00",
+            camps: "2026-07-03T12:40:06-07:00",
+            events: "2026-07-03T12:40:06-07:00"
+        )
+
+        let needsImport = try await playaDB.needsImport(bundleUpdateData: updateData)
+
+        XCTAssertTrue(needsImport, "Empty database should always need an import")
+    }
+
+    func testNeedsImportFalseAfterImportingSameData() async throws {
+        let updateData = updateJSON(
+            art: "2026-07-03T12:40:06-07:00",
+            camps: "2026-07-03T12:40:06-07:00",
+            events: "2026-07-03T12:40:06-07:00"
+        )
+
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: nil,
+            updateData: updateData
+        )
+
+        let needsImport = try await playaDB.needsImport(bundleUpdateData: updateData)
+
+        XCTAssertFalse(needsImport, "Unchanged bundle data should not trigger a re-import")
+    }
+
+    func testNeedsImportTrueWhenBundleIsNewer() async throws {
+        let oldUpdateData = updateJSON(
+            art: "2025-06-01T00:00:00-07:00",
+            camps: "2025-06-01T00:00:00-07:00",
+            events: "2025-06-01T00:00:00-07:00"
+        )
+        let newUpdateData = updateJSON(
+            art: "2025-06-01T00:00:00-07:00",
+            camps: "2025-06-01T00:00:00-07:00",
+            events: "2026-07-03T12:40:06-07:00"
+        )
+
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: nil,
+            updateData: oldUpdateData
+        )
+
+        let needsImport = try await playaDB.needsImport(bundleUpdateData: newUpdateData)
+
+        XCTAssertTrue(needsImport, "A newer events timestamp in the bundle should trigger a re-import")
+    }
+
+    func testNeedsImportTrueWhenBundleAddsNewDataType() async throws {
+        let updateDataWithoutMV = updateJSON(
+            art: "2026-07-03T12:40:06-07:00",
+            camps: "2026-07-03T12:40:06-07:00",
+            events: "2026-07-03T12:40:06-07:00"
+        )
+        let updateDataWithMV = updateJSON(
+            art: "2026-07-03T12:40:06-07:00",
+            camps: "2026-07-03T12:40:06-07:00",
+            events: "2026-07-03T12:40:06-07:00",
+            mv: "2026-07-03T12:40:06-07:00"
+        )
+
+        // Import without MV data — no stored update info row for mutant vehicles
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: nil,
+            updateData: updateDataWithoutMV
+        )
+
+        let needsImport = try await playaDB.needsImport(bundleUpdateData: updateDataWithMV)
+
+        XCTAssertTrue(needsImport, "A bundle data type with no imported counterpart should trigger a re-import")
+    }
+
+    func testImportStoresBundleTimestampsAsLastUpdated() async throws {
+        let eventsUpdated = "2026-07-03T12:40:06-07:00"
+        let updateData = updateJSON(
+            art: "2026-07-01T08:00:00-07:00",
+            camps: "2026-07-02T09:30:00-07:00",
+            events: eventsUpdated
+        )
+
+        try await playaDB.importFromData(
+            artData: MockAPIData.artJSON,
+            campData: MockAPIData.campJSON,
+            eventData: MockAPIData.eventJSON,
+            mvData: nil,
+            updateData: updateData
+        )
+
+        let updateInfo = try await playaDB.getUpdateInfo()
+        let eventInfo = try XCTUnwrap(updateInfo.first { $0.dataType == "event" })
+        let expectedDate = try XCTUnwrap(ISO8601DateFormatter().date(from: eventsUpdated))
+
+        XCTAssertEqual(
+            eventInfo.lastUpdated.timeIntervalSince1970,
+            expectedDate.timeIntervalSince1970,
+            accuracy: 0.001,
+            "Stored lastUpdated should come from update.json, not the import wall-clock time"
+        )
+    }
+
     // MARK: - Full Import Integration Test
     
     func testFullImportIntegration() async throws {

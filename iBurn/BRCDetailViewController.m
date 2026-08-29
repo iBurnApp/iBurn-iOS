@@ -215,7 +215,10 @@ static CGFloat const kTableViewHeaderHeight = 200;
     BRCDataObject *tempObject = [self.dataObject copy];
     [BRCDatabaseManager.shared.readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [self.dataObject replaceMetadata:newMetadata transaction:transaction];
-        if ([tempObject isKindOfClass:[BRCEventObject class]]) {
+        // When PlayaDB calendar sync owns the EKEvents (the default), the favorite hook
+        // reconciles them; writing here too would double-create and re-prompt.
+        // Mirrors DetailDataService.playaDBCalendarService.
+        if ([tempObject isKindOfClass:[BRCEventObject class]] && !BRCCalendarSync.isPlayaDBSyncEnabled) {
             BRCEventObject *event = (BRCEventObject*)tempObject;
             [event refreshCalendarEntry:transaction];
         }

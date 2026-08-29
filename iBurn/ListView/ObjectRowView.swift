@@ -125,32 +125,32 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             }
             .padding(.top, 4)
 
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .layoutPriority(1)
-                } else {
-                    Text("🚶🏽 ? min   🚴🏽 ? min")
-                        .font(.subheadline)
-                        .foregroundColor(colors.secondaryColor)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .layoutPriority(1)
-                }
+            // No distance means no distance line. The row used to fall back to a masked
+            // `🚶🏽 ? min   🚴🏽 ? min`, which turned every unmeasurable row — embargoed
+            // placement, no fix, no coordinates — into an advertisement for missing data.
+            // `PlayaDistanceString` returns nil in exactly those cases and the fragment
+            // simply drops, the way the Nearby card already handles a locked address.
+            if subtitle != nil || !(rightSubtitle ?? "").isEmpty {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .layoutPriority(1)
+                    }
 
-                Spacer(minLength: 0)
+                    Spacer(minLength: 0)
 
-                if let rightSubtitle, !rightSubtitle.isEmpty {
-                    Text(rightSubtitle)
-                        .font(.subheadline)
-                        .foregroundColor(colors.secondaryColor)
-                        .lineLimit(1)
+                    if let rightSubtitle, !rightSubtitle.isEmpty {
+                        Text(rightSubtitle)
+                            .font(.subheadline)
+                            .foregroundColor(colors.secondaryColor)
+                            .lineLimit(1)
+                    }
                 }
+                .padding(.top, 8)
             }
-            .padding(.top, 8)
         }
         .padding(.vertical, 0)
         .listRowBackground(listRowBackground)
@@ -163,6 +163,10 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
 
     /// Leading-edge favorite icon. Uses `Image + onTapGesture` (not `Button`)
     /// so it doesn't conflict with an outer row-level `Button` for selection.
+    ///
+    /// That choice keeps it out of the accessibility tree by default, which left the
+    /// hearts unreachable by VoiceOver on every list screen — hence the explicit element
+    /// and button trait below.
     private func favoriteIcon(colors: ImageColors) -> some View {
         Image(systemName: isFavorite ? "heart.fill" : "heart")
             .foregroundColor(isFavorite ? .pink : colors.detailColor)
@@ -170,6 +174,10 @@ struct ObjectRowView<Object: DisplayableObject, Actions: View>: View {
             .frame(width: 28, height: 28)
             .contentShape(Rectangle())
             .onTapGesture { onFavoriteTap() }
+            .accessibilityElement()
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(isFavorite ? "Unfavorite \(object.name)" : "Favorite \(object.name)")
+            .accessibilityAction { onFavoriteTap() }
     }
 
     private var listRowBackground: some View {

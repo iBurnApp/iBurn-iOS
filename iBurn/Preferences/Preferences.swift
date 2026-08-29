@@ -18,18 +18,60 @@ enum Preferences {
             defaultValue: true,
             description: "Use new detail screen instead of legacy implementation"
         )
+
+        /// Where the global search entry point is anchored.
+        /// Values are `MapSearchLayout` raw values; resolves to the nav bar below iOS 26.
+        static let mapSearchLayout = Preference<String>(
+            key: "userInterface.map.searchLayout",
+            defaultValue: MapSearchLayout.searchTab.rawValue,
+            description: "Anchor the map search bar in the nav bar, a tab accessory, or a search tab"
+        )
+
+        /// Whether the floating button above the tab bar is shown at all. Only ever visible
+        /// on the layout that spends a bar slot on search — see
+        /// `FloatingActionButtonVisibility`.
+        static let floatingButtonEnabled = Preference<Bool>(
+            key: "userInterface.fab.enabled",
+            defaultValue: true,
+            description: "Show the floating button above the tab bar"
+        )
+
+        /// Which screen the floating button opens. Values are
+        /// `FloatingActionButtonAction` raw values.
+        static let floatingButtonAction = Preference<String>(
+            key: "userInterface.fab.action",
+            defaultValue: FloatingActionButtonAction.favorites.rawValue,
+            description: "Screen the floating button above the tab bar opens"
+        )
     }
     
-    // MARK: - Feature Flags (DEBUG only)
-    #if DEBUG
+    // MARK: - Feature Flags
     enum FeatureFlags {
         static let useSwiftUILists = Preference<Bool>(
             key: "featureFlag.lists.useSwiftUI",
+            defaultValue: true,
+            description: "Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps; disable to fall back to legacy UIKit"
+        )
+
+        static let usePlayaDBCalendarSync = Preference<Bool>(
+            key: "featureFlag.calendar.usePlayaDB",
+            defaultValue: true,
+            description: "Sync favorited events to the device calendar from PlayaDB; disable to fall back to legacy YapDatabase calendar entries"
+        )
+
+        /// Whether global search folds in semantic matches from the on-device model after
+        /// the FTS5 results land (the "Finding more with AI…" pass).
+        ///
+        /// Off by default: the merge doesn't return useful results yet, so it only ever
+        /// showed a spinner and the occasional off-topic row. The implementation is intact
+        /// — `GlobalSearchViewModel.isAISearchAvailable` reads this flag, so flipping it on
+        /// restores both the fetch and the UI it drives.
+        static let useAISearch = Preference<Bool>(
+            key: "featureFlag.search.useAI",
             defaultValue: false,
-            description: "Use new SwiftUI list views instead of legacy UIKit for Art and Camps"
+            description: "Fold on-device AI semantic matches into global search results"
         )
     }
-    #endif
     
     // MARK: - Location & Navigation
     enum Location {

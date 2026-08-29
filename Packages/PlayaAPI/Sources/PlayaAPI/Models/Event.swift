@@ -54,6 +54,28 @@ public struct Event: Codable, Hashable, Sendable {
         self.contact = contact
         self.occurrenceSet = occurrenceSet
     }
+
+    // Custom decoding: `url` is user-entered free text and is salvaged leniently rather
+    // than decoded strictly (see `LenientURL`). Encoding stays synthesized/unchanged.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        uid = try container.decode(EventID.self, forKey: .uid)
+        title = try container.decode(String.self, forKey: .title)
+        eventId = try container.decodeIfPresent(Int.self, forKey: .eventId)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        eventType = try container.decode(EventTypeInfo.self, forKey: .eventType)
+        year = try container.decode(Int.self, forKey: .year)
+        printDescription = try container.decode(String.self, forKey: .printDescription)
+        slug = try container.decodeIfPresent(String.self, forKey: .slug)
+        hostedByCamp = try container.decodeIfPresent(CampID.self, forKey: .hostedByCamp)
+        locatedAtArt = try container.decodeIfPresent(ArtID.self, forKey: .locatedAtArt)
+        otherLocation = try container.decode(String.self, forKey: .otherLocation)
+        checkLocation = try container.decode(Bool.self, forKey: .checkLocation)
+        url = try container.decodeLenientURLIfPresent(forKey: .url)
+        allDay = try container.decode(Bool.self, forKey: .allDay)
+        contact = try container.decodeIfPresent(String.self, forKey: .contact)
+        occurrenceSet = try container.decode([EventOccurrence].self, forKey: .occurrenceSet)
+    }
 }
 
 // MARK: - Computed Properties

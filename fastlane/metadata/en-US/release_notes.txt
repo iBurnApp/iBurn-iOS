@@ -1,0 +1,15 @@
+Welcome to iBurn 2026. This one's a big one.
+
+• Apple Watch app! Browse camps, art, and events and see your pins on the map, right from your wrist. Favorites sync with your phone.
+• Official 2026 city map, built from Black Rock City's own survey data.
+• Favorite a single event occurrence instead of the whole series. Just the Thursday sunrise set, please.
+• Make the tab bar yours: reorder tabs, hide the ones you never open.
+• Rebuilt search, with scopes, day and time filters, and favoriting from the results.
+• "Right Now" shows what's happening around you at this very moment, plotted on the map.
+• Long-press the map to drop a pin and explore what's nearby from that spot. Great for planning tomorrow from the shade.
+• Walk and bike times instead of raw distances, because nobody thinks in kilometers out there.
+• Much faster first launch, and a fresh look for iOS 26.
+
+Camp locations unlock on their own once the org releases them. No passcode hunting required.
+
+See you in the dust.

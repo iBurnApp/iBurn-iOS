@@ -1,0 +1,27 @@
+iBurn is a free, open source offline map and guide for Burning Man. Everything works without a signal, because out there you won't have one.
+
+OFFLINE MAP
+Navigate all 3,600 acres of Black Rock City with confidence. The entire map lives on your phone — streets, plazas, portals, and the trash fence — with no data connection required. Find the nearest toilets, ranger stations, medical, ice, and Center Camp when you need them most. We make our own map tiles from the city's official survey data, and we share them.
+
+EVENT GUIDE
+Thousands of events, sorted so you can actually find something. Browse by day, time, and type, or open "Right Now" to see what's happening around you at this very moment. Favorite a whole series or just the one occurrence you care about, and your picks are waiting on your Home Screen and your watch.
+
+CAMPS, ART, AND MUTANT VEHICLES
+Every registered theme camp, art installation, and mutant vehicle, with descriptions, hosts, images, and locations. Search across all of it at once, filter by what you're actually looking for, and get walk or bike times to anywhere instead of raw distances.
+
+APPLE WATCH
+Browse camps, art, and events from your wrist. Your favorites and dropped pins sync from your phone, and the map comes along too.
+
+DROP A PIN
+Long-press anywhere on the map to drop a pin — your camp, your bike, that sculpture you want to find again at 3 a.m. — and explore what's nearby from that spot.
+
+PRIVACY
+iBurn doesn't track you. Your location stays on your device and is only used to show you where you are and what's close.
+
+FREE AND OPEN SOURCE
+iBurn has been made by volunteers since 2009 and is free, with no ads and no in-app purchases. The full source code for the iOS and Android apps is on GitHub under the MPL 2.0. Pull requests welcome.
+
+A NOTE ON LOCATIONS
+Burning Man embargoes camp and art locations until shortly before the event. iBurn unlocks them automatically on the dates the organization allows — camp locations first, then art when gates open. Everything else works year-round.
+
+Made with love and dust. See you out there.

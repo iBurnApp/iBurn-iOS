@@ -8,26 +8,26 @@
 
 import Foundation
 import UIKit
-import iBurn2025APIData
-import iBurn2025Map  
-import iBurn2025MediaFiles
+import iBurn2026APIData
+import iBurn2026Map  
+import iBurn2026MediaFiles
 
 extension Bundle {
     // MARK: - Data Bundle Access
     
     /// Return current year's API Data bundle
     static var brc_dataBundle: Bundle {
-        return iBurn2025APIData.bundle
+        return iBurn2026APIData.bundle
     }
     
     /// Return current year's Map bundle  
     static var brc_mapBundle: Bundle {
-        return iBurn2025Map.bundle
+        return iBurn2026Map.bundle
     }
     
     /// Return current year's MediaFiles bundle
     static var brc_mediaBundle: Bundle {
-        return iBurn2025MediaFiles.bundle
+        return iBurn2026MediaFiles.bundle
     }
     
     
@@ -35,26 +35,26 @@ extension Bundle {
     
     /// Get map.mbtiles URL
     static var brc_mbtilesURL: URL? {
-        return iBurn2025Map.MapResource.mbtiles.url
+        return iBurn2026Map.MapResource.mbtiles.url
     }
     
     /// Get map style URL for current interface style
     static func brc_mapStyleURL(for userInterfaceStyle: UIUserInterfaceStyle) -> URL? {
         return userInterfaceStyle == .light ? 
-               iBurn2025Map.MapResource.lightStyle.url : 
-               iBurn2025Map.MapResource.darkStyle.url
+               iBurn2026Map.MapResource.lightStyle.url : 
+               iBurn2026Map.MapResource.darkStyle.url
     }
     
     /// Get glyphs directory URL
     static var brc_glyphsDirectoryURL: URL? {
-        return iBurn2025Map.MapResource.glyphsDirectory
+        return iBurn2026Map.MapResource.glyphsDirectory
     }
     
     // MARK: - Map Cache Management
     
     /// Get the map cache directory for the current year
     static var brc_mapCacheDirectory: URL {
-        let year = iBurn2025Map.year
+        let year = iBurn2026Map.year
         let appSupportURL = FileManager.default.urls(for: .applicationSupportDirectory, 
                                                      in: .userDomainMask).first!
         return appSupportURL
@@ -79,6 +79,15 @@ extension Bundle {
             return brc_mbtilesURL
         }
         
+        // Refresh the cache when the bundled tiles change (e.g. app update shipping
+        // new tiles). Remote tile updates are currently disabled in BRCDataImporter,
+        // so the bundle is the only source of this file.
+        if FileManager.default.fileExists(atPath: cachedMbtilesURL.path),
+           let bundleMbtilesURL = brc_mbtilesURL,
+           !FileManager.default.contentsEqual(atPath: bundleMbtilesURL.path, andPath: cachedMbtilesURL.path) {
+            try? FileManager.default.removeItem(at: cachedMbtilesURL)
+        }
+
         // Check if cached file exists
         if !FileManager.default.fileExists(atPath: cachedMbtilesURL.path) {
             // Copy from bundle
@@ -115,12 +124,12 @@ extension Bundle {
     
     /// Load media file data
     static func brc_loadMediaData(fileId: String) -> Data? {
-        return iBurn2025MediaFiles.loadImageData(fileId: fileId)
+        return iBurn2026MediaFiles.loadImageData(fileId: fileId)
     }
     
     /// Get media file URL
     static func brc_mediaFileURL(fileId: String, extension ext: String = "jpg") -> URL? {
-        return iBurn2025MediaFiles.url(forResource: fileId, withExtension: ext)
+        return iBurn2026MediaFiles.url(forResource: fileId, withExtension: ext)
     }
 }
 

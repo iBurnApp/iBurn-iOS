@@ -6,6 +6,7 @@
 //  Copyright © 2025 Burning Man Earth. All rights reserved.
 //
 
+import CoreLocation
 import Foundation
 
 extension BRCAppDelegate {
@@ -34,12 +35,10 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createFavoritesViewController() -> UIViewController {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             return FavoritesListHostingController(dependencies: dependencies)
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         let showExpiredEvents = UserSettings.showExpiredEventsInFavorites
@@ -58,12 +57,29 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createNearbyViewController() -> UIViewController {
-        #if DEBUG
+        createNearbyViewController(locationOverride: nil)
+    }
+
+    /// Same screen, optionally measured from somewhere other than the device.
+    ///
+    /// `locationOverride` carries the map's dropped person marker through to the list. It is
+    /// a Swift-only overload because the no-argument spelling above is what `BRCAppDelegate.m`
+    /// calls for tab-bar setup, and a default argument would rename the ObjC selector.
+    ///
+    /// Legacy caveat: the UIKit `NearbyViewController` (feature flag `useSwiftUILists` off)
+    /// ignores the override. Its location source is wired through its own persisted
+    /// time-shift configuration, and the override must not be persisted, so honoring it
+    /// there is a rewrite rather than a parameter — out of scope while the SwiftUI list is
+    /// the shipping path.
+    @MainActor
+    func createNearbyViewController(locationOverride: CLLocation?) -> UIViewController {
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
-            return NearbyListHostingController(dependencies: dependencies)
+            return NearbyListHostingController(
+                dependencies: dependencies,
+                locationOverride: locationOverride
+            )
         }
-        #endif
 
         let nearbyVC = NearbyViewController(
             style: .grouped,
@@ -77,12 +93,10 @@ extension BRCAppDelegate {
     /// Callable from ObjC for tab bar setup.
     @MainActor @objc
     func createEventsViewController() -> UIViewController {
-        #if DEBUG
         let preferenceService = PreferenceServiceFactory.shared
         if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
             return EventListHostingController(dependencies: dependencies)
         }
-        #endif
 
         let dbManager = BRCDatabaseManager.shared
         let legacyVC = EventListViewController(

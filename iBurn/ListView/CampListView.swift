@@ -43,6 +43,7 @@ struct CampListView: View {
                     ) { _ in
                         EmptyView()
                     }
+                    .padding(.trailing, indexRailInset)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onSelect(row.object)
@@ -50,6 +51,7 @@ struct CampListView: View {
                 }
             }
             .listStyle(.plain)
+            .alphabetIndexRail(rows: indexRailRows, accessibilityLabel: "Camp index")
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search camps, descriptions, hometowns"
@@ -112,6 +114,17 @@ struct CampListView: View {
         }
     }
 
+    /// Rows the A–Z rail indexes: whatever the list is showing right now, so search and
+    /// the favorites-only filter shorten the rail along with the list.
+    private var indexRailRows: [AlphabetIndexRow] {
+        viewModel.filteredItems.map { AlphabetIndexRow(id: $0.object.uid, name: $0.object.name) }
+    }
+
+    /// Room the rows give up to the rail so their trailing text doesn't run underneath it.
+    private var indexRailInset: CGFloat {
+        AlphabetIndex.isEnabled(rowCount: viewModel.filteredItems.count) ? AlphabetIndex.railRowInset : 0
+    }
+
     private var filterIconName: String {
         viewModel.filter.onlyFavorites
             ? "line.3.horizontal.decrease.circle.fill"
@@ -123,7 +136,7 @@ struct CampListView: View {
     }
 
     private func rightSubtitle(for camp: CampObject) -> String? {
-        if BRCEmbargo.allowEmbargoedData() {
+        if BRCEmbargo.canShowCampLocations() {
             return camp.locationString ?? camp.intersection ?? "Location Unknown"
         }
         return "Location Restricted"
@@ -138,6 +151,7 @@ struct CampListView: View {
                 locationProvider: MockLocationProvider(),
                 filterStorageKey: "campListFilter.preview",
                 initialFilter: .all,
+                initialItems: PreviewCampDataProvider.mockRows,
                 effectiveFilterForObservation: { $0 },
                 favoritesFilterForObservation: { filter in
                     var f = filter
@@ -157,26 +171,64 @@ struct CampListView: View {
     }
 }
 
-@MainActor
+#Preview("Camp List - Loading") {
+    NavigationView {
+        CampListView(
+            viewModel: CampListViewModel(
+                dataProvider: PreviewCampDataProvider(rows: []),
+                locationProvider: MockLocationProvider(),
+                filterStorageKey: "campListFilter.preview",
+                initialFilter: .all,
+                effectiveFilterForObservation: { $0 },
+                matchesSearch: { _, _ in true }
+            )
+        )
+    }
+}
+
 private class PreviewCampDataProvider: CampDataProvider {
-    init() {
-        super.init(playaDB: try! createPlayaDB())
+    private let rows: [ListRow<CampObject>]
+
+    /// Pass empty `rows` for a permanent loading-state preview: the stream never
+    /// yields, so the view model keeps `isLoading` with no items. The default
+    /// (`nil`) uses `mockRows`.
+    @MainActor
+    init(rows: [ListRow<CampObject>]? = nil) {
+        self.rows = rows ?? Self.mockRows
+        super.init(playaDB: PreviewPlayaDB.shared)
     }
 
     override func observeObjects(filter: CampFilter) -> AsyncStream<[ListRow<CampObject>]> {
-        AsyncStream { continuation in
-            continuation.yield([
-                Self.createMockCamp(name: "Solaris Camp"),
-                Self.createMockCamp(name: "Dusty Mermaid"),
-                Self.createMockCamp(name: "Roaming Oasis")
-            ].map { ListRow(object: $0, metadata: nil, thumbnailColors: nil) })
-            continuation.finish()
+        let rows = self.rows
+        return AsyncStream { continuation in
+            if !rows.isEmpty {
+                continuation.yield(rows)
+                continuation.finish()
+            }
         }
     }
 
-    private nonisolated static func createMockCamp(name: String) -> CampObject {
+    static let mockRows: [ListRow<CampObject>] = [
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-1", name: "Solaris Camp"),
+            metadata: .forCamp(id: "preview-camp-1", isFavorite: true),
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-2", name: "Dusty Mermaid"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+        ListRow(
+            object: createMockCamp(uid: "preview-camp-3", name: "Roaming Oasis"),
+            metadata: nil,
+            thumbnailColors: nil
+        ),
+    ]
+
+    private nonisolated static func createMockCamp(uid: String, name: String) -> CampObject {
         CampObject(
-            uid: UUID().uuidString,
+            uid: uid,
             name: name,
             year: 2025,
             description: "A welcoming theme camp",

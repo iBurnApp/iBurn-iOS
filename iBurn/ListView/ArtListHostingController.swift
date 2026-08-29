@@ -34,7 +34,17 @@ class ArtListHostingController: UIHostingController<ArtListView> {
         self.playaDB = dependencies.playaDB
         self.viewModel = dependencies.makeArtListViewModel()
         super.init(rootView: ArtListView(viewModel: viewModel))
-        self.rootView = ArtListView(
+        self.rootView = makeRootView()
+        self.title = "Art"
+        observeEmbargoDidClear()
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeRootView() -> ArtListView {
+        ArtListView(
             viewModel: viewModel,
             onSelect: { [weak self] art in
                 self?.showDetail(for: art)
@@ -43,11 +53,23 @@ class ArtListHostingController: UIHostingController<ArtListView> {
                 self?.showMap(for: arts)
             }
         )
-        self.title = "Art"
     }
 
-    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    // MARK: - Embargo
+
+    /// Rows read `BRCEmbargo.allowEmbargoedData()` while building their body, so an unlock
+    /// while this screen is alive needs an explicit re-render to reveal playa addresses.
+    private func observeEmbargoDidClear() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(embargoDidClear),
+            name: .BRCEmbargoDidClear,
+            object: nil
+        )
+    }
+
+    @objc private func embargoDidClear() {
+        rootView = makeRootView()
     }
 
     // MARK: - Navigation

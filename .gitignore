@@ -97,6 +97,10 @@ iOSInjectionProject/
 iBurn/BRCSecrets.m
 iBurn/InfoPlistSecrets.h
 iBurn/GoogleService-Info.plist
+# Pre-populated database seeds (regenerated each season; see Docs)
+iBurn/iBurn-*.zip
+iBurn/PlayaDB-*.zip
+iBurnWatch/PlayaDB-*.zip
 .env
 iBurn/crashlytics.sh
 
