@@ -724,3 +724,19 @@ foreground half, the Nearby "Location unavailable" note; §7 the mini-map two-po
 contract; new §11 Data Updates; "Last verified" bumped to 2026-09-12.
 `.claude/skills/drive-app/SKILL.md` — seeded row counts refreshed to the Aug 27 seed
 (art 332, camp 1184, event 3412, occurrences 6565).
+
+---
+
+## Phase 6 — Follow-up round (main session, no subagents)
+
+Three findings from the validation pass plus one default change, each its own commit:
+
+| Commit | Change |
+|---|---|
+| 74ebad76 | `BRCAppDelegate.m`: new `startLocationUpdatesIfAuthorized`, called after the manager is created and in `applicationDidBecomeActive`. Fixes Nearby "Location unavailable" on relaunch. Not simulator-verified this round (unit-untestable; tests + build pass). |
+| dff709ec | `PlayaDB.fetchActiveEvents(startingWithin:from:)` (`end_time > now && start_time <= now + window`) replaces `fetchUpcomingEvents` in `UserMapViewAdapter.refreshRegionAnnotations`, so an event already in progress gets a region pin. New `PlayaDBClock.now` is the default clock for `notExpired`/`happeningNow`/`startingWithin`/`fetchCurrentEvents`/`fetchUpcomingEvents`; `DependencyContainer` sets it to `{ Date.present }` so the Mock Date scheme moves the Events tab. Tests: `ActiveEventsAndClockTests` (3). |
+| 05536f1e | `UserSettings.showActiveEventsOnMap` defaults to `true`. |
+
+Results: PlayaDB package 368 pass; iBurnTests 647 pass. LicensePlist Settings.bundle was already clean (build phase regenerated it in d956ac2e).
+
+Left for later: Dependabot (BlackRockCityPlanner 72 vulns, iBurn-iOS 8), MapLibre 6.18.0-patch0 pin revisit, `EKEventEditViewDelegate` dead conformance on `DetailActionCoordinatorImpl`, unit coverage for surviving `DetailAction` cases.
