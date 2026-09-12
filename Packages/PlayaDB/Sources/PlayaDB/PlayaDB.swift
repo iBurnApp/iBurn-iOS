@@ -352,6 +352,15 @@ public protocol PlayaDB {
     /// timestamp for any type is newer than the stored `lastUpdated`.
     func needsImport(bundleUpdateData: Data) async throws -> Bool
 
+    /// The data types described by `updateData` (an update.json payload, either the
+    /// bundled one or one fetched from the update server) whose timestamps are newer
+    /// than what has been imported into this database.
+    ///
+    /// A type that has never been imported counts as outdated. Types the payload
+    /// doesn't mention are never returned. Order matches import order
+    /// (art, camp, event, mutant vehicle).
+    func outdatedDataTypes(comparedTo updateData: Data) async throws -> [DataObjectType]
+
     /// Get update information for all data types
     func getUpdateInfo() async throws -> [UpdateInfo]
 

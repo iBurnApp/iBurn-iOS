@@ -2962,23 +2962,20 @@ internal class PlayaDBImpl: PlayaDB {
     }
 
     func needsImport(bundleUpdateData: Data) async throws -> Bool {
-        let bundleInfo = try APIParserFactory.create().parseUpdateInfo(from: bundleUpdateData)
         let storedInfo = try await getUpdateInfo()
         guard !storedInfo.isEmpty else { return true }
+        return try await !outdatedDataTypes(comparedTo: bundleUpdateData).isEmpty
+    }
 
-        let storedByType = Dictionary(uniqueKeysWithValues: storedInfo.map { ($0.dataType, $0) })
-        let bundleByType: [(DataObjectType, FileUpdateInfo?)] = [
-            (.art, bundleInfo.art),
-            (.camp, bundleInfo.camps),
-            (.event, bundleInfo.events),
-            (.mutantVehicle, bundleInfo.mv)
-        ]
-        for (type, fileInfo) in bundleByType {
-            guard let fileInfo else { continue }
-            guard let stored = storedByType[type.rawValue] else { return true }
-            if fileInfo.updated > stored.lastUpdated { return true }
+    func outdatedDataTypes(comparedTo updateData: Data) async throws -> [DataObjectType] {
+        let remoteInfo = try APIParserFactory.create().parseUpdateInfo(from: updateData)
+        let storedInfo = try await getUpdateInfo()
+        let storedByType = Dictionary(storedInfo.map { ($0.dataType, $0) }) { first, _ in first }
+
+        return remoteInfo.fileInfoByDataType.compactMap { entry in
+            guard let stored = storedByType[entry.type.rawValue] else { return entry.type }
+            return entry.info.updated > stored.lastUpdated ? entry.type : nil
         }
-        return false
     }
 
     func importFromData(artData: Data, campData: Data, eventData: Data, mvData: Data?, updateData: Data?) async throws {

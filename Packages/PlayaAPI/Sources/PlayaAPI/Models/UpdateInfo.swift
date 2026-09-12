@@ -41,3 +41,9 @@ public extension UpdateInfo {
         art != nil || camps != nil || events != nil || mv != nil
     }
 }
+
+/// Unambiguous spelling of `UpdateInfo` for modules that declare a type of the same
+/// name (PlayaDB has an `UpdateInfo` GRDB record). The module can't be used to
+/// qualify it — `PlayaAPI` is also the name of an enum in this module — so the
+/// alias is the only way to name this type from there.
+public typealias APIUpdateInfo = UpdateInfo
