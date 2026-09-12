@@ -102,6 +102,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     self.locationManager = [CLLocationManager brc_locationManager];
     self.locationManager.delegate = self;
+    // The delegate's authorization callback normally starts updates, but be explicit so a
+    // relaunch with existing permission never leaves Nearby waiting on a manager that was
+    // never started (the map and detail screens use their own managers).
+    [self startLocationUpdatesIfAuthorized];
     
     [self setupRegionBasedUnlock];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
@@ -209,7 +213,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [self startLocationUpdatesIfAuthorized];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -285,6 +289,13 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 + (BRCAppDelegate*) shared {
     return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
+}
+
+- (void) startLocationUpdatesIfAuthorized {
+    CLAuthorizationStatus status = self.locationManager.authorizationStatus;
+    if (status == kCLAuthorizationStatusAuthorizedWhenInUse || status == kCLAuthorizationStatusAuthorizedAlways) {
+        [self.locationManager startUpdatingLocation];
+    }
 }
 
 #pragma mark CLLocationManagerDelegate
