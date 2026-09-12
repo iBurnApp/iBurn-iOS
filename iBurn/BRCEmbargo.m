@@ -9,9 +9,6 @@
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "BRCSecrets.h"
-#import "BRCEventObject.h"
-#import "BRCCampObject.h"
-#import "BRCArtObject.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "NSData+iBurn.h"
 #import "iBurn-Swift.h"
@@ -63,26 +60,5 @@
 {
     return [BRCEmbargoService canShowArtLocations];
 }
-
-+ (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject
-{
-    if ([dataObject isKindOfClass:[BRCArtObject class]]) {
-        return [BRCEmbargo canShowArtLocations];
-    }
-    if ([dataObject isKindOfClass:[BRCEventObject class]]) {
-        // An event at an art installation would leak the art location, so it
-        // stays on the art tier; everything else unlocks with camps.
-        BRCEventObject *event = (BRCEventObject *)dataObject;
-        if (event.hostedByArtUniqueID.length > 0) {
-            return [BRCEmbargo canShowArtLocations];
-        }
-        return [BRCEmbargo canShowCampLocations];
-    }
-    if ([dataObject isKindOfClass:[BRCCampObject class]]) {
-        return [BRCEmbargo canShowCampLocations];
-    }
-    return YES;
-}
-
 
 @end

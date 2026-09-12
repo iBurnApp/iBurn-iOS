@@ -2,24 +2,10 @@ import XCTest
 @preconcurrency @testable import iBurn
 @testable import PlayaDB
 
-/// No-op stand-in for the legacy YapDatabase mirror so tests never touch Yap.
-private final class StubFavoriteSyncService: FavoriteSyncService, @unchecked Sendable {
-    private(set) var mirroredFavorites: [(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool)] = []
-
-    func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async {
-        mirroredFavorites.append((type, uid, isFavorite))
-    }
-
-    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async {}
-
-    func mirrorNotes(type: FavoriteSyncObjectType, uid: String, notes: String) async {}
-}
-
 @MainActor
 final class GlobalSearchViewModelTests: XCTestCase {
 
     private var playaDB: PlayaDB!
-    private var favoriteSync: StubFavoriteSyncService!
     private var viewModel: GlobalSearchViewModel!
 
     override func setUp() async throws {
@@ -30,19 +16,16 @@ final class GlobalSearchViewModelTests: XCTestCase {
             campData: Self.campJSON,
             eventData: Self.eventJSON
         )
-        favoriteSync = StubFavoriteSyncService()
         // nil storage key keeps the filter out of UserDefaults, so tests don't leak
         // filter state into each other or into the simulator's defaults.
         viewModel = GlobalSearchViewModel(
             playaDB: playaDB,
-            favoriteSync: favoriteSync,
             filterStorageKey: nil
         )
     }
 
     override func tearDown() async throws {
         viewModel = nil
-        favoriteSync = nil
         playaDB = nil
         try await super.tearDown()
     }
@@ -382,18 +365,19 @@ final class GlobalSearchViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isFavorite(.event(sibling)))
     }
 
-    func testFavoriteTogglesMirrorIntoLegacyDatabase() async throws {
+    func testFavoriteTogglePersistsToPlayaDB() async throws {
         let camp = try await firstItem(ofType: .camp, query: "Services")
         viewModel.toggleFavorite(camp)
 
-        let mirrored = await eventually { !self.favoriteSync.mirroredFavorites.isEmpty }
-        XCTAssertTrue(mirrored, "Legacy Yap mirror should be invoked, as on the list screens")
-        let entry = try XCTUnwrap(favoriteSync.mirroredFavorites.first)
-        XCTAssertEqual(entry.uid, camp.uid)
-        XCTAssertTrue(entry.isFavorite)
+        let stored = await eventuallyAsync {
+            guard case .camp(let object) = camp else { return false }
+            return (try? await self.playaDB.isFavorite(object)) == true
+        }
+        XCTAssertTrue(stored, "PlayaDB is the source of truth for the heart")
+        XCTAssertTrue(viewModel.isFavorite(camp))
     }
 
-    func testEventMirrorUsesTheOccurrenceCompositeKey() async throws {
+    func testEventFavoriteUsesTheOccurrenceCompositeKey() async throws {
         viewModel.scope = .events
         let event = try await firstItem(ofType: .event, query: "Tarot")
         guard case .event(let occurrence) = event else {
@@ -401,12 +385,14 @@ final class GlobalSearchViewModelTests: XCTestCase {
         }
         viewModel.toggleFavorite(event)
 
-        let mirrored = await eventually { !self.favoriteSync.mirroredFavorites.isEmpty }
-        XCTAssertTrue(mirrored)
-        let entry = try XCTUnwrap(favoriteSync.mirroredFavorites.first)
-        XCTAssertEqual(entry.uid, occurrence.favoriteIdentity,
-                       "The mirror matches the one Yap occurrence starting at that instant")
-        XCTAssertEqual(EventFavoriteKey.eventUID(from: entry.uid), occurrence.event.uid)
+        XCTAssertEqual(event.favoriteIdentity, occurrence.favoriteIdentity,
+                       "Only the showing that was tapped changes")
+        XCTAssertEqual(EventFavoriteKey.eventUID(from: event.favoriteIdentity),
+                       occurrence.event.uid)
+        let stored = await eventuallyAsync {
+            (try? await self.playaDB.isFavorite(occurrence)) == true
+        }
+        XCTAssertTrue(stored)
     }
 
     func testClearingSearchClearsFavoriteState() async throws {

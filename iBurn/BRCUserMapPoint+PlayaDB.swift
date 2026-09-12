@@ -1,15 +1,12 @@
 import Foundation
 import PlayaDB
 import CoreLocation
-import ObjectiveC
-
-private var pinIdKey: UInt8 = 0
 
 extension BRCUserMapPoint {
-    /// The PlayaDB pin ID. Falls back to yapKey if not set.
+    /// The PlayaDB pin ID. `BRCMapPoint.uniqueID` is a fresh UUID until the pin is saved.
     var pinId: String {
-        get { objc_getAssociatedObject(self, &pinIdKey) as? String ?? yapKey }
-        set { objc_setAssociatedObject(self, &pinIdKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC) }
+        get { uniqueID }
+        set { uniqueID = newValue }
     }
 
     convenience init(userMapPin: UserMapPin) {

@@ -44,17 +44,9 @@ class DependencyContainer {
     /// without being killed. See `EmbargoUnlockScheduler`.
     private let embargoUnlockScheduler: EmbargoUnlockScheduling
 
-    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase so both stores agree.
-    /// Lazy so BRCDatabaseManager is only touched once the first provider is used.
-    private(set) lazy var favoriteSyncService: FavoriteSyncService = {
-        FavoriteSyncServiceFactory.shared
-    }()
-
     /// Owns the device-calendar (EventKit) entries for favorited events, bookkeeping
-    /// their identifiers in PlayaDB. Used when
-    /// `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on (the default); the legacy
-    /// Yap path takes over when it is off. Lazy so EventKit and BRCDatabaseManager are
-    /// only touched once a favorite actually changes.
+    /// their identifiers in PlayaDB. Lazy so EventKit is only touched once a favorite
+    /// actually changes.
     private(set) lazy var eventCalendarService: EventCalendarService = {
         EventCalendarServiceFactory.makeService(playaDB: playaDB)
     }()
@@ -62,29 +54,37 @@ class DependencyContainer {
     /// Offers "favorite the other showings too?" after a single occurrence of a recurring
     /// event is favorited. Listens app-wide rather than per screen — see the type's docs.
     private(set) lazy var favoriteSeriesToastPresenter: FavoriteSeriesToastPresenter = {
-        FavoriteSeriesToastPresenter(playaDB: playaDB, favoriteSync: favoriteSyncService)
+        FavoriteSeriesToastPresenter(playaDB: playaDB)
     }()
 
     // MARK: - Data Providers (Lazy)
 
     /// Data provider for Art objects
     private(set) lazy var artDataProvider: ArtDataProvider = {
-        ArtDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
+        ArtDataProvider(playaDB: playaDB)
     }()
 
     /// Data provider for Camp objects
     private(set) lazy var campDataProvider: CampDataProvider = {
-        CampDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
+        CampDataProvider(playaDB: playaDB)
     }()
 
     /// Data provider for Event objects
     private(set) lazy var eventDataProvider: EventDataProvider = {
-        EventDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
+        EventDataProvider(playaDB: playaDB)
     }()
 
     /// Data provider for MutantVehicle objects
     private(set) lazy var mutantVehicleDataProvider: MutantVehicleDataProvider = {
-        MutantVehicleDataProvider(playaDB: playaDB, favoriteSync: favoriteSyncService)
+        MutantVehicleDataProvider(playaDB: playaDB)
+    }()
+
+    /// Over-the-air data updates: fetches update.json, downloads changed per-type
+    /// JSON, and imports it into PlayaDB. Replaces the YapDatabase-era
+    /// `BRCDataImporter` OTA path. Lazy so no network machinery is built until the
+    /// first launch check (or the Settings screen) asks for it.
+    private(set) lazy var dataUpdateService: DataUpdateService = {
+        DataUpdateServiceFactory.makeService(playaDB: playaDB)
     }()
 
     /// AI search service (nil if device doesn't support Apple Intelligence)
@@ -142,29 +142,17 @@ class DependencyContainer {
         }
 
         // Sync favorites and user map pins with the paired Apple Watch.
-        // Favorites applied from the watch are mirrored into the legacy
-        // YapDatabase so legacy surfaces (and event calendar entries) stay in
-        // agreement; pins need no mirror — PlayaDB is already their source of
-        // truth and FilteredMapDataSource observes them straight onto the map.
+        // The watch writes straight into PlayaDB, which is the source of truth for
+        // every surface; the only side effect left to run here is the device-calendar
+        // reconcile that an event favorite would have triggered on the phone.
         // The callback arrives on a background queue; hop to the main actor
         // before touching self.
-        let watchSyncManager = PeerSyncManager(playaDB: self.playaDB, onFavoritesApplied: { [weak self] applied in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                for item in applied {
-                    guard let type = FavoriteSyncObjectType(objectTypeRawValue: item.objectType) else { continue }
-                    // Applied items don't say which field changed, so mirror both.
-                    // Each mirror is a no-op when the Yap value already matches,
-                    // so this is cheap and idempotent.
-                    await self.favoriteSyncService.mirrorFavorite(
-                        type: type,
-                        uid: item.objectId,
+        let watchSyncManager = PeerSyncManager(playaDB: self.playaDB, onFavoritesApplied: { applied in
+            Task { @MainActor in
+                for item in applied where DataObjectType(rawValue: item.objectType) == .event {
+                    EventCalendarSync.reconcile(
+                        favoriteIdentity: item.objectId,
                         isFavorite: item.isFavorite
-                    )
-                    await self.favoriteSyncService.mirrorVisitStatus(
-                        type: type,
-                        uid: item.objectId,
-                        visitStatus: item.visitStatus
                     )
                 }
             }
@@ -359,22 +347,6 @@ class DependencyContainer {
                 await campDataProvider.isDatabaseSeeded()
             }
         )
-    }
-}
-
-// MARK: - Watch Sync Mapping
-
-private extension FavoriteSyncObjectType {
-    /// Maps a `FavoriteSyncItem.objectType` (a `DataObjectType` rawValue) to the
-    /// legacy mirror's object kind. Returns nil for unknown types.
-    init?(objectTypeRawValue: String) {
-        guard let type = DataObjectType(rawValue: objectTypeRawValue) else { return nil }
-        switch type {
-        case .art: self = .art
-        case .camp: self = .camp
-        case .event: self = .event
-        case .mutantVehicle: self = .mutantVehicle
-        }
     }
 }
 

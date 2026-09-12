@@ -46,15 +46,13 @@ final class FavoriteSeriesToastPresenter {
     static let displayDuration: TimeInterval = 5
 
     private let playaDB: PlayaDB
-    private let favoriteSync: FavoriteSyncService
     private var toastView: FavoriteSeriesToastView?
     private var dismissTask: Task<Void, Never>?
     private var resolveTask: Task<Void, Never>?
     private var observer: NSObjectProtocol?
 
-    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService) {
+    init(playaDB: PlayaDB) {
         self.playaDB = playaDB
-        self.favoriteSync = favoriteSync
     }
 
     deinit {
@@ -111,7 +109,6 @@ final class FavoriteSeriesToastPresenter {
         guard let toast else { return }
         dismiss()
         let playaDB = self.playaDB
-        let favoriteSync = self.favoriteSync
         Task {
             do {
                 // One write covers every occurrence, so the list refreshes once rather
@@ -121,9 +118,9 @@ final class FavoriteSeriesToastPresenter {
                 print("FavoriteSeriesToast: failed to favorite series \(toast.eventUID): \(error)")
                 return
             }
-            // Bare uid: the whole series changed, so every Yap occurrence mirrors and the
-            // event's calendar entries are reconciled in one pass.
-            await favoriteSync.mirrorFavorite(type: .event, uid: toast.eventUID, isFavorite: true)
+            // Bare uid: the whole series changed, so the event's calendar entries are
+            // reconciled in one pass.
+            EventCalendarSync.reconcile(favoriteIdentity: toast.eventUID, isFavorite: true)
         }
     }
 

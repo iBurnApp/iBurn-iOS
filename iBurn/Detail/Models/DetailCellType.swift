@@ -28,7 +28,6 @@ struct DetailCell: Identifiable {
 /// Enum representing different types of detail cells
 enum DetailCellType {
     case image(UIImage, aspectRatio: CGFloat)
-    case mapView(BRCDataObject, metadata: BRCObjectMetadata?)
     case mapAnnotation(MLNAnnotation, title: String)
     case text(String, style: DetailTextStyle)
     case email(String, label: String?)
@@ -44,7 +43,6 @@ enum DetailCellType {
     case playaAddress(String, tappable: Bool)
     case distance(CLLocationDistance)
     case travelTime(CLLocationDistance)
-    case audio(BRCArtObject, isPlaying: Bool)
     case audioTrack(BRCAudioTourTrack, isPlaying: Bool)
     case userNotes(String)
     case date(Date, format: String)
@@ -97,18 +95,11 @@ enum RelationshipType {
 enum DetailAction {
     case openEmail(String)
     case openURL(URL)
-    case showMap(BRCDataObject)
     case showMapAnnotation(MLNAnnotation, title: String)
-    case navigateToObject(BRCDataObject)
-    case showEventsList([BRCEventObject], hostName: String)
-    case showNextEvent(BRCEventObject)
     case shareCoordinates(CLLocationCoordinate2D)
-    case playAudio(BRCArtObject)
     case pauseAudio
     case editNotes(current: String, completion: (String) -> Void)
-    case showEventEditor(BRCEventObject)
     case share([Any])
-    case showShareScreen(BRCDataObject)
     /// QR/share screen for a PlayaDB-backed object, whose share URL has already been built
     /// (and embargo-filtered) by the view model.
     case showShareURLScreen(title: String, locationText: String?, url: URL, themeColors: BRCImageColors)

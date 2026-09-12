@@ -7,20 +7,12 @@
 //
 
 #import "MLNMapView+iBurn.h"
-#import "BRCDataImporter.h"
 #import "BRCSecrets.h"
 #import "UIColor+iBurn.h"
-#import "BRCDataObject.h"
 #import "BRCEmbargo.h"
 #import "iBurn-Swift.h"
 
 @implementation MLNMapView (iBurn)
-
-- (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject metadata:(nonnull BRCObjectMetadata *)metadata animated:(BOOL)animated padding:(UIEdgeInsets)padding {
-    DataObjectAnnotation *annotation = [[DataObjectAnnotation alloc] initWithObject:dataObject metadata:metadata];
-    if (!annotation) { return; }
-    [self brc_showDestination:annotation animated:animated padding:padding];
-}
 
 - (void)brc_showDestination:(id<MLNAnnotation>)destination animated:(BOOL) animated padding:(UIEdgeInsets)padding {
     NSParameterAssert(destination);

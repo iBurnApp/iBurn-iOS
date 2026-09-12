@@ -4,6 +4,18 @@ import Foundation
 import MapKit
 import PlayaDB
 
+/// Which object types the Nearby list shows. Declared here now that the UIKit
+/// `NearbyViewController` that used to own it is gone; the raw values are persisted in
+/// `UserSettings.nearbyFilter`.
+public enum NearbyFilter: String {
+    case all = "All"
+    case event = "Events"
+    case art = "Art"
+    case camp = "Camps"
+    /// this is the order that the filters appear
+    static let allValues: [NearbyFilter] = [.all, .art, .camp, .event]
+}
+
 @MainActor
 final class NearbyViewModel: ObservableObject {
     // MARK: - Published

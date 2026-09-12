@@ -6,10 +6,10 @@
 //  Copyright © 2017 Burning Man Earth. All rights reserved.
 //
 
-@import Mantle;
+@import UIKit;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface BRCImageColors : MTLModel
+@interface BRCImageColors : NSObject
 @property (nonatomic, strong, readonly) UIColor *backgroundColor;
 @property (nonatomic, strong, readonly) UIColor *primaryColor;
 @property (nonatomic, strong, readonly) UIColor *secondaryColor;

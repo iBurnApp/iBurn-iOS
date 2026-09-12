@@ -401,33 +401,13 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func pushArtView() {
-        let preferenceService = PreferenceServiceFactory.shared
-        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
-            let artVC = ArtListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
-            artVC.title = "Art"
-            navigationController?.pushViewController(artVC, animated: true)
-            return
-        }
-
-        let dbManager = BRCDatabaseManager.shared
-        // Always use filtered view - it shows all art when filter is disabled
-        let artVC = ArtListViewController(viewName: dbManager.artFilteredByEvents, searchViewName: dbManager.searchArtView)
-        artVC.tableView.separatorStyle = .none
+        let artVC = ArtListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
         artVC.title = "Art"
         navigationController?.pushViewController(artVC, animated: true)
     }
 
     func pushCampsView() {
-        let preferenceService = PreferenceServiceFactory.shared
-        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
-            let campsVC = CampListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
-            campsVC.title = "Camps"
-            navigationController?.pushViewController(campsVC, animated: true)
-            return
-        }
-
-        let dbManager = BRCDatabaseManager.shared
-        let campsVC = ObjectListViewController(viewName: dbManager.campsViewName, searchViewName: dbManager.searchCampsView)
+        let campsVC = CampListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
         campsVC.title = "Camps"
         navigationController?.pushViewController(campsVC, animated: true)
     }
@@ -458,15 +438,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
 
     func pushVisitListView() {
-        let preferenceService = PreferenceServiceFactory.shared
-        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
-            let visitVC = VisitListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
-            visitVC.title = "Visit List"
-            navigationController?.pushViewController(visitVC, animated: true)
-            return
-        }
-
-        let visitVC = VisitListViewController()
+        let visitVC = VisitListHostingController(dependencies: BRCAppDelegate.shared.dependencies)
         visitVC.title = "Visit List"
         navigationController?.pushViewController(visitVC, animated: true)
     }
@@ -521,17 +493,9 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     func showAudioTour() {
-        let preferenceService = PreferenceServiceFactory.shared
-        if preferenceService.getValue(Preferences.FeatureFlags.useSwiftUILists) {
-            let audioVC = AudioTourHostingController(dependencies: BRCAppDelegate.shared.dependencies)
-            audioVC.title = "Audio Tour"
-            navigationController?.pushViewController(audioVC, animated: true)
-            return
-        }
-
-        let audioTour = AudioTourViewController(style: UITableView.Style.grouped, extensionName: BRCDatabaseManager.shared.audioTourViewName)
-        audioTour.title = "Audio Tour"
-        navigationController?.pushViewController(audioTour, animated: true)
+        let audioVC = AudioTourHostingController(dependencies: BRCAppDelegate.shared.dependencies)
+        audioVC.title = "Audio Tour"
+        navigationController?.pushViewController(audioVC, animated: true)
     }
     
     func pushAppearanceView() {

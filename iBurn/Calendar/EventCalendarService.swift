@@ -16,8 +16,7 @@ import PlayaDB
 /// occurrence). The EventKit identifiers are bookkept in PlayaDB's
 /// `event_calendar_entries` table (`EventCalendarEntry`), which survives data imports.
 ///
-/// Replaces the Yap-metadata bookkeeping (`BRCEventMetadata.calendarEventIdentifier`)
-/// when `Preferences.FeatureFlags.usePlayaDBCalendarSync` is on.
+/// Replaced the Yap-metadata bookkeeping (`BRCEventMetadata.calendarEventIdentifier`).
 protocol EventCalendarService {
     /// Brings one API event's calendar entries into agreement with which of its
     /// *occurrences* are currently favorited.
@@ -38,20 +37,19 @@ protocol EventCalendarService {
     /// deleted by hand is recreated on the next reconcile (legacy semantics).
     ///
     /// - Parameter eventUID: The *API* event uid (PlayaDB `EventObject.uid`), not a
-    ///   legacy per-occurrence uid — use `FavoriteSyncServiceImpl.apiEventUID(fromYapUID:)`
-    ///   to normalize.
+    ///   legacy per-occurrence uid — use `EventFavoriteKey.eventUID(from:)` to normalize.
     func reconcile(eventUID: String, isFavorite: Bool) async
 
-    /// Fire-and-forget `reconcile` for synchronous call sites (e.g. the
-    /// `FavoriteSyncCalendarRefreshHook`, which cannot await).
+    /// Fire-and-forget `reconcile` for synchronous call sites (e.g. `EventCalendarSync`,
+    /// which cannot await).
     func reconcileInBackground(eventUID: String, isFavorite: Bool)
 }
 
 // MARK: - Implementation
 
-/// Actor so concurrent reconciles can't race into duplicate EKEvents. The legacy
-/// favorite hook fires once per occurrence key, so the same event arrives N times in
-/// a row; identical in-flight requests are coalesced instead of redone.
+/// Actor so concurrent reconciles can't race into duplicate EKEvents. A series favorite
+/// can fire once per occurrence, so the same event may arrive N times in a row;
+/// identical in-flight requests are coalesced instead of redone.
 actor EventCalendarServiceImpl: EventCalendarService {
 
     /// Legacy reminder offsets: 1.5 hours and 10 minutes before the start.
@@ -74,8 +72,8 @@ actor EventCalendarServiceImpl: EventCalendarService {
     /// - Parameters:
     ///   - playaDB: Source of event occurrences and of the calendar-entry bookkeeping.
     ///   - eventStore: EventKit wrapper (injectable for tests).
-    ///   - legacyIdentifierStore: Yap-side identifiers to take over, if the legacy
-    ///     database is available. Pass nil to disable the takeover.
+    ///   - legacyIdentifierStore: Pre-PlayaDB identifiers to take over, if such a store
+    ///     is available. Always nil in the app since the Yap store was removed.
     ///   - embargoAllowsLocation: Whether the occurrence's playa address may be written
     ///     into the calendar. Defaults to the app's tiered embargo state (camps unlock a
     ///     week before gates; art-located events wait for gate opening).
@@ -277,16 +275,6 @@ actor EventCalendarServiceImpl: EventCalendarService {
     }
 }
 
-/// ObjC-visible mirror of `EventCalendarServiceFactory.isPlayaDBSyncEnabled`, so the
-/// legacy UIKit detail screen can skip the Yap calendar write without duplicating the
-/// feature flag's default.
-@objc(BRCCalendarSync)
-final class CalendarSyncBridge: NSObject {
-    @objc static var isPlayaDBSyncEnabled: Bool {
-        EventCalendarServiceFactory.isPlayaDBSyncEnabled
-    }
-}
-
 private extension String {
     /// Self unless it is empty (or only whitespace).
     var nonEmpty: String? {
@@ -294,30 +282,26 @@ private extension String {
     }
 }
 
-// MARK: - Hook Routing
+// MARK: - Favorite Hook
 
-/// Builds the `FavoriteSyncCalendarRefreshHook` used by `FavoriteSyncServiceFactory`.
+/// Fire-and-forget calendar reconcile for a PlayaDB event favorite change.
 ///
-/// Exactly one stack owns calendar entries at a time: with
-/// `Preferences.FeatureFlags.usePlayaDBCalendarSync` on, every favorite change routes
-/// into `EventCalendarService` (keyed by the API uid, so the per-occurrence fan-out
-/// collapses into one reconcile); with the flag off, the legacy Yap
-/// `refreshCalendarEntry` hook runs unchanged, once per occurrence key.
-///
-/// Extracted (and injected) so the routing can be unit tested without EventKit.
-enum EventCalendarHookRouter {
-    static func makeCalendarRefreshHook(
-        isPlayaDBSyncEnabled: @escaping () -> Bool,
-        playaDBReconcile: @escaping (_ apiEventUID: String, _ isFavorite: Bool) -> Void,
-        legacyRefresh: @escaping (_ yapUID: String, _ isFavorite: Bool) -> Void
-    ) -> FavoriteSyncCalendarRefreshHook {
-        return { yapUID, isFavorite in
-            guard isPlayaDBSyncEnabled() else {
-                legacyRefresh(yapUID, isFavorite)
-                return
-            }
-            let apiUID = FavoriteSyncServiceImpl.apiEventUID(fromYapUID: yapUID)
-            playaDBReconcile(apiUID, isFavorite)
+/// Every heart in the app writes PlayaDB and then calls this; `EventCalendarService`
+/// re-reads the database and decides what the calendar should contain, so passing the
+/// event (not the occurrence) is enough.
+enum EventCalendarSync {
+    /// - Parameters:
+    ///   - favoriteIdentity: Either an `EventFavoriteKey` composite
+    ///     (`"<apiUID>#<ISO start>"`) or a bare API event uid.
+    ///   - isFavorite: What just happened, used only to keep opposite passes from
+    ///     coalescing.
+    static func reconcile(favoriteIdentity: String, isFavorite: Bool) {
+        let eventUID = EventFavoriteKey.eventUID(from: favoriteIdentity)
+        Task { @MainActor in
+            EventCalendarServiceFactory.shared.reconcileInBackground(
+                eventUID: eventUID,
+                isFavorite: isFavorite
+            )
         }
     }
 }
@@ -326,19 +310,12 @@ enum EventCalendarHookRouter {
 
 /// Factory for the app-wide `EventCalendarService`.
 enum EventCalendarServiceFactory {
-    /// Whether calendar entries are owned by the PlayaDB-native service.
-    static var isPlayaDBSyncEnabled: Bool {
-        PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.usePlayaDBCalendarSync)
-    }
-
-    /// Builds a service backed by the real EventKit store and the legacy Yap database.
+    /// Builds a service backed by the real EventKit store.
     static func makeService(playaDB: PlayaDB) -> EventCalendarService {
         EventCalendarServiceImpl(
             playaDB: playaDB,
             eventStore: EKEventStoreProvider(),
-            legacyIdentifierStore: YapLegacyCalendarIdentifierStore(
-                connection: BRCDatabaseManager.shared.readWriteConnection
-            )
+            legacyIdentifierStore: nil
         )
     }
 

@@ -83,7 +83,6 @@ final class GlobalSearchViewModel: ObservableObject {
 
     private let playaDB: PlayaDB
     private let aiSearchService: AISearchService?
-    private let favoriteSync: FavoriteSyncService
     /// `nil` in the contexts that have no location plumbing (previews, most tests); rows
     /// then simply carry no distance.
     private let locationProvider: LocationProvider?
@@ -105,14 +104,12 @@ final class GlobalSearchViewModel: ObservableObject {
     init(
         playaDB: PlayaDB,
         aiSearchService: AISearchService? = nil,
-        favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared,
         locationProvider: LocationProvider? = nil,
         filterStorageKey: String? = "globalSearchFilter",
         isAISearchFlagEnabled: Bool = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
     ) {
         self.playaDB = playaDB
         self.aiSearchService = aiSearchService
-        self.favoriteSync = favoriteSync
         self.locationProvider = locationProvider
         self.filterStorageKey = filterStorageKey
         self.isAISearchFlagEnabled = isAISearchFlagEnabled
@@ -451,8 +448,7 @@ final class GlobalSearchViewModel: ObservableObject {
         setFavoriteState(!wasFavorite, for: key)
 
         let object = item.dataObject
-        let syncType = Self.syncType(for: item)
-        let syncUID = key
+        let isEvent = Self.isEvent(item)
 
         favoriteTask?.cancel()
         favoriteTask = Task { [weak self] in
@@ -461,12 +457,11 @@ final class GlobalSearchViewModel: ObservableObject {
                 try await self.playaDB.toggleFavorite(object)
                 let isFavorite = try await self.playaDB.isFavorite(object)
                 self.setFavoriteState(isFavorite, for: key)
-                // Fire-and-forget mirror into legacy YapDatabase, matching the list
-                // screens' data providers. PlayaDB is the source of truth and the UI
-                // must not wait on the Yap write.
-                let favoriteSync = self.favoriteSync
-                Task {
-                    await favoriteSync.mirrorFavorite(type: syncType, uid: syncUID, isFavorite: isFavorite)
+                // Fire-and-forget calendar reconcile, matching the list screens' data
+                // providers. PlayaDB is the source of truth and the UI must not wait
+                // on EventKit.
+                if isEvent {
+                    EventCalendarSync.reconcile(favoriteIdentity: key, isFavorite: isFavorite)
                 }
             } catch {
                 // Put the heart back where the database says it belongs.
@@ -499,13 +494,10 @@ final class GlobalSearchViewModel: ObservableObject {
         }
     }
 
-    private static func syncType(for item: SearchResultItem) -> FavoriteSyncObjectType {
-        switch item {
-        case .art: .art
-        case .camp: .camp
-        case .event: .event
-        case .mutantVehicle: .mutantVehicle
-        }
+    /// Only event favorites have a calendar side effect.
+    private static func isEvent(_ item: SearchResultItem) -> Bool {
+        if case .event = item { return true }
+        return false
     }
 
     /// Run AI search and merge any new results not found by FTS5

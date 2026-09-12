@@ -27,8 +27,9 @@ final class MapAnnotationRegistryTests: XCTestCase {
 
     private let coordinate = CLLocationCoordinate2D(latitude: 40.7864, longitude: -119.2065)
 
-    /// A pin as the map sees it. `pinId` is the `user_map_pins` row id, which is the only
-    /// thing shared between the copies — `yapKey` is freshly random for each instance.
+    /// A pin as the map sees it. `pinId` is the `user_map_pins` row id (stored in
+    /// `uniqueID` since the Yap/Mantle model went away), which is the only thing the
+    /// separate copies of one row share.
     private func pin(id: String, type: BRCMapPointType = .userBike, title: String? = nil) -> BRCUserMapPoint {
         let point = BRCUserMapPoint(title: title, coordinate: coordinate, type: type)
         point.pinId = id
@@ -37,11 +38,11 @@ final class MapAnnotationRegistryTests: XCTestCase {
 
     // MARK: - Keys
 
-    func testCopiesOfTheSamePinShareAKeyDespiteDifferentYapKeys() {
+    func testSeparateCopiesOfTheSamePinShareAKey() {
         let placed = pin(id: "row-1")
         let fromDatabase = pin(id: "row-1")
 
-        XCTAssertNotEqual(placed.yapKey, fromDatabase.yapKey, "precondition: separate objects")
+        XCTAssertFalse(placed === fromDatabase, "precondition: separate objects")
         XCTAssertEqual(
             MapAnnotationRegistry.key(for: placed),
             MapAnnotationRegistry.key(for: fromDatabase)

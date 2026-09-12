@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Burning Man Earth. All rights reserved.
 //
 
-@import Mantle;
+@import Foundation;
+@import UIKit;
 @import CoreLocation;
 @import MapLibre;
-#import "BRCYapDatabaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,45 +26,17 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
     BRCMapPointTypeRanger
 };
 
-/*
- {
- "type": "Feature",
- "geometry": {
- "type": "Point",
- "coordinates": [
- -119.21001900000002,
- 40.779943
- ]
- },
- "properties": {
- "name": "First Aid (Main)",
- "ref": "EmergencyClinic"
- }
- },
- 
- ## Types (unsupported):
- * airport
- * services
- * dpw
- * centerCamp
- * 8entrance
- * 12entrance
- * greeters
- * ice
- 
- ## Types (supported):
- * EmergencyClinic -> BRCMapPointTypeMedical
- * firstAid -> BRCMapPointTypeMedical
- * ranger -> BRCMapPointTypeRanger
- Note there is both "firstAid" and "EmergencyClinic" for medical
- * toilet -> BRCMapPointTypeToilet
- * center
- 
- */
+/// A dropped map pin.
+///
+/// Historically a Mantle/YapDatabase model (`BRCYapDatabaseObject`); user pins now live in
+/// PlayaDB's `user_map_pins` table and this is just the MapLibre annotation the map draws.
+/// `uniqueID` is the PlayaDB pin id when the pin came from the database, and a fresh UUID
+/// for a pin the user has only just dropped.
+@interface BRCMapPoint : NSObject <MLNAnnotation>
 
-@interface BRCMapPoint : BRCYapDatabaseObject <MTLJSONSerializing, MLNAnnotation>
+/** PlayaDB pin id, or a random UUID for a pin not yet persisted. */
+@property (nonatomic, copy, readwrite) NSString *uniqueID;
 
-/** yap key */
 @property (nonatomic, strong, readwrite) NSDate *creationDate;
 
 @property (nonatomic, copy, nullable, readwrite) NSString *title;
@@ -79,7 +51,6 @@ typedef NS_ENUM(NSUInteger, BRCMapPointType) {
 
 /** BRCUserMapPoint for editable user points, BRCMapPoint for fixed locations */
 + (Class) classForType:(BRCMapPointType)type;
-+ (NSString*) yapCollectionForType:(BRCMapPointType)type;
 
 /** Image for type. */
 @property (nonatomic, strong, readonly) UIImage *image;

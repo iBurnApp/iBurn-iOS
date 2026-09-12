@@ -112,22 +112,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
                 WebViewHelper.presentWebView(url: url, from: viewController)
             }
             
-        case .showEventEditor(let event):
-            guard let presenter = dependencies.presenter else {
-                print("❌ Cannot show event editor: No presenter available")
-                return
-            }
-            
-            // Get the host object for location formatting
-            var host: BRCDataObject?
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                host = event.host(with: transaction)
-            }
-            
-            let eventEditController = EventEditControllerFactory.createEventEditController(for: event, host: host)
-            eventEditController.editViewDelegate = self
-            presenter.present(eventEditController, animated: true, completion: nil)
-            
         case .shareCoordinates(let coordinate):
             guard let presenter = dependencies.presenter else {
                 print("❌ Cannot share coordinates: No presenter available")
@@ -147,67 +131,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             presenter.present(activityViewController, animated: true, completion: nil)
             
             
-        case .showMap(let dataObject):
-            print("🗺️ Attempting to show map for object: \(dataObject.title)")
-            
-            guard let navigator = dependencies.navigator else {
-                print("❌ Map navigation FAILED: Navigator is nil")
-                return
-            }
-            
-            // Get metadata for the object
-            var metadata: BRCObjectMetadata?
-            BRCDatabaseManager.shared.uiConnection.read { transaction in
-                metadata = dataObject.metadata(with: transaction)
-            }
-            
-            // Create MapDetailViewController following old BRCDetailViewController pattern
-            let mapViewController = MapDetailViewController(dataObject: dataObject, metadata: metadata ?? BRCObjectMetadata())
-            mapViewController.title = "Map - \(dataObject.title)"
-            
-            print("🚀 Pushing MapDetailViewController")
-            navigator.pushViewController(mapViewController, animated: true)
-            
-        case .navigateToObject(let object):
-            guard let navigator = dependencies.navigator else { return }
-            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
-            Task { @MainActor in
-                let detailVC = await DetailViewControllerFactory.createDetailViewController(for: object, playaDB: playaDB)
-                navigator.pushViewController(detailVC, animated: true)
-            }
-            
-        case .showEventsList(let events, let hostName):
-            guard let navigator = dependencies.navigator else { return }
-            guard let firstEvent = events.first else { return }
-
-            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
-            Task { @MainActor in
-                var playaEvents: [EventObjectOccurrence] = []
-                if let campId = firstEvent.hostedByCampUniqueID {
-                    playaEvents = (try? await playaDB.fetchEvents(hostedByCampUID: campId)) ?? []
-                } else if let artId = firstEvent.hostedByArtUniqueID {
-                    playaEvents = (try? await playaDB.fetchEvents(locatedAtArtUID: artId)) ?? []
-                }
-
-                let eventsVC = PlayaHostedEventsViewController(
-                    events: playaEvents,
-                    hostName: hostName,
-                    playaDB: playaDB
-                )
-                navigator.pushViewController(eventsVC, animated: true)
-            }
-            
-        case .showNextEvent(let nextEvent):
-            print("⏭️ Attempting to show next event: \(nextEvent.title)")
-            
-            guard let _ = dependencies.navigator else {
-                print("❌ Navigation FAILED: Navigator is nil")
-                return
-            }
-            
-            // Navigate to the next event's detail view
-            self.handle(.navigateToObject(nextEvent))
-
         case .showMapAnnotation(let annotation, let title):
             guard let navigator = dependencies.navigator else {
                 print("❌ Cannot show map: Navigator is nil")
@@ -217,10 +140,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             let mapVC = MapListViewController(dataSource: dataSource)
             mapVC.title = title
             navigator.pushViewController(mapVC, animated: true)
-            
-        case .playAudio(_):
-            // Audio is handled directly by AudioService in ViewModel
-            break
             
         case .pauseAudio:
             // Audio is handled directly by AudioService in ViewModel
@@ -265,15 +184,6 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
             
             presenter.present(activityController, animated: true, completion: nil)
             
-        case .showShareScreen(let dataObject):
-            guard let presenter = dependencies.presenter else {
-                print("❌ Cannot show share screen: No presenter available")
-                return
-            }
-
-            let shareViewController = ShareQRCodeHostingController(dataObject: dataObject)
-            presenter.present(shareViewController, animated: true, completion: nil)
-
         case .showShareURLScreen(let title, let locationText, let url, let themeColors):
             guard let presenter = dependencies.presenter else {
                 print("❌ Cannot show share screen: No presenter available")

@@ -7,11 +7,9 @@ class MutantVehicleDataProvider: ObjectListDataProvider {
     typealias Filter = MutantVehicleFilter
 
     private let playaDB: PlayaDB
-    private let favoriteSync: FavoriteSyncService
 
-    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared) {
+    init(playaDB: PlayaDB) {
         self.playaDB = playaDB
-        self.favoriteSync = favoriteSync
     }
 
     func isDatabaseSeeded() async -> Bool {
@@ -35,13 +33,6 @@ class MutantVehicleDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: MutantVehicleObject) async throws {
         try await playaDB.toggleFavorite(object)
-        let isFavorite = try await playaDB.isFavorite(object)
-        // Mutant vehicles have no legacy Yap class; the mirror is a documented no-op,
-        // kept here so all four providers share the same favorite pipeline.
-        let favoriteSync = self.favoriteSync
-        Task {
-            await favoriteSync.mirrorFavorite(type: .mutantVehicle, uid: object.uid, isFavorite: isFavorite)
-        }
     }
 
     func distanceAttributedString(from location: CLLocation?, to object: MutantVehicleObject) -> AttributedString? {

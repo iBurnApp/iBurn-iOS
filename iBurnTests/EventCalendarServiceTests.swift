@@ -9,8 +9,6 @@
 import XCTest
 @preconcurrency @testable import iBurn
 import PlayaDB
-import YapDatabase
-import Mantle
 
 // MARK: - Spies
 
@@ -131,6 +129,27 @@ private final class SpyEventStore: EventStoreProviding {
     }
 }
 
+/// Stand-in for a pre-PlayaDB identifier store (the YapDatabase-backed one was deleted
+/// with the rest of the legacy stack). Exercises `EventCalendarService`'s one-way
+/// takeover of EKEvents that an older build bookkept elsewhere.
+private final class StubLegacyCalendarIdentifierStore: LegacyCalendarIdentifierStore, @unchecked Sendable {
+    private(set) var identifiersByEvent: [String: [String]]
+    private(set) var clearedEventUIDs: [String] = []
+
+    init(identifiersByEvent: [String: [String]]) {
+        self.identifiersByEvent = identifiersByEvent
+    }
+
+    func identifiers(forEventUID apiEventUID: String) async -> [String] {
+        identifiersByEvent[apiEventUID] ?? []
+    }
+
+    func clearIdentifiers(forEventUID apiEventUID: String) async {
+        clearedEventUIDs.append(apiEventUID)
+        identifiersByEvent[apiEventUID] = []
+    }
+}
+
 // MARK: - Tests
 
 final class EventCalendarServiceTests: XCTestCase {
@@ -141,25 +160,17 @@ final class EventCalendarServiceTests: XCTestCase {
     /// calendar occurrence keys (ISO-8601 UTC).
     private static let occurrenceKeys = ["2026-08-31T19:00:00Z", "2026-09-01T19:00:00Z"]
 
-    private var databaseHelper: BRCTestDatabaseHelper!
-    private var connection: YapDatabaseConnection!
     private var playaDB: PlayaDB!
     private var store: SpyEventStore!
 
     override func setUp() {
         super.setUp()
-        databaseHelper = BRCTestDatabaseHelper()
-        databaseHelper.setUp()
-        connection = databaseHelper.connection
         store = SpyEventStore()
     }
 
     override func tearDown() {
         store = nil
         playaDB = nil
-        connection = nil
-        databaseHelper.tearDown()
-        databaseHelper = nil
         super.tearDown()
     }
 
@@ -189,46 +200,13 @@ final class EventCalendarServiceTests: XCTestCase {
         )
     }
 
-    /// Seeds the legacy per-occurrence Yap objects with EKEvent identifiers, the way an
-    /// install that favorited the event before this service shipped would look.
-    private func seedLegacyYapIdentifiers(_ identifiers: [String]) throws {
-        for (index, identifier) in identifiers.enumerated() {
-            let json: [String: Any] = [
-                "uid": "\(Self.eventUID)-\(index)",
-                "title": "Fairycore Tarot Meetup",
-                "year": 2026
-            ]
-            let model = try MTLJSONAdapter.model(of: BRCEventObject.self, fromJSONDictionary: json)
-            let event = try XCTUnwrap(model as? BRCEventObject)
-            let metadata = try XCTUnwrap(BRCEventMetadata())
-            metadata.isFavorite = true
-            metadata.calendarEventIdentifier = identifier
-            connection.readWrite { transaction in
-                transaction.setObject(event,
-                                      forKey: event.yapKey,
-                                      inCollection: event.yapCollection,
-                                      withMetadata: metadata)
-            }
+    /// Builds a legacy identifier store holding EKEvent identifiers for this event, the
+    /// way an install that favorited it before this service shipped would look.
+    private func makeLegacyStore(_ identifiers: [String]) -> StubLegacyCalendarIdentifierStore {
+        for identifier in identifiers {
             store.registerExisting(identifier: identifier)
         }
-    }
-
-    private func legacyIdentifiersInYap() throws -> [String?] {
-        var identifiers: [String?] = []
-        connection.read { transaction in
-            let collection = BRCEventObject.yapCollection
-            let keys = FavoriteSyncServiceImpl.occurrenceKeys(
-                from: transaction.allKeys(inCollection: collection),
-                apiUID: Self.eventUID
-            ).sorted()
-            for key in keys {
-                guard let event = transaction.object(forKey: key, inCollection: collection) as? BRCEventObject else {
-                    continue
-                }
-                identifiers.append((event.metadata(with: transaction) as? BRCEventMetadata)?.calendarEventIdentifier)
-            }
-        }
-        return identifiers
+        return StubLegacyCalendarIdentifierStore(identifiersByEvent: [Self.eventUID: identifiers])
     }
 
     /// Reconcile the way the app does it: the favorite state lands in PlayaDB first, then
@@ -548,40 +526,38 @@ final class EventCalendarServiceTests: XCTestCase {
         XCTAssertEqual(promptCount, 0)
     }
 
-    // MARK: - Legacy Yap Takeover
+    // MARK: - Legacy Identifier Takeover
 
-    func testUnfavoriteRemovesLegacyYapBookkeptEvents() async throws {
+    func testUnfavoriteRemovesLegacyBookkeptEvents() async throws {
         let db = try await makePlayaDB()
-        try seedLegacyYapIdentifiers(["legacy-0", "legacy-1"])
-        let legacyStore = YapLegacyCalendarIdentifierStore(connection: connection)
+        let legacyStore = makeLegacyStore(["legacy-0", "legacy-1"])
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
         // PlayaDB has no entries: everything in the calendar came from the legacy stack.
         try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertEqual(store.removedIdentifiers.sorted(), ["legacy-0", "legacy-1"])
-        XCTAssertEqual(try legacyIdentifiersInYap(), [nil, nil], "Yap identifiers must be cleared")
+        XCTAssertEqual(legacyStore.clearedEventUIDs, [Self.eventUID],
+                       "Legacy identifiers must be cleared")
     }
 
     func testFavoriteTakesOverLegacyEventsInsteadOfDuplicating() async throws {
         let db = try await makePlayaDB()
-        try seedLegacyYapIdentifiers(["legacy-0", "legacy-1"])
-        let legacyStore = YapLegacyCalendarIdentifierStore(connection: connection)
+        let legacyStore = makeLegacyStore(["legacy-0", "legacy-1"])
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
         try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.removedIdentifiers.sorted(), ["legacy-0", "legacy-1"])
         XCTAssertEqual(store.createdIdentifiers.count, 2, "One fresh EKEvent per occurrence")
-        XCTAssertEqual(try legacyIdentifiersInYap(), [nil, nil])
+        XCTAssertEqual(legacyStore.clearedEventUIDs, [Self.eventUID])
         let entries = try await db.fetchCalendarEntries(eventId: Self.eventUID)
         XCTAssertEqual(entries.count, 2)
     }
 
     func testTakeoverDoesNotRunOnceEntriesAreOwnedByPlayaDB() async throws {
         let db = try await makePlayaDB()
-        try seedLegacyYapIdentifiers(["legacy-0", "legacy-1"])
-        let legacyStore = YapLegacyCalendarIdentifierStore(connection: connection)
+        let legacyStore = makeLegacyStore(["legacy-0", "legacy-1"])
         let service = makeService(playaDB: db, legacyIdentifierStore: legacyStore)
 
         try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
@@ -589,60 +565,18 @@ final class EventCalendarServiceTests: XCTestCase {
         try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: true)
 
         XCTAssertEqual(store.removeAttempts.count, removalsAfterTakeover,
-                       "The Yap takeover is one-way; it must not repeat once PlayaDB owns the entries")
+                       "The takeover is one-way; it must not repeat once PlayaDB owns the entries")
     }
 
     func testTakeoverIsSkippedWithoutLegacyStore() async throws {
         let db = try await makePlayaDB()
-        try seedLegacyYapIdentifiers(["legacy-0", "legacy-1"])
+        store.registerExisting(identifier: "legacy-0")
+        store.registerExisting(identifier: "legacy-1")
         let service = makeService(playaDB: db, legacyIdentifierStore: nil)
 
         try await favoriteSeriesAndReconcile(service, db, uid: Self.eventUID, isFavorite: false)
 
         XCTAssertTrue(store.removeAttempts.isEmpty)
-        XCTAssertEqual(try legacyIdentifiersInYap(), ["legacy-0", "legacy-1"])
-    }
-
-    // MARK: - Hook Routing (feature flag)
-
-    func testHookRoutesToPlayaDBServiceWhenFlagIsOn() {
-        var reconciled: [(String, Bool)] = []
-        var legacyCalls: [String] = []
-        let hook = EventCalendarHookRouter.makeCalendarRefreshHook(
-            isPlayaDBSyncEnabled: { true },
-            playaDBReconcile: { uid, isFavorite in reconciled.append((uid, isFavorite)) },
-            legacyRefresh: { uid, _ in legacyCalls.append(uid) }
-        )
-
-        hook("\(Self.eventUID)-0", true)
-        hook("\(Self.eventUID)-12", false)
-
-        XCTAssertTrue(legacyCalls.isEmpty)
-        XCTAssertEqual(reconciled.map(\.0), [Self.eventUID, Self.eventUID],
-                       "Per-occurrence Yap uids must be normalized to the API uid")
-        XCTAssertEqual(reconciled.map(\.1), [true, false])
-    }
-
-    func testHookRoutesToLegacyWhenFlagIsOff() {
-        var reconciled: [String] = []
-        var legacyCalls: [(String, Bool)] = []
-        let hook = EventCalendarHookRouter.makeCalendarRefreshHook(
-            isPlayaDBSyncEnabled: { false },
-            playaDBReconcile: { uid, _ in reconciled.append(uid) },
-            legacyRefresh: { uid, isFavorite in legacyCalls.append((uid, isFavorite)) }
-        )
-
-        hook("\(Self.eventUID)-0", true)
-
-        XCTAssertTrue(reconciled.isEmpty)
-        XCTAssertEqual(legacyCalls.map(\.0), ["\(Self.eventUID)-0"],
-                       "The legacy hook keeps the raw per-occurrence uid")
-        XCTAssertEqual(legacyCalls.map(\.1), [true])
-    }
-
-    func testFeatureFlagDefaultsToPlayaDBSync() {
-        XCTAssertEqual(Preferences.FeatureFlags.usePlayaDBCalendarSync.key, "featureFlag.calendar.usePlayaDB")
-        XCTAssertTrue(Preferences.FeatureFlags.usePlayaDBCalendarSync.defaultValue)
     }
 
     // MARK: - Inline PlayaDB Fixtures (minimal PlayaAPI-format JSON)

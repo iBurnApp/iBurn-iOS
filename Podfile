@@ -9,10 +9,7 @@ target 'iBurn' do
 
 	pod 'Anchorage'
 
-	pod 'YapDatabase', :path => 'Submodules/YapDatabase/YapDatabase.podspec'
-
 	pod 'CocoaLumberjack/Swift'
-	pod 'Mantle', '~> 2.0'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
 	pod 'PureLayout', '~> 3.0'
@@ -23,7 +20,6 @@ target 'iBurn' do
 	pod 'CupertinoYankee', '~> 1.0'
 	pod 'DOFavoriteButton', :path => 'Submodules/DOFavoriteButton/DOFavoriteButton.podspec'
 	pod 'TUSafariActivity', '~> 1.0'
-	pod 'ASDayPicker', :path => 'Submodules/ASDayPicker/ASDayPicker.podspec'
 	pod 'KVOController', '~> 1.0'
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', :path => 'Submodules/PermissionScope/PermissionScope.podspec'

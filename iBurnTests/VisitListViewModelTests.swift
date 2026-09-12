@@ -15,34 +15,19 @@ import XCTest
 @preconcurrency @testable import iBurn
 @testable import PlayaDB
 
-/// No-op stand-in for the legacy YapDatabase mirror so tests never touch Yap.
-private final class StubFavoriteSyncService: FavoriteSyncService {
-    private(set) var mirroredFavorites: [(uid: String, isFavorite: Bool)] = []
-
-    func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async {
-        mirroredFavorites.append((uid, isFavorite))
-    }
-
-    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async {}
-
-    func mirrorNotes(type: FavoriteSyncObjectType, uid: String, notes: String) async {}
-}
-
 @MainActor
 final class VisitListViewModelTests: XCTestCase {
 
     private var playaDB: PlayaDB?
-    private var favoriteSync: StubFavoriteSyncService?
 
     private func makeViewModel() throws -> VisitListViewModel {
         let db = try XCTUnwrap(playaDB)
-        let sync = try XCTUnwrap(favoriteSync)
         return VisitListViewModel(
             playaDB: db,
-            artProvider: ArtDataProvider(playaDB: db, favoriteSync: sync),
-            campProvider: CampDataProvider(playaDB: db, favoriteSync: sync),
-            eventProvider: EventDataProvider(playaDB: db, favoriteSync: sync),
-            mvProvider: MutantVehicleDataProvider(playaDB: db, favoriteSync: sync),
+            artProvider: ArtDataProvider(playaDB: db),
+            campProvider: CampDataProvider(playaDB: db),
+            eventProvider: EventDataProvider(playaDB: db),
+            mvProvider: MutantVehicleDataProvider(playaDB: db),
             locationProvider: MockLocationProvider()
         )
     }
@@ -56,12 +41,10 @@ final class VisitListViewModelTests: XCTestCase {
             eventData: Self.eventJSON
         )
         playaDB = db
-        favoriteSync = StubFavoriteSyncService()
     }
 
     override func tearDown() async throws {
         playaDB = nil
-        favoriteSync = nil
         try await super.tearDown()
     }
 

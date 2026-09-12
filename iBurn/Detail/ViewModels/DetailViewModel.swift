@@ -32,12 +32,11 @@ struct ImageColors {
 class DetailViewModel: ObservableObject {
     // MARK: - Published State
     @Published var subject: DetailSubject
-    @Published var legacyMetadata: BRCObjectMetadata?
     @Published var isFavorite: Bool
     @Published var userNotes: String
     @Published var firstViewed: Date?
     @Published var lastViewed: Date?
-    /// Visit status raw value for PlayaDB subjects (legacy subjects read `legacyMetadata`).
+    /// Visit status raw value for the PlayaDB subject.
     @Published var playaVisitStatus: Int = 0
     @Published var extractedImageColors: BRCImageColors?
     @Published var cells: [DetailCell] = []
@@ -47,20 +46,14 @@ class DetailViewModel: ObservableObject {
     @Published var selectedImage: UIImage?
     
     // MARK: - Dependencies
-    private let dataService: DetailDataServiceProtocol?
     private let playaDB: PlayaDB?
     private let mediaProvider: MediaAssetProviding
 
-    private let audioService: AudioServiceProtocol?
     private let audioPlayer: any AudioPlayerProtocol
     private let locationService: LocationServiceProtocol
     private let coordinator: DetailActionCoordinator
 
     private let rowAssets: RowAssetsLoader?
-
-    /// Mirrors PlayaDB favorite changes into the legacy YapDatabase.
-    /// Lazy so BRCDatabaseManager is only touched on first use; injectable for tests.
-    lazy var favoriteSyncService: FavoriteSyncService = FavoriteSyncServiceFactory.shared
 
     // MARK: - Private Properties
     private var preloadedImages: [String: UIImage] = [:]
@@ -87,50 +80,6 @@ class DetailViewModel: ObservableObject {
     
     // MARK: - Initialization
 
-    /// Backwards-compatible initializer for legacy YapDB-backed detail screens.
-    init(
-        dataObject: BRCDataObject,
-        dataService: DetailDataServiceProtocol,
-        audioService: AudioServiceProtocol,
-        locationService: LocationServiceProtocol,
-        coordinator: DetailActionCoordinator
-    ) {
-        let mediaProvider = BRCMediaAssetProvider()
-        let rowAssets: RowAssetsLoader?
-        if dataObject is BRCArtObject || dataObject is BRCCampObject {
-            rowAssets = RowAssetsLoader(objectID: dataObject.uniqueID, provider: mediaProvider)
-        } else {
-            rowAssets = nil
-        }
-
-        self.subject = .legacy(dataObject)
-        self.dataService = dataService
-        self.playaDB = nil
-        self.mediaProvider = mediaProvider
-        self.audioService = audioService
-        self.audioPlayer = BRCAudioPlayer.sharedInstance
-        self.locationService = locationService
-        self.coordinator = coordinator
-        self.rowAssets = rowAssets
-
-        // `BRCObjectMetadata`'s default init comes from Mantle (Obj-C) and may be imported as optional.
-        // In practice it should always succeed; force-unwrap so downstream APIs can keep using a
-        // non-optional metadata object.
-        let md = dataService.getMetadata(for: dataObject) ?? BRCObjectMetadata()!
-        self.legacyMetadata = md
-        self.isFavorite = md.isFavorite
-        self.userNotes = md.userNotes ?? ""
-        self.extractedImageColors = rowAssets?.colors
-
-        rowAssets?.$colors
-            .sink { [weak self] colors in
-                self?.extractedImageColors = colors
-            }
-            .store(in: &cancellables)
-
-        setupAudioNotificationObserver()
-    }
-
     /// PlayaDB-backed initializer.
     /// - Parameters:
     ///   - preloadedMetadata: Optional pre-loaded metadata from ListRow (avoids async query on first render).
@@ -145,14 +94,6 @@ class DetailViewModel: ObservableObject {
         mediaProvider: MediaAssetProviding = BRCMediaAssetProvider(),
         audioPlayer: any AudioPlayerProtocol = BRCAudioPlayer.sharedInstance
     ) {
-        precondition(
-            {
-                if case .legacy = subject { return false }
-                return true
-            }(),
-            "Use the legacy initializer for BRCDataObject"
-        )
-
         let rowAssets: RowAssetsLoader?
         switch subject {
         case .art(let art):
@@ -161,21 +102,17 @@ class DetailViewModel: ObservableObject {
             rowAssets = RowAssetsLoader(objectID: camp.uid, provider: mediaProvider)
         case .mutantVehicle(let mv):
             rowAssets = RowAssetsLoader(objectID: mv.uid, provider: mediaProvider)
-        case .event, .eventOccurrence, .legacy:
+        case .event, .eventOccurrence:
             rowAssets = nil
         }
 
         self.subject = subject
-        self.dataService = nil
         self.playaDB = playaDB
         self.mediaProvider = mediaProvider
-        self.audioService = nil
         self.audioPlayer = audioPlayer
         self.locationService = locationService
         self.coordinator = coordinator
         self.rowAssets = rowAssets
-
-        self.legacyMetadata = nil
 
         // Apply pre-loaded metadata immediately (avoids async flicker)
         if let md = preloadedMetadata {
@@ -217,11 +154,6 @@ class DetailViewModel: ObservableObject {
 
     var title: String { subject.title }
 
-    var showsCalendarButton: Bool {
-        if case .legacy(let obj) = subject, obj is BRCEventObject { return true }
-        return false
-    }
-    
     // MARK: - Public Methods
     
     func loadData() async {
@@ -239,17 +171,6 @@ class DetailViewModel: ObservableObject {
     /// Phase 1: Quick metadata queries to show content ASAP
     private func loadMetadata() async {
         switch subject {
-        case .legacy(let obj):
-            guard let dataService else { break }
-            if let updated = dataService.getMetadata(for: obj) {
-                legacyMetadata = updated
-                isFavorite = updated.isFavorite
-                userNotes = updated.userNotes ?? ""
-            }
-            if let artObject = obj as? BRCArtObject, artObject.audioURL != nil {
-                isAudioPlaying = audioService?.isPlaying(artObject: artObject) ?? false
-            }
-
         case .art(let art):
             guard let playaDB else { break }
             do {
@@ -337,9 +258,6 @@ class DetailViewModel: ObservableObject {
         needsRefresh = !preloadedImages.isEmpty
 
         switch subject {
-        case .legacy:
-            break
-
         case .art(let art):
             guard let playaDB else { break }
             try? await playaDB.setLastViewed(Date(), for: art)
@@ -426,39 +344,30 @@ class DetailViewModel: ObservableObject {
     }
     
     func toggleFavorite() async {
-        let newFavoriteStatus = !isFavorite
-
         do {
             switch subject {
-            case .legacy(let obj):
-                guard let dataService else { throw DetailError.invalidData }
-                try await dataService.updateFavoriteStatus(for: obj, isFavorite: newFavoriteStatus)
-                legacyMetadata?.isFavorite = newFavoriteStatus
-                isFavorite = newFavoriteStatus
             case .art(let art):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(art)
                 isFavorite = try await playaDB.isFavorite(art)
-                syncFavoriteToYapDB(type: .art, uid: art.uid, isFavorite: isFavorite)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(camp)
                 isFavorite = try await playaDB.isFavorite(camp)
-                syncFavoriteToYapDB(type: .camp, uid: camp.uid, isFavorite: isFavorite)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 // A bare EventObject names no particular showing, so its heart means the
-                // whole series — PlayaDB toggles every occurrence, and the bare uid fans
-                // the mirror out to every Yap occurrence to match.
+                // whole series — PlayaDB toggles every occurrence, and the bare uid
+                // reconciles the calendar for all of them.
                 try await playaDB.toggleFavorite(event)
                 isFavorite = try await playaDB.isFavorite(event)
-                syncFavoriteToYapDB(type: .event, uid: event.uid, isFavorite: isFavorite)
+                EventCalendarSync.reconcile(favoriteIdentity: event.uid, isFavorite: isFavorite)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(occ)
                 isFavorite = try await playaDB.isFavorite(occ)
                 // The occurrence's composite identity: only this showing changed.
-                syncFavoriteToYapDB(type: .event, uid: occ.favoriteIdentity, isFavorite: isFavorite)
+                EventCalendarSync.reconcile(favoriteIdentity: occ.favoriteIdentity, isFavorite: isFavorite)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.toggleFavorite(mv)
@@ -475,31 +384,22 @@ class DetailViewModel: ObservableObject {
     func updateNotes(_ notes: String) async {
         do {
             switch subject {
-            case .legacy(let obj):
-                guard let dataService else { throw DetailError.invalidData }
-                try await dataService.updateUserNotes(for: obj, notes: notes)
-                legacyMetadata?.userNotes = notes
-                userNotes = notes
             case .art(let art):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: art)
                 userNotes = notes
-                syncNotesToYapDB(type: .art, uid: art.uid, notes: notes)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: camp)
                 userNotes = notes
-                syncNotesToYapDB(type: .camp, uid: camp.uid, notes: notes)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: event)
                 userNotes = notes
-                syncNotesToYapDB(type: .event, uid: event.uid, notes: notes)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: occ.event)
                 userNotes = notes
-                syncNotesToYapDB(type: .event, uid: occ.event.uid, notes: notes)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setUserNotes(notes.isEmpty ? nil : notes, for: mv)
@@ -517,34 +417,22 @@ class DetailViewModel: ObservableObject {
         do {
             let playaStatus = VisitStatus(rawValue: status.rawValue) ?? .unvisited
             switch subject {
-            case .legacy(let obj):
-                guard let dataService else { return }
-                // Writes Yap and dual-writes PlayaDB (see DetailDataService.syncVisitStatusToPlayaDB,
-                // which normalizes per-occurrence event uids "<apiUID>-<index>" to the bare API uid) —
-                // same routing as updateFavoriteStatus/updateUserNotes for legacy subjects, where
-                // `self.playaDB` is nil and the data service owns the PlayaDB handle.
-                try await dataService.updateVisitStatus(for: obj, visitStatus: status)
-                legacyMetadata?.visitStatus = status.rawValue
             case .art(let art):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setVisitStatus(playaStatus, for: art)
                 playaVisitStatus = status.rawValue
-                syncVisitStatusToYapDB(type: .art, uid: art.uid, visitStatus: status.rawValue)
             case .camp(let camp):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setVisitStatus(playaStatus, for: camp)
                 playaVisitStatus = status.rawValue
-                syncVisitStatusToYapDB(type: .camp, uid: camp.uid, visitStatus: status.rawValue)
             case .event(let event):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setVisitStatus(playaStatus, for: event)
                 playaVisitStatus = status.rawValue
-                syncVisitStatusToYapDB(type: .event, uid: event.uid, visitStatus: status.rawValue)
             case .eventOccurrence(let occ):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setVisitStatus(playaStatus, for: occ)
                 playaVisitStatus = status.rawValue
-                syncVisitStatusToYapDB(type: .event, uid: occ.event.uid, visitStatus: status.rawValue)
             case .mutantVehicle(let mv):
                 guard let playaDB else { throw DetailError.invalidData }
                 try await playaDB.setVisitStatus(playaStatus, for: mv)
@@ -554,38 +442,6 @@ class DetailViewModel: ObservableObject {
 
         } catch {
             self.error = error
-        }
-    }
-
-    // MARK: - YapDB Sync (backward compat during migration)
-
-    /// Fire-and-forget mirror into legacy YapDatabase via the shared FavoriteSyncService.
-    /// For events this fans out to every per-occurrence Yap object ("<apiUID>-<index>")
-    /// and refreshes each one's calendar entry (EKEvent created/removed).
-    private func syncFavoriteToYapDB(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) {
-        let service = favoriteSyncService
-        Task {
-            await service.mirrorFavorite(type: type, uid: uid, isFavorite: isFavorite)
-        }
-    }
-
-    /// Fire-and-forget visit-status mirror into legacy YapDatabase (event uids fan out
-    /// to every per-occurrence object; no calendar side effects).
-    private func syncVisitStatusToYapDB(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) {
-        let service = favoriteSyncService
-        Task {
-            await service.mirrorVisitStatus(type: type, uid: uid, visitStatus: visitStatus)
-        }
-    }
-
-    /// Fire-and-forget notes mirror into legacy YapDatabase. Routed through
-    /// `FavoriteSyncService` so event uids fan out to every per-occurrence Yap object
-    /// ("<apiUID>-<index>"); writing the bare PlayaDB uid straight into
-    /// `BRCEventObject.yapCollection` matched no key at all. No calendar side effects.
-    private func syncNotesToYapDB(type: FavoriteSyncObjectType, uid: String, notes: String) {
-        let service = favoriteSyncService
-        Task {
-            await service.mirrorNotes(type: type, uid: uid, notes: notes)
         }
     }
 
@@ -615,8 +471,6 @@ class DetailViewModel: ObservableObject {
         case .playaAddress(_, let tappable):
             if tappable {
                 switch subject {
-                case .legacy(let legacyObject):
-                    coordinator.handle(.showMap(legacyObject))
                 case .art(let art):
                     if let annotation = PlayaObjectAnnotation(art: art) {
                         coordinator.handle(.showMapAnnotation(annotation, title: "Map - \(art.name)"))
@@ -633,21 +487,9 @@ class DetailViewModel: ObservableObject {
         case .image(let image, _):
             selectedImage = image
             
-        case .mapView(let dataObject, _):
-            coordinator.handle(.showMap(dataObject))
-
         case .mapAnnotation(let annotation, let title):
             coordinator.handle(.showMapAnnotation(annotation, title: title))
             
-        case .audio(let artObject, _):
-            guard let audioService else { break }
-            if audioService.isPlaying(artObject: artObject) {
-                audioService.pauseAudio()
-            } else {
-                audioService.playAudio(artObjects: [artObject])
-            }
-            // Audio state will be updated via notification observer
-
         case .audioTrack(let track, _):
             audioPlayer.playAudioTour([track])
             isAudioPlaying = audioPlayer.isPlaying(id: track.uid)
@@ -666,17 +508,8 @@ class DetailViewModel: ObservableObject {
         }
     }
     
-    func showEventEditor() {
-        if case .legacy(let legacyObject) = subject, let eventObject = legacyObject as? BRCEventObject {
-            coordinator.handle(.showEventEditor(eventObject))
-        }
-    }
-    
     func shareObject() {
         switch subject {
-        case .legacy(let legacyObject):
-            // Show QR code share screen instead of direct share sheet
-            coordinator.handle(.showShareScreen(legacyObject))
         case .mutantVehicle(let mv):
             // Mutant vehicles have no deep link type on iburnapp.com yet.
             coordinator.handle(.share(["Mutant Vehicle: \(mv.name)\nID: \(mv.uid)"]))
@@ -718,7 +551,7 @@ class DetailViewModel: ObservableObject {
             )
         case .eventOccurrence(let occ):
             return .event(occ, canShowLocation: BRCEmbargo.canShowLocation(for: occ))
-        case .legacy, .mutantVehicle:
+        case .mutantVehicle:
             return nil
         }
     }
@@ -743,42 +576,22 @@ class DetailViewModel: ObservableObject {
     }
 
 
-    /// Extract theme colors following the same logic as BRCDetailViewController
+    /// Extract theme colors for the detail screen.
     func getThemeColors() -> ImageColors {
         ImageColors(getThemeBRCColors())
     }
 
-    /// UIKit-friendly theme colors for navigation bar theming and legacy parity.
+    /// UIKit-friendly theme colors for navigation bar theming.
     func getThemeBRCColors() -> BRCImageColors {
         // If image colors theming is disabled, always return global theme colors
         if !Appearance.useImageColorsTheming {
             return Appearance.currentColors
         }
 
-        switch subject {
-        case .legacy(let legacyObject):
-            // Special handling for events - try to get colors from hosting camp first
-            if let eventObject = legacyObject as? BRCEventObject {
-                return getEventThemeBRCColors(for: eventObject)
-            }
-
-            // For Art/Camp objects, check if metadata has thumbnail colors
-            if let artMetadata = legacyMetadata as? BRCArtMetadata,
-               let imageColors = artMetadata.thumbnailImageColors {
-                return imageColors
-            } else if let campMetadata = legacyMetadata as? BRCCampMetadata,
-                      let imageColors = campMetadata.thumbnailImageColors {
-                return imageColors
-            }
-
-            return Appearance.currentColors
-
-        case .art, .camp, .event, .eventOccurrence, .mutantVehicle:
-            if let colors = extractedImageColors {
-                return colors
-            }
-            return Appearance.currentColors
+        if let colors = extractedImageColors {
+            return colors
         }
+        return Appearance.currentColors
     }
     
     // MARK: - Audio State Management
@@ -801,13 +614,6 @@ class DetailViewModel: ObservableObject {
         let wasPlaying = isAudioPlaying
 
         switch subject {
-        case .legacy(let legacyObject):
-            guard let artObject = legacyObject as? BRCArtObject,
-                  artObject.audioURL != nil else {
-                return
-            }
-            isAudioPlaying = audioService?.isPlaying(artObject: artObject) ?? false
-
         case .art(let art):
             guard localAudioURL(objectID: art.uid) != nil else { return }
             isAudioPlaying = audioPlayer.isPlaying(id: art.uid)
@@ -821,24 +627,6 @@ class DetailViewModel: ObservableObject {
         }
     }
     
-    /// Handle event-specific color logic - try hosting camp colors first
-    private func getEventThemeBRCColors(for event: BRCEventObject) -> BRCImageColors {
-        // Try to get colors from hosting camp's image first
-        if let campId = event.hostedByCampUniqueID,
-           let dataService,
-           let camp = dataService.getCamp(withId: campId) {
-            
-            // Get camp metadata and check for image colors
-            if let campMetadata = dataService.getMetadata(for: camp) as? BRCCampMetadata,
-               let campImageColors = campMetadata.thumbnailImageColors {
-                return campImageColors
-            }
-        }
-        
-        // Fallback to event type colors
-        return BRCImageColors.colors(for: event.eventType)
-    }
-    
     // MARK: - Private Methods
     
     private func generateCells() -> [DetailCell] {
@@ -848,11 +636,6 @@ class DetailViewModel: ObservableObject {
     
     private func generateCellTypes() -> [DetailCellType] {
         switch subject {
-        case .legacy(let legacyObject):
-            guard let dataService else { return [] }
-            let md = legacyMetadata ?? BRCObjectMetadata()!
-            return generateLegacyCellTypes(legacyObject, metadata: md, dataService: dataService)
-
         case .art(let art):
             return generatePlayaArtCellTypes(art)
         case .camp(let camp):
@@ -866,77 +649,6 @@ class DetailViewModel: ObservableObject {
         }
     }
 
-    private func generateLegacyCellTypes(
-        _ dataObject: BRCDataObject,
-        metadata: BRCObjectMetadata,
-        dataService: DetailDataServiceProtocol
-    ) -> [DetailCellType] {
-        var cellTypes: [DetailCellType] = []
-        var hasImage = false
-
-        // Add image header first if available (for all object types)
-        if let artObject = dataObject as? BRCArtObject,
-           let imageURL = artObject.localThumbnailURL,
-           let image = loadImage(from: imageURL) {
-            let aspectRatio = image.size.width / image.size.height
-            cellTypes.append(.image(image, aspectRatio: aspectRatio))
-            hasImage = true
-        }
-        // Add camp image for camp objects
-        else if let campObject = dataObject as? BRCCampObject,
-                let imageURL = campObject.localThumbnailURL,
-                let image = loadImage(from: imageURL) {
-            let aspectRatio = image.size.width / image.size.height
-            cellTypes.append(.image(image, aspectRatio: aspectRatio))
-            hasImage = true
-        }
-        // Add host image for event objects (camp or art)
-        else if let eventObject = dataObject as? BRCEventObject {
-            if let campImage = loadHostCampImage(for: eventObject, dataService: dataService) {
-                let aspectRatio = campImage.size.width / campImage.size.height
-                cellTypes.append(.image(campImage, aspectRatio: aspectRatio))
-                hasImage = true
-            } else if let artImage = loadHostArtImage(for: eventObject, dataService: dataService) {
-                let aspectRatio = artImage.size.width / artImage.size.height
-                cellTypes.append(.image(artImage, aspectRatio: aspectRatio))
-                hasImage = true
-            }
-        }
-
-        // Add map view if object has location and is not embargoed
-        // Only add here if no image exists, otherwise add it later before GPS coordinates
-        if shouldShowMap(dataObject) && !hasImage {
-            cellTypes.append(.mapView(dataObject, metadata: metadata))
-        }
-
-        // Add title
-        let title = dataObject.title
-        if !title.isEmpty {
-            cellTypes.append(.text(title, style: .title))
-        }
-
-        // Add description
-        if let description = dataObject.detailDescription, !description.isEmpty {
-            cellTypes.append(.text(description, style: .body))
-        }
-
-        // Add type-specific cells
-        if let artObject = dataObject as? BRCArtObject {
-            cellTypes.append(contentsOf: generateArtCells(artObject, dataService: dataService))
-        } else if let campObject = dataObject as? BRCCampObject {
-            cellTypes.append(contentsOf: generateCampCells(campObject, dataService: dataService))
-        } else if let eventObject = dataObject as? BRCEventObject {
-            cellTypes.append(contentsOf: generateEventCells(eventObject, dataService: dataService))
-        }
-
-        // Add common cells
-        cellTypes.append(contentsOf: generateLegacyCommonCells(dataObject: dataObject, metadata: metadata, dataService: dataService, hasImage: hasImage))
-
-        // Add metadata section at the end
-        cellTypes.append(contentsOf: generateLegacyMetadataCells(metadata))
-
-        return cellTypes
-    }
 
     private func generatePlayaArtCellTypes(_ art: ArtObject) -> [DetailCellType] {
         var cellTypes: [DetailCellType] = []
@@ -1423,230 +1135,12 @@ class DetailViewModel: ObservableObject {
         return attributedString
     }
 
-    private func generateArtCells(_ art: BRCArtObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
-        var cells: [DetailCellType] = []
-        
-        // Artist name
-        let artistName = art.artistName
-        if !artistName.isEmpty {
-            cells.append(.text("Artist: \(artistName)", style: .subtitle))
-        }
-        
-        // Artist location
-        let artistLocation = art.artistLocation
-        if !artistLocation.isEmpty {
-            cells.append(.text("Artist Location: \(artistLocation)", style: .caption))
-        }
-        
-        // Location with embargo handling
-        let locationValue = getLocationValue(for: art, dataService: dataService)
-        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: art)))
-        
-        // Audio tour
-        if art.audioURL != nil {
-            cells.append(.audio(art, isPlaying: isAudioPlaying))
-        }
-        
-        // Next event
-        if let nextEvent = dataService.getNextEvent(for: art) {
-            let scheduleText = Self.formatEventTimeAndDuration(
-                startDate: nextEvent.startDate as Date?,
-                endDate: nextEvent.endDate as Date?
-            )
-            cells.append(.nextHostEvent(
-                title: nextEvent.title,
-                scheduleText: scheduleText,
-                hostName: art.title,
-                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
-            ))
-        }
 
-        // Hosted events
-        if let events = dataService.getEvents(for: art), !events.isEmpty {
-            cells.append(.eventRelationship(
-                count: events.count,
-                hostName: art.title,
-                onTap: { [weak self] in self?.coordinator.handle(.showEventsList(events, hostName: art.title)) }
-            ))
-        }
 
-        return cells
-    }
-
-    private func generateCampCells(_ camp: BRCCampObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
-        var cells: [DetailCellType] = []
-        
-        // Hometown
-        if let hometown = camp.hometown, !hometown.isEmpty {
-            cells.append(.text("Hometown: \(hometown)", style: .caption))
-        }
-        
-        // Landmark
-        if let landmark = camp.landmark, !landmark.isEmpty {
-            cells.append(.landmark(landmark))
-        }
-        
-        // Location with embargo handling
-        let locationValue = getLocationValue(for: camp, dataService: dataService)
-        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: camp)))
-        
-        // Next event
-        if let nextEvent = dataService.getNextEvent(for: camp) {
-            let scheduleText = Self.formatEventTimeAndDuration(
-                startDate: nextEvent.startDate as Date?,
-                endDate: nextEvent.endDate as Date?
-            )
-            cells.append(.nextHostEvent(
-                title: nextEvent.title,
-                scheduleText: scheduleText,
-                hostName: camp.title,
-                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
-            ))
-        }
-
-        // Hosted events
-        if let events = dataService.getEvents(for: camp), !events.isEmpty {
-            cells.append(.eventRelationship(
-                count: events.count,
-                hostName: camp.title,
-                onTap: { [weak self] in self?.coordinator.handle(.showEventsList(events, hostName: camp.title)) }
-            ))
-        }
-
-        return cells
-    }
-
-    private func generateEventCells(_ event: BRCEventObject, dataService: DetailDataServiceProtocol) -> [DetailCellType] {
-        var cells: [DetailCellType] = []
-        
-        // Host relationship (camp or art)
-        var hostName: String?
-        var hostId: String?
-        
-        if let campId = event.hostedByCampUniqueID,
-           let camp = dataService.getCamp(withId: campId) {
-            cells.append(.relationship(
-                title: camp.title,
-                type: .hostedBy(camp.title),
-                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(camp)) }
-            ))
-            hostName = camp.title
-            hostId = campId
-        } else if let artId = event.hostedByArtUniqueID,
-                  let art = dataService.getArt(withId: artId) {
-            cells.append(.relationship(
-                title: art.title,
-                type: .hostedBy(art.title),
-                onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(art)) }
-            ))
-            hostName = art.title
-            hostId = artId
-        }
-        
-        // Next event and all events from the same host
-        if let hostId = hostId, let hostName = hostName {
-            // Get next event from the same host
-            if let nextEvent = dataService.getNextEvent(forHostId: hostId, after: event) {
-                let scheduleText = Self.formatEventTimeAndDuration(
-                    startDate: nextEvent.startDate as Date?,
-                    endDate: nextEvent.endDate as Date?
-                )
-                cells.append(.nextHostEvent(
-                    title: nextEvent.title,
-                    scheduleText: scheduleText,
-                    hostName: hostName,
-                    onTap: { [weak self] in self?.coordinator.handle(.navigateToObject(nextEvent)) }
-                ))
-            }
-
-            // Get count of other events and show "see all" if more than just next event
-            let otherEventsCount = dataService.getOtherEventsCount(forHostId: hostId, excluding: event)
-            if otherEventsCount > 0 {
-                cells.append(.allHostEvents(
-                    count: otherEventsCount,
-                    hostName: hostName,
-                    onTap: { [weak self] in
-                        guard let self else { return }
-                        var allEvents: [BRCEventObject] = []
-                        if let camp = dataService.getCamp(withId: hostId) {
-                            allEvents = dataService.getEvents(for: camp) ?? []
-                        } else if let art = dataService.getArt(withId: hostId) {
-                            allEvents = dataService.getEvents(for: art) ?? []
-                        }
-                        self.coordinator.handle(.showEventsList(allEvents, hostName: hostName))
-                    }
-                ))
-            }
-        }
-        
-        // Schedule information with proper formatting
-        if let startDate = event.startDate as Date?,
-           let endDate = event.endDate as Date? {
-            let scheduleString = formatEventSchedule(event: event, startDate: startDate, endDate: endDate)
-            cells.append(.schedule(scheduleString))
-        }
-        
-        // Location with embargo handling
-        let locationValue = getLocationValue(for: event, dataService: dataService)
-        cells.append(.playaAddress(locationValue, tappable: dataService.canShowLocation(for: event)))
-        
-        // Event type section
-        cells.append(.eventType(emoji: event.eventType.emoji, label: event.eventType.displayString))
-
-        // Add host description if available
-        if let hostDescription = getHostDescription(for: event) {
-            cells.append(.text(hostDescription, style: .body))
-        }
-
-        return cells
-    }
     
-    private func formatEventSchedule(event: BRCEventObject, startDate: Date, endDate: Date) -> NSAttributedString {
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "EEEE M/d"
-        dayFormatter.timeZone = TimeZone.burningManTimeZone
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
-        
-        let dayString = dayFormatter.string(from: startDate)
-        var timeString: String
-        
-        if event.isAllDay {
-            let start = timeFormatter.string(from: startDate)
-            let end = timeFormatter.string(from: endDate)
-            timeString = "All Day (\(start) - \(end))"
-        } else {
-            let start = timeFormatter.string(from: startDate)
-            let end = timeFormatter.string(from: endDate)
-            timeString = "\(start) - \(end)"
-        }
-        
-        let fullString = "\(dayString)\n\(timeString)"
-        let attributedString = NSMutableAttributedString(string: fullString)
-        
-        // Color the time portion based on event status
-        let timeColor = getEventTimeColor(for: event, startDate: startDate, endDate: endDate)
-        let timeRange = NSRange(location: dayString.count + 1, length: timeString.count)
-        attributedString.addAttribute(.foregroundColor, value: timeColor, range: timeRange)
-        
-        return attributedString
-    }
     
-    private func getEventTimeColor(for event: BRCEventObject, startDate: Date, endDate: Date) -> UIColor {
-        let now = Date()
-        if now < startDate {
-            return .systemGreen // Future event
-        } else if now >= startDate && now <= endDate {
-            return .systemOrange // Current event
-        } else {
-            return .systemRed // Past event
-        }
-    }
 
     /// Formats start/end dates into a "Day at Time - Duration" string.
-    /// Shared between legacy and PlayaDB paths.
     static func formatEventTimeAndDuration(startDate: Date?, endDate: Date?) -> String {
         guard let startDate, let endDate else { return "" }
         let calendar = Calendar.current
@@ -1681,50 +1175,7 @@ class DetailViewModel: ObservableObject {
         return "\(timeString) \u{2022} \(durationString)"
     }
 
-    private func getLocationValue(for object: BRCDataObject, dataService: DetailDataServiceProtocol) -> String {
-        if !dataService.canShowLocation(for: object) {
-            return "Restricted"
-        }
-        
-        // Special handling for events - prioritize host location
-        if let event = object as? BRCEventObject {
-            // Try camp host location first
-            if let campId = event.hostedByCampUniqueID,
-               let camp = dataService.getCamp(withId: campId),
-               let campLocation = camp.playaLocation, !campLocation.isEmpty {
-                return campLocation
-            }
-            // Try art host location
-            else if let artId = event.hostedByArtUniqueID,
-                    let art = dataService.getArt(withId: artId),
-                    let artLocation = art.playaLocation, !artLocation.isEmpty {
-                return artLocation
-            }
-        }
-        
-        // Default to object's own location
-        if let location = object.playaLocation, !location.isEmpty {
-            return location
-        } else {
-            return "Unknown"
-        }
-    }
     
-    private func getHostDescription(for event: BRCEventObject) -> String? {
-        guard let dataService else { return nil }
-        if let campId = event.hostedByCampUniqueID,
-           let camp = dataService.getCamp(withId: campId),
-           let description = camp.detailDescription,
-           !description.isEmpty {
-            return description
-        } else if let artId = event.hostedByArtUniqueID,
-                  let art = dataService.getArt(withId: artId),
-                  let description = art.detailDescription,
-                  !description.isEmpty {
-            return description
-        }
-        return nil
-    }
     
     private func generateHostImageCells() -> [DetailCellType] {
         let cells: [DetailCellType] = []
@@ -1735,64 +1186,7 @@ class DetailViewModel: ObservableObject {
         return cells
     }
     
-    private func generateLegacyCommonCells(
-        dataObject: BRCDataObject,
-        metadata: BRCObjectMetadata,
-        dataService: DetailDataServiceProtocol,
-        hasImage: Bool
-    ) -> [DetailCellType] {
-        var cells: [DetailCellType] = []
 
-        // Email
-        if let email = dataObject.email, !email.isEmpty {
-            cells.append(.email(email, label: "Contact"))
-        }
-
-        // URL
-        if let url = dataObject.url {
-            cells.append(.url(url, title: "Website"))
-        }
-
-        // Add map view here if image exists (so it appears above GPS coordinates)
-        if shouldShowMap(dataObject) && hasImage {
-            cells.append(.mapView(dataObject, metadata: metadata))
-        }
-
-        // GPS coordinates - only show if embargo allows
-        if dataService.canShowLocation(for: dataObject), let location = dataObject.location {
-            cells.append(.coordinates(location.coordinate, label: "GPS Coordinates"))
-        }
-
-        // Distance
-        if let distance = locationService.distanceToObject(dataObject) {
-            cells.append(.distance(distance))
-            cells.append(.travelTime(distance))
-        }
-
-        // User notes
-        cells.append(.userNotes(userNotes))
-
-        // Visit status
-        let visitStatus = BRCVisitStatus(rawValue: metadata.visitStatus) ?? .unvisited
-        cells.append(.visitStatus(visitStatus))
-
-        return cells
-    }
-
-    private func generateLegacyMetadataCells(_ metadata: BRCObjectMetadata) -> [DetailCellType] {
-        var cells: [DetailCellType] = []
-
-        if let updateDate = metadata.lastUpdated {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .short
-            formatter.timeStyle = .short
-            formatter.timeZone = TimeZone.burningManTimeZone
-            let dateString = formatter.string(from: updateDate)
-            cells.append(.text("Last Updated: \(dateString)", style: .caption))
-        }
-
-        return cells
-    }
     
     private func loadImage(from url: URL) -> UIImage? {
         // Check preloaded cache first
@@ -1808,23 +1202,6 @@ class DetailViewModel: ObservableObject {
         var urls: [URL] = []
 
         switch subject {
-        case .legacy(let obj):
-            if let artObj = obj as? BRCArtObject, let url = artObj.localThumbnailURL {
-                urls.append(url)
-            } else if let campObj = obj as? BRCCampObject, let url = campObj.localThumbnailURL {
-                urls.append(url)
-            } else if let eventObj = obj as? BRCEventObject {
-                if let campId = eventObj.hostedByCampUniqueID,
-                   let camp = dataService?.getCamp(withId: campId),
-                   let url = camp.localThumbnailURL {
-                    urls.append(url)
-                }
-                if let artId = eventObj.hostedByArtUniqueID,
-                   let art = dataService?.getArt(withId: artId),
-                   let url = art.localThumbnailURL {
-                    urls.append(url)
-                }
-            }
         case .art(let art):
             if let url = localThumbnailURL(objectID: art.uid) { urls.append(url) }
         case .camp(let camp):
@@ -1853,27 +1230,7 @@ class DetailViewModel: ObservableObject {
         preloadedImages = loaded
     }
 
-    private func loadHostCampImage(for event: BRCEventObject, dataService: DetailDataServiceProtocol) -> UIImage? {
-        guard let campId = event.hostedByCampUniqueID else { return nil }
 
-        if let camp = dataService.getCamp(withId: campId),
-           let imageURL = camp.localThumbnailURL {
-            return loadImage(from: imageURL)
-        }
-
-        return nil
-    }
-
-    private func loadHostArtImage(for event: BRCEventObject, dataService: DetailDataServiceProtocol) -> UIImage? {
-        guard let artId = event.hostedByArtUniqueID else { return nil }
-
-        if let art = dataService.getArt(withId: artId),
-           let imageURL = art.localThumbnailURL {
-            return loadImage(from: imageURL)
-        }
-
-        return nil
-    }
 
     private func localThumbnailURL(objectID: String) -> URL? {
         mediaProvider.localThumbnailURL(objectID: objectID)
@@ -2099,19 +1456,4 @@ class DetailViewModel: ObservableObject {
         return cells
     }
 
-    /// Determines if map should be shown based on location and embargo status
-    /// Following the same logic as BRCDetailViewController.setupMapViewWithObject:
-    private func shouldShowMap(_ dataObject: BRCDataObject) -> Bool {
-        // Check if object has location data and embargo allows showing it
-        if let _ = dataObject.location, BRCEmbargo.canShowLocation(for: dataObject) {
-            return true
-        }
-        
-        // Also check for burner map location (user-set location)
-        if let _ = dataObject.burnerMapLocation {
-            return true
-        }
-        
-        return false
-    }
 }

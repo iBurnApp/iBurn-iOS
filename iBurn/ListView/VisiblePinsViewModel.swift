@@ -136,7 +136,6 @@ final class VisiblePinsViewModel: ObservableObject {
     // MARK: Dependencies
 
     private let playaDB: PlayaDB
-    private let favoriteSync: FavoriteSyncService
     private let locationProvider: LocationProvider
 
     // MARK: State
@@ -154,12 +153,10 @@ final class VisiblePinsViewModel: ObservableObject {
     init(
         annotations: [MLNAnnotation],
         playaDB: PlayaDB,
-        locationProvider: LocationProvider,
-        favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared
+        locationProvider: LocationProvider
     ) {
         self.playaDB = playaDB
         self.locationProvider = locationProvider
-        self.favoriteSync = favoriteSync
         self.currentLocation = locationProvider.currentLocation
 
         var art: [VisiblePinItem] = []
@@ -272,23 +269,23 @@ final class VisiblePinsViewModel: ObservableObject {
         // legacy `iBurn.DataObject` class and `PlayaDB.DataObject` parses as a
         // member of the same-named `PlayaDB` protocol.
         do {
-            let mirrorType: FavoriteSyncObjectType
+            let isEvent: Bool
             let isFavorite: Bool
             switch item {
             case .art(let o):
-                mirrorType = .art
+                isEvent = false
                 try await playaDB.toggleFavorite(o)
                 isFavorite = try await playaDB.isFavorite(o)
             case .camp(let o):
-                mirrorType = .camp
+                isEvent = false
                 try await playaDB.toggleFavorite(o)
                 isFavorite = try await playaDB.isFavorite(o)
             case .eventOccurrence(let o):
-                mirrorType = .event
+                isEvent = true
                 try await playaDB.toggleFavorite(o)
                 isFavorite = try await playaDB.isFavorite(o)
             case .event(let o):
-                mirrorType = .event
+                isEvent = true
                 try await playaDB.toggleFavorite(o)
                 isFavorite = try await playaDB.isFavorite(o)
             case .userPin:
@@ -300,10 +297,9 @@ final class VisiblePinsViewModel: ObservableObject {
             } else {
                 favoriteUIDs.remove(uid)
             }
-            // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source of truth.
-            let favoriteSync = self.favoriteSync
-            Task {
-                await favoriteSync.mirrorFavorite(type: mirrorType, uid: uid, isFavorite: isFavorite)
+            // Fire-and-forget calendar reconcile; PlayaDB is the source of truth.
+            if isEvent {
+                EventCalendarSync.reconcile(favoriteIdentity: uid, isFavorite: isFavorite)
             }
         } catch {
             print("Error toggling favorite for \(item.name): \(error)")

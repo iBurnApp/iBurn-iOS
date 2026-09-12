@@ -33,18 +33,15 @@ struct MapAnnotationRegistry {
     /// The stable identity of `annotation`, or nil for annotations that aren't tracked
     /// (the dropped-person marker, the user location) and are simply passed through.
     static func key(for annotation: MLNAnnotation) -> AnyHashable? {
-        if let data = annotation as? DataObjectAnnotation {
-            let className = String(describing: type(of: data.object))
-            return AnyHashable("\(className):\(data.object.uniqueID)")
-        } else if let playa = annotation as? PlayaObjectAnnotation {
+        if let playa = annotation as? PlayaObjectAnnotation {
             return AnyHashable(playa.id)
         } else if let userPin = annotation as? BRCUserMapPoint {
-            // `yapKey` is a fresh random UUID every time the pin is rebuilt from PlayaDB,
-            // so it can never de-duplicate. `pinId` is the stable PlayaDB row id.
+            // `pinId` is the stable PlayaDB row id (a fresh UUID only until the pin is
+            // saved), so separate objects standing for the same row collapse onto one key.
             return AnyHashable("BRCUserMapPoint:\(userPin.pinId)")
         } else if let mapPoint = annotation as? BRCMapPoint {
             let className = String(describing: type(of: mapPoint))
-            return AnyHashable("\(className):\(mapPoint.yapKey)")
+            return AnyHashable("\(className):\(mapPoint.uniqueID)")
         }
         return nil // Non-trackable annotations
     }

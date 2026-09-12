@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
-@class BRCDataObject;
-
 NS_ASSUME_NONNULL_BEGIN
 @interface BRCEmbargo : NSObject
 
@@ -28,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 /** Art tier: art locations stay restricted until gates open AND the device has been
  inside the Burning Man region (or the passcode was entered). */
 + (BOOL)canShowArtLocations;
-
-+ (BOOL)canShowLocationForObject:(BRCDataObject *)dataObject;
 
 @end
 NS_ASSUME_NONNULL_END

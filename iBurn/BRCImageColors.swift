@@ -95,16 +95,3 @@ extension BRCImageColors {
         return fallback ?? .dynamic
     }
 }
-
-extension BRCEventObjectTableViewCell {
-    public override func setColorTheme(_ colors: BRCImageColors, animated: Bool) {
-        backgroundColor = colors.backgroundColor
-        descriptionLabel.textColor = colors.secondaryColor
-        titleLabel.textColor = colors.primaryColor
-        hostLabel?.textColor = colors.detailColor
-        eventTypeLabel.textColor = colors.detailColor
-        locationLabel.textColor = colors.detailColor
-        subtitleLabel.textColor = colors.detailColor
-        rightSubtitleLabel.textColor = colors.detailColor
-    }
-}

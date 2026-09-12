@@ -8,12 +8,8 @@
 
 @import MapLibre;
 
-@class BRCDataObject, BRCObjectMetadata;
-
 NS_ASSUME_NONNULL_BEGIN
 @interface MLNMapView (iBurn)
-
-- (void)brc_showDestinationForDataObject:(BRCDataObject*)dataObject metadata:(BRCObjectMetadata*)metadata animated:(BOOL)animated padding:(UIEdgeInsets)padding;
 
 - (void)brc_showDestination:(id<MLNAnnotation>)destination animated:(BOOL)animated padding:(UIEdgeInsets)padding;
 

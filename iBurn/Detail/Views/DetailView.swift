@@ -72,17 +72,6 @@ struct DetailView: View {
                         .font(.body)
                 }
                 
-                // Add to Calendar button for events
-                if viewModel.showsCalendarButton {
-                    Button(action: {
-                        viewModel.showEventEditor()
-                    }) {
-                        Image(systemName: "calendar.badge.plus")
-                            .accessibilityLabel("Add to Calendar")
-                            .font(.body)
-                    }
-                }
-                
                 // Favorite button for all object types
                 Button(action: {
                     Task { await viewModel.toggleFavorite() }
@@ -159,7 +148,7 @@ struct DetailCellView: View {
         default:
             // Map previews included: they are rounded (see `DetailMapViewRepresentable`),
             // and a rounded corner pinned to the screen edge just clips a notch out of the
-            // map. `.mapAnnotation` was already inset; this puts `.mapView` alongside it.
+            // map.
             return true
         }
     }
@@ -200,9 +189,6 @@ struct DetailCellView: View {
         case .userNotes(let notes):
             DetailUserNotesCell(notes: notes)
             
-        case .audio(let artObject, let isPlaying):
-            DetailAudioCell(artObject: artObject, isPlaying: isPlaying)
-
         case .audioTrack(let track, let isPlaying):
             DetailAudioTrackCell(track: track, isPlaying: isPlaying)
             
@@ -233,15 +219,6 @@ struct DetailCellView: View {
         case .image(let image, let aspectRatio):
             DetailImageView(image: image, aspectRatio: aspectRatio)
             
-        case .mapView(let dataObject, let metadata):
-            DetailMapViewRepresentable(
-                dataObject: dataObject,
-                metadata: metadata
-            ) {
-                viewModel.handleCellTap(cell)
-            }
-            .frame(height: 200)
-
         case .mapAnnotation(let annotation, _):
             DetailMapViewRepresentable(annotation: annotation) {
                 viewModel.handleCellTap(cell)
@@ -269,7 +246,7 @@ struct DetailCellView: View {
     
     private func isCellTappable(_ cellType: DetailCellType) -> Bool {
         switch cellType {
-        case .email, .url, .coordinates, .audio, .audioTrack, .userNotes, .mapView, .mapAnnotation:
+        case .email, .url, .coordinates, .audioTrack, .userNotes, .mapAnnotation:
             return true
         case .relationship(_, _, let onTap):
             return onTap != nil
@@ -505,22 +482,6 @@ struct DetailUserNotesCell: View {
                 }
                 Spacer()
             }
-        }
-    }
-}
-
-struct DetailAudioCell: View {
-    let artObject: BRCArtObject
-    let isPlaying: Bool
-    @Environment(\.themeColors) var themeColors
-    
-    var body: some View {
-        HStack {
-            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                .foregroundColor(themeColors.primaryColor)
-                .font(.title2)
-            Text("Audio Tour")
-            Spacer()
         }
     }
 }

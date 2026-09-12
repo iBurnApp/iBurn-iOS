@@ -7,7 +7,13 @@
 //
 
 import UIKit
-import Mantle
+
+/// One entry in `credits.json`. Replaces the Mantle model `BRCCreditsInfo`.
+struct CreditsInfo: Decodable {
+    let name: String
+    let url: URL?
+    let blurb: String?
+}
 
 open class SubtitleCell: UITableViewCell {
     static let kReuseIdentifier = "kSubtitleIdentifier"
@@ -28,7 +34,7 @@ private enum SectionInfo: Int {
 
 class CreditsViewController: UITableViewController {
     
-    var creditsInfoArray:[BRCCreditsInfo] = []
+    var creditsInfoArray: [CreditsInfo] = []
 
     init () {
         super.init(style: UITableView.Style.grouped)
@@ -46,18 +52,13 @@ class CreditsViewController: UITableViewController {
         super.viewDidLoad()
 
         let dataBundle = Bundle.brc_dataBundle
-        let creditsURL = dataBundle.url(forResource: "credits", withExtension:"json")
-        let creditsData = try? Data(contentsOf: creditsURL!)
-        do {
-            if let creditsArray = try JSONSerialization.jsonObject(with: creditsData!, options:JSONSerialization.ReadingOptions()) as? NSArray {
-                let creditsInfo = try MTLJSONAdapter.models(of: BRCCreditsInfo.self,fromJSONArray: creditsArray as [AnyObject])
-                self.creditsInfoArray = creditsInfo as! [BRCCreditsInfo]
-                assert(self.creditsInfoArray.count > 0, "Empty credits info!")
-            }
-        } catch {
-            
+        if let creditsURL = dataBundle.url(forResource: "credits", withExtension: "json"),
+           let creditsData = try? Data(contentsOf: creditsURL),
+           let credits = try? JSONDecoder().decode([CreditsInfo].self, from: creditsData) {
+            self.creditsInfoArray = credits
+            assert(!self.creditsInfoArray.isEmpty, "Empty credits info!")
         }
-        
+
         
         self.tableView.register(SubtitleCell.self, forCellReuseIdentifier: SubtitleCell.kReuseIdentifier)
         self.tableView.rowHeight = 55

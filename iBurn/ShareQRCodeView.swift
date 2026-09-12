@@ -17,19 +17,8 @@ struct ShareQRCodeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @State private var qrCodeImage: UIImage?
-    private let dataObject: BRCDataObject?
     /// Subtitle shown when there is no location text (map pins only).
     private let emptyLocationPlaceholder: String?
-
-    // Convenience init for BRCDataObject
-    init(dataObject: BRCDataObject, themeColors: BRCImageColors? = nil) {
-        self.title = dataObject.title
-        self.locationText = dataObject.playaLocation
-        self._shareURL = State(initialValue: URL(string: "https://iburnapp.com")!)
-        self.themeColors = themeColors ?? BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
-        self.dataObject = dataObject
-        self.emptyLocationPlaceholder = nil
-    }
 
     // New init for BRCMapPoint
     init(mapPoint: BRCMapPoint) {
@@ -37,7 +26,6 @@ struct ShareQRCodeView: View {
         self.locationText = nil // Map points don't have playa location text
         self._shareURL = State(initialValue: mapPoint.generateShareURL() ?? URL(string: "https://iburnapp.com")!)
         self.themeColors = Appearance.currentColors
-        self.dataObject = nil
         self.emptyLocationPlaceholder = "Custom Map Pin"
     }
 
@@ -47,7 +35,6 @@ struct ShareQRCodeView: View {
         self.locationText = locationText
         self._shareURL = State(initialValue: shareURL)
         self.themeColors = themeColors
-        self.dataObject = nil
         self.emptyLocationPlaceholder = nil
     }
 
@@ -160,9 +147,6 @@ struct ShareQRCodeView: View {
             }
         }
         .task {
-            if let dataObject, let url = await dataObject.generateShareURL() {
-                shareURL = url
-            }
             generateQRCode()
         }
     }
@@ -226,15 +210,6 @@ struct ShareQRCodeView: View {
 // MARK: - Hosting Controller
 
 class ShareQRCodeHostingController: UIHostingController<ShareQRCodeView> {
-    // Init for BRCDataObject
-    init(dataObject: BRCDataObject, themeColors: BRCImageColors? = nil) {
-        let colors = themeColors ?? BRCImageColors.colors(for: dataObject, fallback: Appearance.currentColors)
-        let shareView = ShareQRCodeView(dataObject: dataObject, themeColors: colors)
-        super.init(rootView: shareView)
-        
-        setupModal()
-    }
-    
     // Init for BRCMapPoint
     init(mapPoint: BRCMapPoint) {
         let shareView = ShareQRCodeView(mapPoint: mapPoint)
@@ -268,16 +243,5 @@ class ShareQRCodeHostingController: UIHostingController<ShareQRCodeView> {
     
     @MainActor required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-}
-
-// MARK: - Preview
-
-struct ShareQRCodeView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a mock data object for preview
-        let mockObject = BRCArtObject()
-        
-        return ShareQRCodeView(dataObject: mockObject ?? BRCArtObject())
     }
 }

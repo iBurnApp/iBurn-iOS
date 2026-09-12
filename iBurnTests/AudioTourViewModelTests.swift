@@ -18,13 +18,6 @@ import XCTest
 
 // MARK: - Stubs
 
-/// No-op stand-in for the legacy YapDatabase mirror so tests never touch Yap.
-private final class StubFavoriteSyncService: FavoriteSyncService {
-    func mirrorFavorite(type: FavoriteSyncObjectType, uid: String, isFavorite: Bool) async {}
-    func mirrorVisitStatus(type: FavoriteSyncObjectType, uid: String, visitStatus: Int) async {}
-    func mirrorNotes(type: FavoriteSyncObjectType, uid: String, notes: String) async {}
-}
-
 /// Stubs the filesystem half of the membership rule.
 private final class StubAudioTourAssetProvider: AudioTourAssetProviding {
     private let uids: Set<String>
@@ -100,7 +93,7 @@ final class AudioTourViewModelTests: XCTestCase {
         let db = try XCTUnwrap(playaDB)
         let player = try XCTUnwrap(audioPlayer)
         return AudioTourViewModel(
-            artProvider: ArtDataProvider(playaDB: db, favoriteSync: StubFavoriteSyncService()),
+            artProvider: ArtDataProvider(playaDB: db),
             locationProvider: MockLocationProvider(mockLocation: location),
             assetProvider: StubAudioTourAssetProvider(uids: localAudioUIDs),
             audioPlayer: player

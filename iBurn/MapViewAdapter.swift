@@ -216,18 +216,6 @@ extension MapViewAdapter: MLNMapViewDelegate {
             }
             imageAnnotationView.image = image
             annotationView = imageAnnotationView
-        } else if let data = annotation as? DataObjectAnnotation {
-            let labelAnnotationView: LabelAnnotationView
-            if let view = mapView.dequeueReusableAnnotationView(withIdentifier: LabelAnnotationView.reuseIdentifier) as? LabelAnnotationView {
-                labelAnnotationView = view
-            } else {
-                labelAnnotationView = LabelAnnotationView(reuseIdentifier: LabelAnnotationView.reuseIdentifier)
-            }
-            labelAnnotationView.imageView.image = image
-            labelAnnotationView.label.text = data.title
-            labelAnnotationView.campUID = campUID(for: annotation)
-            labelViews.append(labelAnnotationView)
-            annotationView = labelAnnotationView
         } else if let data = annotation as? PlayaObjectAnnotation {
             let labelAnnotationView: LabelAnnotationView
             if let view = mapView.dequeueReusableAnnotationView(withIdentifier: LabelAnnotationView.reuseIdentifier) as? LabelAnnotationView {
@@ -266,19 +254,13 @@ extension MapViewAdapter: MLNMapViewDelegate {
     public func mapView(_ mapView: MLNMapView, didDeselect annotation: MLNAnnotation) {}
     
     public func mapView(_ mapView: MLNMapView, leftCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
-        guard annotation is DataObjectAnnotation else {
-            return nil
-        }
-        // Share button
-        let shareButton = UIButton(type: .system)
-        shareButton.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal)
-        shareButton.tag = ButtonTag.share.rawValue
-        shareButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
-        return shareButton
+        // No left accessory for object pins; `UserMapViewAdapter` overrides this to put an
+        // edit button on the user's own pins.
+        return nil
     }
-    
+
     public func mapView(_ mapView: MLNMapView, rightCalloutAccessoryViewFor annotation: MLNAnnotation) -> UIView? {
-        guard annotation is DataObjectAnnotation || annotation is PlayaObjectAnnotation else {
+        guard annotation is PlayaObjectAnnotation else {
             return nil
         }
         let infoButton = UIButton(type: .infoLight)
@@ -294,24 +276,12 @@ extension MapViewAdapter: MLNMapViewDelegate {
         case .delete, .edit:
             break
         case .info:
-            if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
-                Task { @MainActor in
-                    let playaDB = BRCAppDelegate.shared.dependencies.playaDB
-                    let vc = await DetailViewControllerFactory.createDetailViewController(for: data.object, playaDB: playaDB)
-                    parentVC.navigationController?.pushViewController(vc, animated: true)
-                }
-                return
-            }
-
             if let data = annotation as? PlayaObjectAnnotation {
                 onPlayaInfoTapped?(data.id)
                 return
             }
         case .share:
-            if let data = annotation as? DataObjectAnnotation, let parentVC = parent {
-                let shareViewController = ShareQRCodeHostingController(dataObject: data.object)
-                parentVC.present(shareViewController, animated: true, completion: nil)
-            }
+            break
         case .more:
             // More action not used for regular data objects
             break
@@ -359,9 +329,6 @@ extension MapViewAdapter {
         if let playa = annotation as? PlayaObjectAnnotation {
             return playa.id.objectType == .camp ? playa.id.uid : nil
         }
-        if let data = annotation as? DataObjectAnnotation {
-            return (data.object as? BRCCampObject)?.uniqueID
-        }
         return nil
     }
 }
@@ -374,9 +341,8 @@ extension MapViewAdapter {
     /// the HIG minimum — around text that is only 9–14pt tall at the zooms it is drawn at.
     private static let styleLabelTapRadius: CGFloat = 22
 
-    /// Identifies our recognizer on a map view. `DetailMapViewRepresentable` builds a fresh
-    /// adapter around the *same* `MLNMapView` on every SwiftUI update, so without this the
-    /// recognizers would stack up one per update.
+    /// Identifies our recognizer on a map view, so a second adapter built around a map view
+    /// that already has one doesn't stack up a duplicate.
     private static let styleLabelTapRecognizerName = "iBurn.campStyleLabelTap"
 
     /// Makes the camp names drawn by `camp-labels-big` behave like the pins they replaced:
@@ -453,10 +419,6 @@ private protocol OffsettableAnnotation: AnyObject {
     var coordinate: CLLocationCoordinate2D { get set }
     var originalCoordinate: CLLocationCoordinate2D { get }
     var stableID: String { get }
-}
-
-extension DataObjectAnnotation: OffsettableAnnotation {
-    fileprivate var stableID: String { object.uniqueID }
 }
 
 extension PlayaObjectAnnotation: OffsettableAnnotation {

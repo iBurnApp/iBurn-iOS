@@ -249,8 +249,7 @@ final class VisitListViewModel: ObservableObject {
         favoriteKeys.contains(item.favoriteKey)
     }
 
-    /// Toggles through the shared data providers so the legacy YapDatabase mirror
-    /// (`FavoriteSyncService`) stays in agreement, exactly like the other SwiftUI lists.
+    /// Toggles through the shared data providers, exactly like the other SwiftUI lists.
     func toggleFavorite(_ item: VisitListItem) async {
         do {
             switch item {

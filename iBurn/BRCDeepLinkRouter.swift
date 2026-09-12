@@ -232,34 +232,6 @@ enum DeepLinkObjectType: String {
 
 // MARK: - URL Generation
 
-extension BRCDataObject {
-    
-    /// Universal link for this object, embargo-filtered.
-    ///
-    /// URL construction lives in `ShareURLBuilder` so the legacy and SwiftUI share paths
-    /// emit identical links; this method only resolves the async host name and the embargo tier.
-    @MainActor
-    func generateShareURL() async -> URL? {
-        var hostName: String?
-        if let event = self as? BRCEventObject {
-            let playaDB = BRCAppDelegate.shared.dependencies.playaDB
-            if let campId = event.hostedByCampUniqueID, !campId.isEmpty {
-                hostName = try? await playaDB.fetchCamp(uid: campId)?.name
-            } else if let artId = event.hostedByArtUniqueID, !artId.isEmpty {
-                hostName = try? await playaDB.fetchArt(uid: artId)?.name
-            }
-        }
-
-        guard let payload = ShareURLPayload.legacy(
-            self,
-            hostName: hostName,
-            canShowLocation: BRCEmbargo.canShowLocation(for: self)
-        ) else { return nil }
-
-        return ShareURLBuilderFactory.shared.url(for: payload)
-    }
-}
-
 extension BRCMapPoint {
 
     @objc func generateShareURL() -> URL? {

@@ -7,8 +7,9 @@ label text, not on elementRef numbers (refs change every snapshot).
 
 > **Maintenance:** if a step here doesn't match the running app, fix this file in
 > the same session (see "Keeping the flow docs current" in SKILL.md).
-> Last verified: 2026-08-22 against the 2026 dataset (Aug 22 API refresh),
-> iPhone 17 Pro Max sim, iOS 26.5.
+> Last verified: 2026-09-12 against the 2026 dataset (Aug 27 seed), iPhone 17 Pro Max
+> sim, iOS 26.5 — onboarding, map event pins/filter/expiry, detail mini-map, Data
+> Updates, search, favorites.
 
 ## 1. First-launch onboarding (fresh install)
 
@@ -39,17 +40,12 @@ resolves to `navigationBar` and the bar is Map / Nearby / Favorites / Events / M
 the Map Search Layout (§8) and the user's own tab customization (§10) change which tabs
 are on the bar, so match on tab labels rather than assuming a fixed order or count.
 
-## 2. SwiftUI + PlayaDB stack (default ON; legacy fallback)
+## 2. SwiftUI + PlayaDB stack (the only stack)
 
-The flag `featureFlag.lists.useSwiftUI` (all builds, default true) gates the
-Favorites/Nearby/Events/Art/Camps SwiftUI screens, More → Visit List, and PlayaDB
-creation/seeding. It is ON by default; disable it to exercise the legacy
-UIKit/YapDatabase stack.
-
-- CLI (preferred for automation): terminate app →
-  `xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool NO`
-  → relaunch. (Use `-bool YES` or delete the key to restore the default.)
-- In-app (DEBUG builds only): More tab → Feature Flags → toggle "Use SwiftUI Lists".
+Favorites/Nearby/Events/Art/Camps, More → Visit List, every detail screen and the map
+all read PlayaDB. YapDatabase, Mantle and the legacy UIKit screens were deleted in
+Sept 2026 together with the `featureFlag.lists.useSwiftUI` kill-switch, so there is no
+flag to flip and no legacy fallback to exercise.
 
 Verify: after navigating to any tab post-launch,
 `<app container>/Documents/PlayaDB.sqlite` exists, `PRAGMA journal_mode` = wal,
@@ -85,6 +81,14 @@ Preconditions: flow 2 done (SwiftUI stack on).
 Verify: rows swap instantly to that day's events (day slicing is in-memory —
 no spinner, no reload flash). Row content: name, type emoji, host camp,
 description, "Wed 2:00pm (2h)"-style time label.
+
+**Under a mock date the day tabs look empty.** With `BRCMockDateEnabled` /
+`MOCK_DATE=1` set to a festival instant, every day reads "No events found" until the
+Filter sheet's **"Show Expired Events"** is turned on. PlayaDB's `notExpired()` /
+`happeningNow()` predicates take `at date: Date = Date()` — the package has no idea the
+app's clock is mocked — so against the real (post-festival) clock every 2026 occurrence is
+expired. Turn "Show Expired Events" on for any mock-date driving session; it is not a
+regression in the list.
 
 **Max Duration filter (default 6h):** occurrences longer than 6h (all-day
 "amenity listing" pseudo-events) are hidden by default. The toolbar Filter
@@ -142,12 +146,8 @@ in SKILL.md for the full set, including the legacy parent-uid fold.
 `event_calendar_entries` should hold one row per **favorited** occurrence — six for a
 six-occurrence event after "Favorite all 6", one after favoriting a single showing.
 
-Also verify the Yap mirror (`FavoriteSyncService`): in
-`<app container>/Library/Application Support/iBurn/iBurn-2026/iBurn-2026.sqlite`, the
-per-occurrence row (`database2` table, collection `BRCEventObject`, keys `"<apiUID>-<n>"`)
-whose `startDate` matches the favorited occurrence gets an updated metadata blob with
-`isFavorite=true`; a series-wide change updates all of them. The favorited blobs are
-larger than the ~440-byte import-stamped baseline.
+(There is no longer a Yap mirror to cross-check — `FavoriteSyncService` and the
+`iBurn-<year>.sqlite` file were deleted with YapDatabase.)
 
 ### Calendar permission pre-prompt (verified 2026-08-20)
 
@@ -263,8 +263,7 @@ chrome above the results:
   on** (it already pins the window to now). A **Reset** button appears in the sheet when
   the filter is non-default; the sheet footer spells out the selected band's hours.
 - **Favoriting works from search.** Every result row's heart is live: tapping it flips the
-  row immediately and writes through `PlayaDB.toggleFavorite` (mirrored into legacy Yap
-  like the list screens). Search collapses an event to one row, and that row stands in for
+  row immediately and writes through `PlayaDB.toggleFavorite`. Search collapses an event to one row, and that row stands in for
   one *showing*: its heart is that occurrence's state, tapping it favorites only that
   occurrence, and the series toast follows. A different showing favorited elsewhere leaves
   this heart empty. Verify in the DB with
@@ -277,7 +276,7 @@ chrome above the results:
   words in either order.
 
 - **Results index rail** (right edge, `IndexRailView` fed by `SearchResultIndex`). Appears once the results
-  run to ~12+ rows and offer more than one destination. It is the Yap-era global-search
+  run to ~12+ rows and offer more than one destination. It is the global-search
   `sectionIndexTitles` ported forward: a **type icon** at the head of each section
   (`BRCArtIcon` / `BRCCampIcon` / `BRCEventIcon`, `car.fill` for vehicles), then
   **uppercased first letters** for art/camps/vehicles (`#` for anything non-alphabetic)
@@ -353,6 +352,38 @@ Automation notes:
   layout) and an iOS 18.x sim (classic 5-tab bar) — they take different delegate callbacks.
   (This behavior used to live in `BRCAppDelegate`'s `didSelectViewController:`, which was
   dead on the `UITab` layout; the app delegate is no longer the tab bar's delegate at all.)
+- **Event pins are OFF by default.** `UserSettings.showActiveEventsOnMap` defaults to
+  `false` ("to reduce initial map clutter"), so a fresh install shows no event pins at any
+  zoom until Map Filter ▸ **Events** is switched on. Do that first before concluding event
+  pins are broken. Turning it on/off lands live on **Done** — no relaunch.
+- **Two layers draw event pins, and they cover different occurrences.**
+  `PlayaDBAnnotationDataSource` observes *today's* occurrences and `allAnnotations()`
+  re-derives which are live, so it owns the **happening-now** pins at every zoom. The
+  region path (`UserMapViewAdapter.refreshRegionAnnotations`, zoom ≥ 16) calls
+  `fetchUpcomingEvents(within: 1, from: now)`, whose SQL is `start_time > now`, so it only
+  ever adds pins for occurrences **starting within 30 minutes**. Don't expect the region
+  path to pin an event that is already running.
+- **An event pin's callout reads `host · address · time`** —
+  `PlayaObjectAnnotation.calloutSubtitle(for:now:canShowAddress:)`, e.g. "Maison Phi ·
+  10:00 B Plaza · 11:00 AM - 2:00 PM". The weekday is prepended unless the occurrence is
+  actually running ("Friday 12:00 PM - 1:00 PM"), and the address half is dropped when
+  `BRCEmbargo.canShowLocation(for:)` says no. The old "Hosted by Camp" placeholder is gone;
+  seeing it again means a bare `EventObject` reached `PlayaObjectAnnotation` somewhere.
+  The AX snapshot exposes the subtitle as the annotation button's **value**, so a single
+  `snapshot_ui` verifies every visible callout at once without tapping.
+- **Event pins expire on a timer** (`iBurn/MapEventRefreshScheduler.swift`, added Sept
+  2026): one non-repeating `Timer` armed for the soonest interesting instant (an
+  occurrence's start/end, start−30m, end−15m, or the next minute boundary), clamped to
+  [15s, 60s], plus refreshes on `willEnterForeground` / `didBecomeActive` /
+  `significantTimeChange`. **The timer half cannot be exercised under a mock date** — it
+  fires on the real clock while `Date.present` stays pinned, so nothing changes; that path
+  is covered by `iBurnTests/MapEventPinTests.swift`. Drive the `didBecomeActive` half with
+  the §6 suspend/resume recipe instead: mock the clock to just before an occurrence's end,
+  `button({buttonType:"home"})`, write a later `BRCMockDateValue`, `xcrun simctl launch`
+  (same pid = resumed), and the finished pins are gone on the next snapshot while
+  newly-starting-soon ones appear. Verified 2026-09-12 at 40.79126,-119.21107 (Orphan
+  Asylum): 11:00 → 11:35 dropped "Fanning delight" and "Masking in the sun" (both end
+  11:30) and added the noon starts.
 - **The user puck always shows a heading arrow** — `brc_setDefaults` sets
   `showsUserHeadingIndicator = true`, so the arrow is drawn in every tracking mode rather
   than only in follow-with-heading. MapLibre documents it as not rotating the camera.
@@ -595,10 +626,9 @@ Automation notes:
   is currently drawn inside the map's visible bounds, sectioned Art / Camps /
   Events / Map Pins, nearest-first when a location is available. Tapping a data
   row pushes the PlayaDB detail screen; tapping a Map Pins row pops back to the
-  map, recenters on that pin and opens its callout. Legacy Yap-fed maps (the
-  `useSwiftUILists` kill-switch list screens) still get the old
-  `MapPinListViewController` — the split is in `ListButtonHelper`, keyed on
-  whether any visible annotation is a `DataObjectAnnotation`.
+  map, recenters on that pin and opens its callout. Every map uses this list now —
+  `MapPinListViewController` and the `DataObjectAnnotation` split in `ListButtonHelper`
+  went away with YapDatabase.
 - Search field "Search" is in the map header.
 
 ### Drop the person (long-press "look from here")
@@ -654,8 +684,7 @@ every distance, are then measured from the marker instead of the device.
   (`createNearbyViewController(locationOverride:)` → `makeNearbyViewModel(locationOverride:)`).
   That screen shows a banner **"Near &lt;address&gt;"** with a **"Use My Location"** button;
   the button clears the override *for that screen only* — the map keeps its person until you
-  remove it there. The legacy UIKit `NearbyViewController` (`useSwiftUILists` off) ignores the
-  override entirely; that's a documented caveat, not a bug.
+  remove it there.
 - While a person is down the GPS stream keeps updating in the background but **cannot** move
   the card or re-center its query. Removing the pin snaps to the *current* fix, not the one
   from when the pin was dropped.
@@ -824,6 +853,18 @@ The full-screen Nearby list (tab, or the card's "See all") shares its event filt
 card above — one `NearbyEventFilterStore`, persisted under `nearbyEventFilter` /
 `nearbyEventFilter.maxDuration`.
 
+**"Location unavailable" on the Nearby tab after a relaunch (observed 2026-09-12).** The
+list's empty state is gated on `NearbyViewModel.currentLocation`, which comes from
+`CoreLocationProvider` — a thin poller over `BRCAppDelegate.shared.locationManager` that
+never calls `startUpdatingLocation` itself. Only onboarding's `requestLocationPermission`
+and `locationManagerDidChangeAuthorization` do, so on a launch where neither runs, that
+manager's `.location` stays nil and Nearby reads "Location unavailable" **even though the
+map's blue dot and the detail screen's "Distance:" row are both fine** (MapLibre and
+`Detail/Services/LocationService` each own a separate, started manager). Re-issuing
+`xcrun simctl location … set` does not help. Workarounds while driving: use **Warp**, or
+re-run onboarding. Longstanding — it predates the Sept 2026 Yap removal — not a regression
+to chase.
+
 - Nav bar is **Warp (leading) | filter | map (trailing)**. The filter button (AX label
   "Filter Nearby Events") opens the same `EventFilterSheet` the Events tab uses, minus the
   "Show Expired Events" toggle — Nearby's time gate is its own now-window, so that control
@@ -859,6 +900,17 @@ From any list row (event/camp/art):
   applied on the `MLNMapView`'s layer inside `DetailMapViewRepresentable` so `.mapView` and
   `.mapAnnotation` cells cannot drift apart) and is inset 16 pt like every other cell. Only
   `.image` cells still bleed to the screen edges.
+- **The preview frames the pin *and* the user dot**, never the whole city — same
+  two-point rule as the pushed map (`BRCLocations.mapFramingCoordinate(forUserLocation:)`).
+  `DetailMapViewRepresentable.Coordinator` builds its `MapViewAdapter` once in
+  `makeUIView` and keeps the delegate, forwarding the adapter's methods; before Sept 2026
+  `updateUIView` minted a new adapter on every SwiftUI pass, which stole the delegate and
+  left the map parked at zoom 13. Verify from the AX snapshot: the map element's **value**
+  reads "Zoom 14x." and both a **"You Are Here"** button and the object's own annotation
+  button are listed. Scrolling the screen, toggling the heart, and presenting/dismissing
+  the share sheet must not change which annotations are framed (the reported zoom may
+  settle a level either way; both pins staying in frame is the assertion). Covered by
+  `iBurnTests/DetailMapFramingTests.swift`.
 - Viewing a detail writes `last_viewed`/`first_viewed` metadata (this must NOT
   cause list observations to re-emit — the metadata region excludes those
   columns; regression-tested in FilterObservationTests).
@@ -889,8 +941,7 @@ after changing the location rather than expecting the camera to re-fit in place.
 
 ### More → Visit List (PlayaDB, default)
 
-More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`
-(`useSwiftUILists` ON; OFF falls back to the Yap-fed `VisitListViewController`).
+More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`.
 
 - Segmented picker **All / Want to Visit / Visited** over sections
   "⭐ Want to Visit" and "✅ Visited" (there is never an "unvisited" section);
@@ -906,7 +957,7 @@ More tab → **Visit List** pushes the SwiftUI `VisitListHostingController`
 ## 8. Feature Flags screen
 
 More tab → scroll to the bottom → **"Debug"** (DEBUG only). Contains the date
-override, "Use SwiftUI Lists", **"AI Search Merge"** (off by default — see §5), and the
+override, **"AI Search Merge"** (off by default — see §5), and the
 **Map Search Layout** picker.
 
 Navigating here is awkward: `MoreViewController`'s table cells are **not exposed
@@ -1241,9 +1292,8 @@ root `.task` after seeding).
    set, and the watch Favorites screen lists it (event details show occurrence
    times, e.g. "Sun 5:00 – 7:00 PM").
 2. Favorite a camp on the watch (Nearby → detail → Add Favorite) → the phone's
-   PlayaDB gains `camp|<uid>|1` AND the phone's Yap mirror updates the
-   `BRCCampObject` metadata blob (`isFavorite=true`; for events, all
-   `"<uid>-<n>"` occurrence rows + EKEvent, same as flow 4).
+   PlayaDB gains `camp|<uid>|1` (for events, the occurrence rows + EKEvent, same
+   as flow 4).
 3. Delivery requires the peer app to be installed at push time; the managers
    re-push on `sessionWatchStateDidChange`/`sessionCompanionAppInstalledDidChange`,
    on activation, and on every favorite change, so a fresh watch install
@@ -1258,7 +1308,7 @@ IS NOT NULL;` on either DB. Un-favoriting syncs too (rows persist with
 
 1. Drop a pin on the watch → the phone's `user_map_pins` gains the row and the
    annotation appears on the phone map immediately (`FilteredMapDataSource`
-   observes PlayaDB; no Yap mirror is involved).
+   observes PlayaDB).
 2. Drop one on the phone (map sidebar bike/home/star → name → Save) → it appears
    in the watch's Browse → Pins.
 3. Delete on either device → the row becomes a **tombstone**
@@ -1271,9 +1321,8 @@ IS NOT NULL;` on either DB. Un-favoriting syncs too (rows persist with
 
 **Visit status syncs the same way** (per-field LWW on `visit_status_updated_at`,
 values 0=unvisited/1=visited/2=wantToVisit): setting "Want to Visit" on the
-watch shows up in the phone's PlayaDB `visit_status` AND its Yap metadata blob;
-setting a status in the phone detail's VISIT STATUS cell (below USER NOTES —
-present on both the legacy and PlayaDB detail paths) appears on the watch.
+watch shows up in the phone's PlayaDB `visit_status`; setting a status in the
+phone detail's VISIT STATUS cell (below USER NOTES) appears on the watch.
 The rating prompt ("Enjoying iBurn?") can block phone UI automation — it's not
 in the AX tree, so there's no elementRef to tap. Appirater is configured with
 `setTimeBeforeReminding:2` (`BRCAppDelegate.m`), so a plain terminate + relaunch
@@ -1371,10 +1420,30 @@ Events / More, minus Favorites under `searchTab`, where the floating button repl
 > the app on the first rebuild after launch. If you touch `rebuildTabs()`, exercise a
 > *second* rebuild (hide a tab from this screen), not just app launch.
 
+## 11. Data Updates (More → Data Updates)
+
+Since Sept 2026 this screen is PlayaDB-only: `DataUpdateService` downloads `update.json`
+plus the per-type JSON into `<Application Support>/PlayaDB/ota/<year>/` and hands each
+payload to `PlayaDB.importFromData`. The old `BRCDataImporter`/YapDatabase path is gone.
+
+More tab → scroll to the bottom (the rows are text-only in the AX tree, so reach it with
+`touch {down,up}` on the **"Data Updates"** text ref).
+
+- **"Check for Updates"** forces a check (bypasses the 24h throttle and the auto-update
+  toggle). With `kBRCUpdatesURLString` empty — which it is in any checkout whose
+  `BRCSecrets.m` was generated locally — the status line reads **"Update failed: No update
+  server URL is configured."** in red. That is the correct outcome, not a crash.
+- **"Automatic Updates"** is disabled (greyed) once `YearSettings.isEventOver`, with an
+  "Event is over, auto-updates disabled." caption.
+- **"Reset to Bundled Data"** → confirmation alert → **Reset** re-imports the bundled JSON
+  and reports "Reset complete" in ~5s. Turn on **"Show Nerdy Stats"** to check the result:
+  Art 332 / Camp 1,184 / Event 3,412, each `Status: complete` with a fresh "Loaded into
+  app" stamp (2026 data, Aug 27 seed). The lists and the map repopulate through the GRDB
+  observations, and `object_metadata` survives — favorites, visit status and
+  last-viewed are all still there afterwards.
+
 ## Known quirks / expected noise
 
-- Yap legacy import logs ("Marking event ... as all-day", "Duped dates for ...")
-  appear at every fresh launch — legacy pipeline, unrelated to PlayaDB.
 - "Error fetching updates: unsupported URL" in sim logs: the updates URL secret
   is empty in local builds. Expected.
 - Walk/bike times show "? min" until a location is set
@@ -1383,5 +1452,5 @@ Events / More, minus Favorites under `searchTab`, where the floating button repl
   embargoed coordinates. So on the Nearby screen pre-embargo, camps and art legitimately
   read `🚶🏽 ? min 🚴🏽 ? min` even with a location fix; a real walk time there is a leak
   (`NearbyItem.canShowLocation` / `NearbyViewModel.distanceString`).
-- The app dual-writes favorites Yap→PlayaDB; PlayaDB object data comes from the
-  bundled seed only (network updates still flow through YapDatabase).
+- PlayaDB object data comes from the baked seed (`iBurn/PlayaDB-<year>.zip`) or the
+  bundled JSON; over-the-air updates go straight into PlayaDB via `DataUpdateService`.

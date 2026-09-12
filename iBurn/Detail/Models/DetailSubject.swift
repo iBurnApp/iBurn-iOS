@@ -10,12 +10,7 @@ import Foundation
 import PlayaDB
 
 /// Wrapper for the object being displayed in the SwiftUI detail screen.
-///
-/// During the PlayaDB migration, we need to support both:
-/// - legacy YapDB-backed `BRCDataObject` instances
-/// - new GRDB/PlayaDB-backed objects (`ArtObject`, `CampObject`, `EventObject`)
 enum DetailSubject {
-    case legacy(BRCDataObject)
     case art(ArtObject)
     case camp(CampObject)
     case event(EventObject)
@@ -26,8 +21,6 @@ enum DetailSubject {
 extension DetailSubject {
     var title: String {
         switch self {
-        case .legacy(let obj):
-            return obj.title
         case .art(let art):
             return art.name
         case .camp(let camp):
@@ -43,8 +36,6 @@ extension DetailSubject {
 
     var uid: String {
         switch self {
-        case .legacy(let obj):
-            return obj.uniqueID
         case .art(let art):
             return art.uid
         case .camp(let camp):
@@ -60,8 +51,6 @@ extension DetailSubject {
 
     var location: CLLocation? {
         switch self {
-        case .legacy(let obj):
-            return obj.location
         case .art(let art):
             return art.location
         case .camp(let camp):
@@ -79,8 +68,6 @@ extension DetailSubject {
     /// For events, resolves to the host camp or art UID when available.
     var thumbnailObjectID: String {
         switch self {
-        case .legacy(let obj):
-            return obj.uniqueID
         case .art(let art):
             return art.uid
         case .camp(let camp):
@@ -99,8 +86,6 @@ extension DetailSubject {
     /// Note: For PlayaDB objects this should respect embargo rules at the call site.
     var locationString: String? {
         switch self {
-        case .legacy(let obj):
-            return obj.playaLocation
         case .art(let art):
             return art.locationString ?? art.timeBasedAddress
         case .camp(let camp):

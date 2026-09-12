@@ -118,37 +118,18 @@ public final class BRCAudioPlayer: NSObject {
         }
     }
     
-    @objc public func isPlaying(_ item: BRCArtObject) -> Bool {
-        isPlaying(id: item.uniqueID)
-    }
 
     public func isPlaying(id: String) -> Bool {
         nowPlaying?.uid == id && (player?.rate ?? 0) > 0
     }
     
     /// Check if an item is currently loaded (playing or paused)
-    @objc public func hasItem(_ item: BRCArtObject) -> Bool {
-        hasItem(id: item.uniqueID)
-    }
 
     public func hasItem(id: String) -> Bool {
         nowPlaying?.uid == id && player != nil
     }
     
     /** Plays audio tour for items, if they are the same it will pause */
-    @objc public func playAudioTour(_ items: [BRCArtObject]) {
-        let tracks = items.compactMap { obj -> BRCAudioTourTrack? in
-            guard let url = obj.audioURL else { return nil }
-            return BRCAudioTourTrack(
-                uid: obj.uniqueID,
-                title: obj.title,
-                artist: obj.artistName,
-                audioURL: url,
-                artworkURL: obj.localThumbnailURL
-            )
-        }
-        playAudioTour(tracks)
-    }
 
     /// Swift-only entry point for PlayaDB-backed lists.
     public func playAudioTour(_ tracks: [BRCAudioTourTrack]) {

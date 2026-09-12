@@ -12,10 +12,9 @@ import PlayaDB
 
 /// UIKit hosting controller that wraps the SwiftUI `AudioTourView`.
 ///
-/// PlayaDB-backed replacement for the Yap-backed `AudioTourViewController`
-/// (kept as the `useSwiftUILists` kill-switch fallback). Bridges the two bits of
-/// navigation the SwiftUI screen can't do itself: pushing the paged detail screen
-/// and presenting the SoundCloud web view.
+/// PlayaDB-backed replacement for the deleted Yap-backed `AudioTourViewController`.
+/// Bridges the two bits of navigation the SwiftUI screen can't do itself: pushing the
+/// paged detail screen and presenting the SoundCloud web view.
 @MainActor
 class AudioTourHostingController: UIHostingController<AudioTourView> {
     private let playaDB: PlayaDB

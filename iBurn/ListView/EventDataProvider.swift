@@ -11,11 +11,9 @@ class EventDataProvider: ObjectListDataProvider {
     typealias Filter = EventFilter
 
     let playaDB: PlayaDB
-    private let favoriteSync: FavoriteSyncService
 
-    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared) {
+    init(playaDB: PlayaDB) {
         self.playaDB = playaDB
-        self.favoriteSync = favoriteSync
     }
 
     func isDatabaseSeeded() async -> Bool {
@@ -76,15 +74,9 @@ class EventDataProvider: ObjectListDataProvider {
     func toggleFavorite(_ object: EventObjectOccurrence) async throws {
         try await playaDB.toggleFavorite(object)
         let isFavorite = try await playaDB.isFavorite(object)
-        // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source
-        // of truth and the UI must not wait on the Yap write. The occurrence's
-        // composite identity mirrors onto the one matching Yap occurrence and
-        // reconciles the event's calendar entries.
-        let favoriteSync = self.favoriteSync
-        let identity = object.favoriteIdentity
-        Task {
-            await favoriteSync.mirrorFavorite(type: .event, uid: identity, isFavorite: isFavorite)
-        }
+        // Fire-and-forget calendar reconcile; PlayaDB is the source of truth and the
+        // UI must not wait on EventKit.
+        EventCalendarSync.reconcile(favoriteIdentity: object.favoriteIdentity, isFavorite: isFavorite)
     }
 
     /// Walk/bike estimate, embargo-gated and sanity-clamped in `PlayaDistanceString`. An

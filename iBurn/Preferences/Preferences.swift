@@ -13,12 +13,6 @@ enum Preferences {
     
     // MARK: - User Interface
     enum UserInterface {
-        static let useSwiftUIDetailView = Preference<Bool>(
-            key: "userInterface.detailView.useSwiftUI",
-            defaultValue: true,
-            description: "Use new detail screen instead of legacy implementation"
-        )
-
         /// Where the global search entry point is anchored.
         /// Values are `MapSearchLayout` raw values; resolves to the nav bar below iOS 26.
         static let mapSearchLayout = Preference<String>(
@@ -47,18 +41,6 @@ enum Preferences {
     
     // MARK: - Feature Flags
     enum FeatureFlags {
-        static let useSwiftUILists = Preference<Bool>(
-            key: "featureFlag.lists.useSwiftUI",
-            defaultValue: true,
-            description: "Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps; disable to fall back to legacy UIKit"
-        )
-
-        static let usePlayaDBCalendarSync = Preference<Bool>(
-            key: "featureFlag.calendar.usePlayaDB",
-            defaultValue: true,
-            description: "Sync favorited events to the device calendar from PlayaDB; disable to fall back to legacy YapDatabase calendar entries"
-        )
-
         /// Whether global search folds in semantic matches from the on-device model after
         /// the FTS5 results land (the "Finding more with AI…" pass).
         ///
@@ -130,21 +112,6 @@ enum Preferences {
             key: "UseImageColorsTheming",
             defaultValue: true,
             description: "Extract colors from images for UI theming"
-        )
-    }
-    
-    // MARK: - Filters
-    enum Filters {
-        static let favorites = Preference<String>(
-            key: "FavoritesFilter",
-            defaultValue: FavoritesFilter.all.rawValue,
-            description: "Selected favorites filter"
-        )
-        
-        static let nearby = Preference<String>(
-            key: "NearbyFilter",
-            defaultValue: NearbyFilter.all.rawValue,
-            description: "Selected nearby filter"
         )
     }
     

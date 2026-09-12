@@ -7,18 +7,10 @@
 //
 
 #import "BRCAppDelegate.h"
-#import "BRCDatabaseManager.h"
-#import "BRCDataImporter.h"
-#import "BRCArtObject.h"
-#import "BRCCampObject.h"
-#import "BRCRecurringEventObject.h"
-#import "BRCEventObject_Private.h"
 #import "NSDateFormatter+iBurn.h"
 #import "BRCSecrets.h"
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
-#import "BRCEventObject.h"
-#import "BRCDetailViewController.h"
 #import "CLLocationManager+iBurn.h"
 #import "Appirater.h"
 #import "TUSafariActivity.h"
@@ -26,7 +18,6 @@
 @import TTTAttributedLabel;
 #import "iBurn-Swift.h"
 #import "NSUserDefaults+iBurn.h"
-#import "BRCDataImporter_Private.h"
 @import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;
@@ -46,7 +37,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
 @end
 
 @implementation BRCAppDelegate
-@synthesize dataImporter = _dataImporter;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -84,33 +74,14 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Background fetch is now handled by BackgroundTasks framework
     // [application setMinimumBackgroundFetchInterval:dailyInterval];
         
-    [BRCDatabaseManager.shared.backgroundReadConnection asyncReadWithBlock:^(YapDatabaseReadTransaction * __nonnull transaction) {
-        NSUInteger campCount = [transaction numberOfKeysInCollection:[BRCCampObject yapCollection]];
-        NSUInteger artCount = [transaction numberOfKeysInCollection:[BRCArtObject yapCollection]];
-        NSUInteger eventCount = [transaction numberOfKeysInCollection:[BRCEventObject yapCollection]];
-        NSLog(@"Existing data: \n%d Art\n%d Camp\n%d Event", (int)artCount, (int)campCount, (int)eventCount);
-    }];
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSLog(@"Loading bundled data...");
-        [self preloadExistingData];
-        if ([NSUserDefaults areDownloadsDisabled]) {
-            NSLog(@"Downloads are disabled, skipping.");
-            return;
-        }
-        NSLog(@"Loading data from internet...");
-        NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-        [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
-            NSLog(@"Fetched data from internet with result: %d", (int)result);
-        }];
-        // ColorCache extracts colors from Yap-backed objects for the legacy UIKit cells only.
-        // The default (SwiftUI/PlayaDB) stack is served by ColorPrefetcher, which writes the
-        // persistent `thumbnail_colors` table (see DependencyContainer). Running both every
-        // launch duplicates the same image decoding work.
-        if (!BRCPreferenceService.useSwiftUILists) {
-            [ColorCache.shared prefetchAllColors];
-        }
-    });
+    // Bundled data lands in PlayaDB via PlayaDBSeeder (see DependencyContainer); the
+    // only launch-time network work left is the PlayaDB-native OTA check, which
+    // throttles itself to once a day and imports straight into PlayaDB.
+    if ([NSUserDefaults areDownloadsDisabled]) {
+        NSLog(@"Downloads are disabled, skipping update check.");
+    } else {
+        [self checkForDataUpdates];
+    }
     
     // Handle launch from notification
     if (launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]) {
@@ -247,15 +218,8 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     DDLogInfo(@"applicationWillTerminate");
 }
 
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
-    if ([identifier isEqualToString:kBRCBackgroundFetchIdentifier]) {
-        [self.dataImporter addBackgroundURLSessionCompletionHandler:completionHandler];
-    }
-}
-
 - (void) applicationDidReceiveMemoryWarning:(UIApplication *)application {
     DDLogWarn(@"applicationDidReceiveMemoryWarning:");
-    [BRCDatabaseManager.shared reduceCacheLimit];
 }
 
 - (void)setupDefaultTabBarController
@@ -290,18 +254,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     self.tabBarController.moreNavigationController.delegate = self;
 }
 
-- (void) preloadExistingData {
-    NSBundle *dataBundle = [NSBundle brc_dataBundle];
-    
-    NSURL *updateURL = [dataBundle URLForResource:@"update" withExtension:@"json"];
-
-    [self.dataImporter loadUpdatesFromURL:updateURL fetchResultBlock:^(UIBackgroundFetchResult result) {
-        NSLog(@"Attempted to load pre-existing data with result %d", (int)result);
-    }];
-    [self.dataImporter waitForDataUpdatesToFinish];
-    NSLog(@"Finished loading pre-existing data");
-}
-
 - (void) setupRegionBasedUnlock {
     NSParameterAssert(self.locationManager != nil);
     self.burningManRegion = [BRCLocations burningManRegion];
@@ -333,17 +285,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 + (BRCAppDelegate*) shared {
     return (BRCAppDelegate*)[UIApplication sharedApplication].delegate;
-}
-
-// Lazy load the data importer
-- (BRCDataImporter*) dataImporter {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSURLSessionConfiguration *bgSessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBRCBackgroundFetchIdentifier];
-        YapDatabaseConnection *connection = [BRCDatabaseManager.shared.database newConnection];
-        self->_dataImporter = [[BRCDataImporter alloc] initWithReadWriteConnection:connection sessionConfiguration:bgSessionConfiguration];
-    });
-    return _dataImporter;
 }
 
 #pragma mark CLLocationManagerDelegate
@@ -449,11 +390,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         return;
     }
     
-    NSURL *updatesURL = [NSURL URLWithString:kBRCUpdatesURLString];
-    [self.dataImporter loadUpdatesFromURL:updatesURL fetchResultBlock:^(UIBackgroundFetchResult result) {
-        BOOL success = (result == UIBackgroundFetchResultNewData);
-        [task setTaskCompletedWithSuccess:success];
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self checkForDataUpdatesWithCompletion:^(BOOL didImport) {
+            [task setTaskCompletedWithSuccess:didImport];
+        }];
+    });
 }
 
 #pragma mark - Deep Linking

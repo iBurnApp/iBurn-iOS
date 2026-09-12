@@ -60,13 +60,12 @@ enum TabIdentifier: String, CaseIterable {
     }
 
     /// Matches a tab root (usually a `NavigationController`) to its identifier by leaf type.
-    /// Both the SwiftUI and legacy implementations of each list are recognized.
     static func identifier(forRoot root: UIViewController) -> TabIdentifier? {
         let leaf = (root as? UINavigationController)?.viewControllers.first ?? root
         if leaf is MainMapViewController { return .map }
-        if leaf is NearbyListHostingController || leaf is NearbyViewController { return .nearby }
-        if leaf is FavoritesListHostingController || leaf is FavoritesViewController { return .favorites }
-        if leaf is EventListHostingController || leaf is EventListViewController { return .events }
+        if leaf is NearbyListHostingController { return .nearby }
+        if leaf is FavoritesListHostingController { return .favorites }
+        if leaf is EventListHostingController { return .events }
         if leaf is MoreViewController { return .more }
         return nil
     }

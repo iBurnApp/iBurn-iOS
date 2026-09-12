@@ -33,11 +33,10 @@ class EventsFilterViewModel: ObservableObject {
         
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypes
-        self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> EventTypeContainer? in
-            guard let type = BRCEventType(rawValue: number.uintValue) else { return nil }
-            return EventTypeContainer(
+        self.eventTypes = BRCEventType.allVisibleTypes.map { type in
+            EventTypeContainer(
                 type: type,
-                title: BRCEventObject.stringForEventType(type),
+                title: type.description,
                 isSelected: storedTypes.contains(type)
             )
         }

@@ -44,14 +44,6 @@
 		</dict>
 		<dict>
 			<key>File</key>
-			<string>com.mono0926.LicensePlist/ASDayPicker</string>
-			<key>Title</key>
-			<string>ASDayPicker (1.0.0)</string>
-			<key>Type</key>
-			<string>PSChildPaneSpecifier</string>
-		</dict>
-		<dict>
-			<key>File</key>
 			<string>com.mono0926.LicensePlist/BButton</string>
 			<key>Title</key>
 			<string>BButton (4.0.2)</string>
@@ -196,14 +188,6 @@
 		</dict>
 		<dict>
 			<key>File</key>
-			<string>com.mono0926.LicensePlist/Mantle</string>
-			<key>Title</key>
-			<string>Mantle (2.2.0)</string>
-			<key>Type</key>
-			<string>PSChildPaneSpecifier</string>
-		</dict>
-		<dict>
-			<key>File</key>
 			<string>com.mono0926.LicensePlist/maplibre-gl-native-distribution</string>
 			<key>Title</key>
 			<string>MapLibre Native (6.18.0-patch0)</string>
@@ -279,14 +263,6 @@
 			<string>com.mono0926.LicensePlist/TUSafariActivity</string>
 			<key>Title</key>
 			<string>TUSafariActivity (1.0.4)</string>
-			<key>Type</key>
-			<string>PSChildPaneSpecifier</string>
-		</dict>
-		<dict>
-			<key>File</key>
-			<string>com.mono0926.LicensePlist/YapDatabase</string>
-			<key>Title</key>
-			<string>YapDatabase (4.0)</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>

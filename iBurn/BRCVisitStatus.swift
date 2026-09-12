@@ -79,7 +79,7 @@ import SwiftUI
 // MARK: - Objective-C Compatibility
 
 extension BRCVisitStatus {
-    /// String value for Mantle serialization
+    /// String value for serialization
     public var stringValue: String {
         switch self {
         case .unvisited:
@@ -91,7 +91,7 @@ extension BRCVisitStatus {
         }
     }
     
-    /// Initialize from string value (for Mantle deserialization)
+    /// Initialize from a string value
     public init?(stringValue: String) {
         switch stringValue {
         case "unvisited":

@@ -29,27 +29,14 @@ extension ListButtonHelper where Self: UIViewController {
 
     /// Shows what is currently drawn inside the map's visible bounds.
     ///
-    /// Two stacks feed maps in this app, so the list button branches on what the map is
-    /// actually showing:
-    ///
-    /// - **Legacy (kill-switch) maps** are fed by `YapViewAnnotationDataSource` /
-    ///   `YapCollectionAnnotationDataSource` and emit `DataObjectAnnotation`s. Those keep
-    ///   the Yap-backed `MapPinListViewController`.
-    /// - **Everything else** — the main map (`FilteredMapDataSource`) and the SwiftUI list
-    ///   screens' map push (`StaticAnnotationDataSource` of `PlayaObjectAnnotation`s) —
-    ///   gets the PlayaDB-native `VisiblePinsHostingController`, which also lists
-    ///   `BRCUserMapPoint` user pins. `MapPinListViewController` only ever collected
-    ///   `DataObjectAnnotation`s, so on these maps it was always empty.
+    /// Every map in the app — the main map (`FilteredMapDataSource`) and the SwiftUI list
+    /// screens' map push (`StaticAnnotationDataSource` of `PlayaObjectAnnotation`s) — gets
+    /// the PlayaDB-native `VisiblePinsHostingController`, which also lists
+    /// `BRCUserMapPoint` user pins.
     func listButtonPressed(_ sender: Any?) {
         let visibleAnnotations = mapView.annotations ?? []
         let visibleBounds = mapView.visibleCoordinateBounds
         let inBounds = visibleAnnotations.filter { visibleBounds.brc_contains($0.coordinate) }
-
-        if inBounds.contains(where: { $0 is DataObjectAnnotation }) {
-            let listVC = MapPinListViewController(visibleAnnotations: visibleAnnotations, visibleBounds: visibleBounds)
-            navigationController?.pushViewController(listVC, animated: true)
-            return
-        }
 
         let dependencies = BRCAppDelegate.shared.dependencies
         let listVC = VisiblePinsHostingController(annotations: inBounds, dependencies: dependencies) { [weak self] pin in

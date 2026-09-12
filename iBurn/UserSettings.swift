@@ -46,20 +46,6 @@ public final class UserSettings: NSObject {
         static let showBigCampNames = "kBRCShowBigCampNamesKey"
     }
     
-    /// Selected favorites filter (legacy, used by FavoritesViewController)
-    public static var favoritesFilter: FavoritesFilter {
-        set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: Keys.favoritesFilter)
-        }
-        get {
-            guard let string = UserDefaults.standard.string(forKey: Keys.favoritesFilter),
-                let filter = FavoritesFilter(rawValue: string) else {
-                    return .all
-            }
-            return filter
-        }
-    }
-
     /// Selected favorites type filter (SwiftUI, supports all types including MVs)
     /// Uses the same key as favoritesFilter for backward compatibility
     static var favoritesTypeFilter: FavoritesTypeFilter {
@@ -306,7 +292,7 @@ public final class UserSettings: NSObject {
         get {
             guard let numbers = UserDefaults.standard.array(forKey: Keys.selectedEventTypesForMap) as? [NSNumber] else { 
                 // Default to all event types if not set
-                return BRCEventObject.allVisibleEventTypes.compactMap { BRCEventType(rawValue: $0.uintValue) }
+                return BRCEventType.allVisibleTypes
             }
             return numbers.compactMap { BRCEventType(rawValue: $0.uintValue) }
         }

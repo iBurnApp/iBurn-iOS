@@ -14,14 +14,6 @@ name: Appirater, nameSpecified:
 body: Copyright 2017. Aras…
 version: 2.3.1
 
-name: ASDayPicker, nameSpecified: 
-body: The MIT License (MIT…
-version: 1.0.0
-
-name: ASDayPicker, nameSpecified: 
-body: The MIT License (MIT…
-version: 1.0.0
-
 name: BButton, nameSpecified: 
 body: BButton - copyright …
 version: 4.0.2
@@ -94,14 +86,6 @@ body: MIT License
 Copyrig…
 version: 3.27.1
 
-name: Mantle, nameSpecified: 
-body: **Copyright (c) GitH…
-version: 2.2.0
-
-name: Mantle, nameSpecified: 
-body: **Copyright (c) GitH…
-version: 2.2.0
-
 name: Onboard, nameSpecified: 
 body: Copyright (c) 2014 M…
 version: 2.3.3
@@ -141,14 +125,6 @@ version: 1.0.4
 name: TUSafariActivity, nameSpecified: 
 body: Copyright (c) 2012 T…
 version: 1.0.4
-
-name: YapDatabase, nameSpecified: 
-body: Software License Agr…
-version: 4.0
-
-name: YapDatabase, nameSpecified: 
-body: Software License Agr…
-version: 4.0
 
 name: abseil-cpp-binary, nameSpecified: abseil, owner: google, version: 1.2024072200.0, source: https://github.com/google/abseil-cpp-binary
 

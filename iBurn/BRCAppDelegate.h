@@ -10,7 +10,6 @@
 @import Onboard;
 @import CoreLocation;
 
-@class BRCDataImporter;
 @class MainMapViewController;
 @class TabController;
 
@@ -21,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) TabController *tabBarController;
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
-@property (nonatomic, strong, readonly) BRCDataImporter *dataImporter;
 
 @property (nonatomic, strong) MainMapViewController *mapViewController;
 
@@ -34,8 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void) registerForRemoteNotifications;
 /** Asks for location and starts updating */
 - (void) requestLocationPermission;
-
-- (void) preloadExistingData;
 
 @end
 NS_ASSUME_NONNULL_END

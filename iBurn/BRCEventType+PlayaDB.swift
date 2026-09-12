@@ -42,10 +42,7 @@ extension BRCEventType {
     /// Returns `nil` when all visible types are selected (meaning "no filter").
     static func eventTypeCodes(from types: [BRCEventType]) -> Set<String>? {
         let codes = Set(types.compactMap(\.playaDBCode))
-        let allCodes = Set(
-            BRCEventObject.allVisibleEventTypes
-                .compactMap { BRCEventType(rawValue: $0.uintValue)?.playaDBCode }
-        )
+        let allCodes = Set(BRCEventType.allVisibleTypes.compactMap(\.playaDBCode))
         return codes == allCodes ? nil : codes
     }
 }

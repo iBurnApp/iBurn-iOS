@@ -19,15 +19,11 @@ class CampDataProvider: ObjectListDataProvider {
     typealias Filter = CampFilter
 
     private let playaDB: PlayaDB
-    private let favoriteSync: FavoriteSyncService
 
     /// Initialize the data provider
-    /// - Parameters:
-    ///   - playaDB: The PlayaDB instance to use for data access
-    ///   - favoriteSync: Mirrors favorite changes into the legacy YapDatabase
-    init(playaDB: PlayaDB, favoriteSync: FavoriteSyncService = FavoriteSyncServiceFactory.shared) {
+    /// - Parameter playaDB: The PlayaDB instance to use for data access
+    init(playaDB: PlayaDB) {
         self.playaDB = playaDB
-        self.favoriteSync = favoriteSync
     }
 
     func isDatabaseSeeded() async -> Bool {
@@ -53,13 +49,6 @@ class CampDataProvider: ObjectListDataProvider {
 
     func toggleFavorite(_ object: CampObject) async throws {
         try await playaDB.toggleFavorite(object)
-        let isFavorite = try await playaDB.isFavorite(object)
-        // Fire-and-forget mirror into legacy YapDatabase; PlayaDB is the source
-        // of truth and the UI must not wait on the Yap write.
-        let favoriteSync = self.favoriteSync
-        Task {
-            await favoriteSync.mirrorFavorite(type: .camp, uid: object.uid, isFavorite: isFavorite)
-        }
     }
 
     /// Walk/bike estimate, embargo-gated and sanity-clamped in `PlayaDistanceString`.

@@ -21,14 +21,11 @@ description: Build, launch, and drive the iBurn app in the iOS Simulator via Xco
 
 ## Critical setup facts (learned the hard way)
 
-- **The SwiftUI/PlayaDB stack is ON by default.** The flag
-  `featureFlag.lists.useSwiftUI` (all builds, default true) acts as a
-  kill-switch: set it to NO and you get legacy UIKit/YapDatabase screens and
-  `PlayaDB.sqlite` is never created. To exercise the legacy stack, set before
-  (re)launching:
-  ```bash
-  xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 featureFlag.lists.useSwiftUI -bool NO
-  ```
+- **The SwiftUI/PlayaDB stack is the only stack.** YapDatabase, Mantle and every
+  legacy UIKit list/detail screen were deleted in Sept 2026, along with the
+  `featureFlag.lists.useSwiftUI` kill-switch and the Appearance > "Use New Detail
+  Screen" toggle. There is no legacy fallback to exercise and no
+  `iBurn-<year>.sqlite` on disk - `PlayaDB.sqlite` is the database.
 - **PlayaDB seeds lazily**, when the DependencyContainer is first built (tab
   construction after onboarding) — not at app launch. Don't conclude seeding is
   broken because the DB file doesn't exist yet; navigate into the main UI first.
@@ -74,10 +71,10 @@ app:
 APP_DATA=$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010 data)
 sqlite3 "file:$APP_DATA/Documents/PlayaDB.sqlite?mode=ro" "
   PRAGMA journal_mode;                          -- expect: wal
-  SELECT COUNT(*) FROM art_objects;             -- ~332 (2026 data, Aug 9 refresh)
-  SELECT COUNT(*) FROM camp_objects;            -- ~1191 (placed; GPS non-null for ~1184)
-  SELECT COUNT(*) FROM event_objects;           -- ~2538
-  SELECT COUNT(*) FROM event_occurrences;       -- ~5032
+  SELECT COUNT(*) FROM art_objects;             -- 332 (2026 data, Aug 27 seed)
+  SELECT COUNT(*) FROM camp_objects;            -- 1184
+  SELECT COUNT(*) FROM event_objects;           -- 3412
+  SELECT COUNT(*) FROM event_occurrences;       -- 6565
   SELECT identifier FROM grdb_migrations;       -- v1-initial-schema
   SELECT object_type, object_id, is_favorite FROM object_metadata;"
 ```

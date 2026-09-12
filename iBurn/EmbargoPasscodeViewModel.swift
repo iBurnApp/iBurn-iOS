@@ -11,7 +11,7 @@ class EmbargoPasscodeViewModel: ObservableObject {
     @Published var showPasscodeEntry: Bool = false
     
     private var countdownTimer: Timer?
-    private let festivalStartDate: Date = BRCEventObject.festivalStartDate()
+    private let festivalStartDate: Date = YearSettings.eventStart
     
     var dismissAction: (() -> Void)?
 

@@ -85,11 +85,10 @@ class MapFilterViewModel: ObservableObject {
 
         // Initialize event types
         let storedTypes = UserSettings.selectedEventTypesForMap
-        self.eventTypes = BRCEventObject.allVisibleEventTypes.compactMap { number -> MapEventTypeContainer? in
-            guard let type = BRCEventType(rawValue: number.uintValue) else { return nil }
-            return MapEventTypeContainer(
+        self.eventTypes = BRCEventType.allVisibleTypes.map { type in
+            MapEventTypeContainer(
                 type: type,
-                title: BRCEventObject.stringForEventType(type),
+                title: type.description,
                 isSelected: storedTypes.contains(type)
             )
         }

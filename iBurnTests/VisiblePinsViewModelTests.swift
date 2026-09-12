@@ -128,7 +128,7 @@ final class VisiblePinsViewModelTests: XCTestCase {
 
     func testDuplicateUserPinsAreDeDupedByPinID() {
         // Two BRCUserMapPoint instances for the same PlayaDB row: identity is `pinId`,
-        // not the per-instance random `yapKey`.
+        // not the per-instance random `uniqueID`.
         let viewModel = makeViewModel(annotations: [
             userPin(id: "pin-1", title: "My Bike"),
             userPin(id: "pin-1", title: "My Bike"),

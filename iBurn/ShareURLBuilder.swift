@@ -283,7 +283,7 @@ extension ShareURLPayload {
 }
 
 extension EventObjectOccurrence {
-    /// Host descriptor for share URLs, preferring the camp tier over art (matches `BRCEventObject`).
+    /// Host descriptor for share URLs, preferring the camp tier over art.
     var shareHost: ShareURLHost? {
         if let campID = hostedByCamp, !campID.isEmpty {
             return .camp(uid: campID, name: hostName)
@@ -296,47 +296,3 @@ extension EventObjectOccurrence {
 }
 
 // MARK: - Legacy payloads
-
-extension ShareURLPayload {
-
-    /// Payload for a legacy YapDB-backed object.
-    ///
-    /// - Parameters:
-    ///   - hostName: Resolved host name for events (looked up asynchronously by the caller).
-    ///   - canShowLocation: `BRCEmbargo.canShowLocation(for: object)` at the call site.
-    /// - Returns: `nil` for object types that have no deep link (e.g. mutant vehicles).
-    static func legacy(_ object: BRCDataObject, hostName: String?, canShowLocation: Bool) -> ShareURLPayload? {
-        let kind: ShareURLKind
-        if object is BRCArtObject {
-            kind = .art
-        } else if object is BRCCampObject {
-            kind = .camp
-        } else if object is BRCEventObject {
-            kind = .event
-        } else {
-            return nil
-        }
-
-        var payload = ShareURLPayload(
-            kind: kind,
-            uid: object.uniqueID,
-            title: object.title,
-            coordinate: canShowLocation ? object.location?.coordinate : nil,
-            address: canShowLocation ? object.playaLocation : nil,
-            detailDescription: object.detailDescription
-        )
-
-        if let event = object as? BRCEventObject {
-            payload.startDate = event.startDate
-            payload.endDate = event.endDate
-            payload.isAllDay = event.isAllDay
-            if let campID = event.hostedByCampUniqueID, !campID.isEmpty {
-                payload.host = .camp(uid: campID, name: hostName)
-            } else if let artID = event.hostedByArtUniqueID, !artID.isEmpty {
-                payload.host = .art(uid: artID, name: hostName)
-            }
-        }
-
-        return payload
-    }
-}

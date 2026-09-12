@@ -305,9 +305,9 @@ final class AudioTourViewModel: ObservableObject {
 
     // MARK: - Favorites
 
-    /// Toggles through `ArtDataProvider` so the legacy YapDatabase mirror
-    /// (`FavoriteSyncService`) stays in agreement. The observation re-emits with
-    /// fresh metadata, so no optimistic local mutation is needed.
+    /// Toggles through `ArtDataProvider`, the one favorite pipeline every list shares.
+    /// The observation re-emits with fresh metadata, so no optimistic local mutation is
+    /// needed.
     func toggleFavorite(_ item: AudioTourItem) async {
         do {
             try await artProvider.toggleFavorite(item.art)

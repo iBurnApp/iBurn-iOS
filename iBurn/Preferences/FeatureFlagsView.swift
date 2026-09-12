@@ -18,9 +18,6 @@ struct FeatureFlagsView: View {
     @State private var currentDate = Date.present
     @State private var timer: Timer?
 
-    // SwiftUI Lists feature flag
-    @State private var useSwiftUILists = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useSwiftUILists)
-
     // Prototype: where the global search entry point lives
     @State private var searchLayout = MapSearchLayout.current
 
@@ -116,10 +113,6 @@ struct FeatureFlagsView: View {
 
             // SwiftUI Lists Section
             Section {
-                Toggle("Use SwiftUI Lists", isOn: $useSwiftUILists)
-                    .onChange(of: useSwiftUILists) { newValue in
-                        PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useSwiftUILists)
-                    }
                 Toggle("AI Search Merge", isOn: $useAISearch)
                     .onChange(of: useAISearch) { newValue in
                         PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useAISearch)
@@ -127,7 +120,7 @@ struct FeatureFlagsView: View {
             } header: {
                 Text("UI Features")
             } footer: {
-                Text("Use SwiftUI list views for Favorites, Nearby, Events, Art, and Camps. Turn off to fall back to the legacy UIKit lists. AI Search Merge folds on-device semantic matches into global search — off by default while the results aren't useful. Reopen search after changing it.")
+                Text("AI Search Merge folds on-device semantic matches into global search — off by default while the results aren't useful. Reopen search after changing it.")
                     .font(.footnote)
             }
 

@@ -18,15 +18,6 @@ class LocationService: LocationServiceProtocol {
         return locationManager.location
     }
     
-    func distanceToObject(_ object: BRCDataObject) -> CLLocationDistance? {
-        guard let currentLocation = getCurrentLocation(),
-              let objectLocation = object.location else {
-            return nil
-        }
-        
-        return currentLocation.distance(from: objectLocation)
-    }
-    
     func startLocationUpdates() {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
