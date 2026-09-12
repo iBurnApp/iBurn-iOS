@@ -44,8 +44,17 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
         }
     }
 
+    /// Redraws the event pins at the next instant one of them changes state.
+    ///
+    /// Both annotation paths are clock-dependent (a happening-now pin, its status dot, its
+    /// callout's time text) and neither ticks on its own — the region path waited for a pan,
+    /// the observation path for a database write. Lives and dies with the map's appearance,
+    /// the same as `geocoderTimer`.
+    private var eventRefreshScheduler: MapEventRefreshScheduler?
+
     deinit {
         geocoderTimer?.invalidate()
+        eventRefreshScheduler?.stop()
     }
 
     public init() {
@@ -420,6 +429,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
         geocoderTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             self?.geocodeNavigationBar()
         }
+        startEventRefreshScheduler()
         installBottomAccessoryIfNeeded()
     }
     
@@ -440,6 +450,32 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
         self.sidebarButtons.isHidden = false
         geocoderTimer = nil
+        eventRefreshScheduler?.stop()
+        eventRefreshScheduler = nil
+    }
+
+    /// Builds (once per appearance) and starts the event-pin refresh timer.
+    ///
+    /// The scheduler re-arms itself against whatever the region path last drew, so it is
+    /// pointed at the adapter's tracked occurrences and re-armed whenever a refresh lands —
+    /// including the ones it didn't ask for, like a pan or the filter sheet's Done.
+    private func startEventRefreshScheduler() {
+        guard eventRefreshScheduler == nil else { return }
+        let scheduler = MapEventRefreshScheduler { [weak self] in
+            guard let self else { return }
+            self.userMapViewAdapter?.refreshRegionAnnotations()
+            // Re-reads `allAnnotations()`, which is where the observation layer re-derives
+            // which of today's occurrences are still live.
+            self.mapViewAdapter.reloadAnnotations()
+        }
+        scheduler.occurrencesProvider = { [weak self] in
+            self?.userMapViewAdapter?.trackedOccurrences ?? []
+        }
+        userMapViewAdapter?.onRegionAnnotationsRefreshed = { [weak scheduler] in
+            scheduler?.reschedule()
+        }
+        eventRefreshScheduler = scheduler
+        scheduler.start()
     }
 }
 

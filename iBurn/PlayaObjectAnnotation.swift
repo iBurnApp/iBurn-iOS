@@ -79,30 +79,70 @@ final class PlayaObjectAnnotation: NSObject, MLNAnnotation, ImageAnnotation {
         )
     }
 
-    convenience init?(event: EventObjectOccurrence) {
+    convenience init?(event: EventObjectOccurrence, now: Date = .present) {
         guard let location = event.location, CLLocationCoordinate2DIsValid(location.coordinate) else { return nil }
         self.init(
             id: event.event.anyID,
             coordinate: location.coordinate,
             title: event.name,
-            subtitle: Self.calloutSubtitle(for: event),
+            subtitle: Self.calloutSubtitle(for: event, now: now),
             object: .eventOccurrence(event)
         )
     }
 
-    /// A pin's callout has to say *which day* — the map shows favourites weeks ahead of the
-    /// burn, and "9:00 AM - 11:00 AM" alone is unreadable when the answer could be any of
-    /// eight days. Dropped only while the occurrence is actually running, when the day is
-    /// implied and the times are all that's left to say. Same rule as the legacy
+    /// Where and when, in one line: "Palinka Lounge · 5:57 & Bodhi · 8:00 AM - 10:00 AM".
+    ///
+    /// An event pin is drawn at its *host's* coordinates, so "what is this place?" is the
+    /// first question the callout has to answer — a bare time range leaves the user tapping
+    /// through to the detail screen to find out whose camp they are looking at.
+    ///
+    /// The address is embargo-gated exactly the way the list rows gate theirs
+    /// (`BRCEmbargo.canShowLocation(for:)`, the per-object tier), so a locked camp
+    /// contributes its name and nothing else. `canShowAddress` is passed explicitly by
+    /// tests; production leaves it nil and the tier is read live.
+    ///
+    /// A pin's callout also has to say *which day* — the map shows favourites weeks ahead of
+    /// the burn, and "9:00 AM - 11:00 AM" alone is unreadable when the answer could be any of
+    /// eight days. The weekday is dropped only while the occurrence is actually running, when
+    /// the day is implied and the times are all that's left to say. Same rule as the legacy
     /// `DataObjectAnnotation.subtitle`.
+    ///
+    /// MapLibre draws callout subtitles on a single line, so this stays to three pieces at
+    /// most: host, address, time.
     static func calloutSubtitle(for event: EventObjectOccurrence,
-                                now: Date = .present) -> String {
+                                now: Date = .present,
+                                canShowAddress: Bool? = nil) -> String {
+        var parts: [String] = []
+        if let hostName = event.hostName?.trimmedNonEmpty {
+            parts.append(hostName)
+        }
+        let addressAllowed = canShowAddress ?? BRCEmbargo.canShowLocation(for: event)
+        if addressAllowed, let address = event.hostAddress?.trimmedNonEmpty {
+            parts.append(address)
+        }
+        if parts.isEmpty, let other = event.otherLocation.trimmedNonEmpty {
+            // No joined host (or nothing showable from it): the event's own free-text
+            // location is the only place left to name.
+            parts.append(other)
+        }
+        parts.append(timeText(for: event, now: now))
+        return parts.joined(separator: " · ")
+    }
+
+    private static func timeText(for event: EventObjectOccurrence, now: Date) -> String {
         if event.isHappeningRightNow(now) {
             return event.startAndEndString
         }
         return "\(event.startWeekdayString) \(event.startAndEndString)"
     }
 
+    /// Last-resort initializer for an event with no occurrence resolved.
+    ///
+    /// The subtitle can only be the event's own free-text location: a bare `EventObject`
+    /// names neither its host (it holds only the camp/art *id*) nor a time. Prefer
+    /// `init(event: EventObjectOccurrence)` wherever the joined row is available — the map's
+    /// region path used to come through here, which is why its callouts read "Hosted by
+    /// Camp".
     convenience init?(event: EventObject) {
         guard let location = event.location, CLLocationCoordinate2DIsValid(location.coordinate) else { return nil }
         self.init(

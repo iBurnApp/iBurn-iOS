@@ -208,16 +208,15 @@ public extension EventObject {
         !printDescription.isEmpty
     }
     
-    /// Primary location string for display
+    /// Primary location string for display, or nil when this row can't name a place.
+    ///
+    /// A bare `EventObject` carries only *ids* for its host camp/art (`hostedByCamp`,
+    /// `locatedAtArt`), so there is nothing here to name them with. This used to return the
+    /// literal placeholders "Hosted by Camp" / "Located at Art", which shipped straight into
+    /// map callout subtitles. Anything that wants the host's name wants
+    /// `EventObjectOccurrence.primaryLocationString`, which carries the joined host object.
     var primaryLocationString: String? {
-        if isHostedByCamp {
-            return "Hosted by Camp" // Would resolve camp name through PlayaDB
-        } else if isLocatedAtArt {
-            return "Located at Art" // Would resolve art name through PlayaDB
-        } else if hasOtherLocation {
-            return otherLocation
-        }
-        return nil
+        hasOtherLocation ? otherLocation : nil
     }
 }
 

@@ -209,9 +209,21 @@ public extension EventObjectOccurrence {
         event.hasPrintDescription
     }
     
-    /// Primary location string for display
+    /// Primary location string for display: the host's name, then its address.
+    ///
+    /// This is the inflated counterpart of `EventObject.primaryLocationString` — the host was
+    /// resolved by the JOIN, so it can actually be named ("Palinka Lounge · 5:57 & Bodhi")
+    /// instead of falling back to the event's free-text `otherLocation`.
+    ///
+    /// No embargo check happens here (PlayaDB knows nothing about it): callers that render
+    /// the address gate it themselves, the way the list rows and map callouts do.
     var primaryLocationString: String? {
-        event.primaryLocationString
+        let parts = [hostName, hostAddress].compactMap { value -> String? in
+            guard let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+            return value
+        }
+        guard !parts.isEmpty else { return event.primaryLocationString }
+        return parts.joined(separator: " · ")
     }
     
     /// Duration of this specific occurrence in seconds

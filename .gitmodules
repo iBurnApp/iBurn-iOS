@@ -5,12 +5,6 @@
 [submodule "Submodules/DOFavoriteButton"]
 	path = Submodules/DOFavoriteButton
 	url = git@github.com:chrisballinger/DOFavoriteButton.git
-[submodule "Submodules/ASDayPicker"]
-	path = Submodules/ASDayPicker
-	url = git@github.com:chrisballinger/ASDayPicker.git
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
-[submodule "Submodules/YapDatabase"]
-	path = Submodules/YapDatabase
-	url = git@github.com:iBurnApp/YapDatabase.git

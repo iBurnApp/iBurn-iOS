@@ -24,18 +24,26 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
     private var artAnnotations: [MLNAnnotation] = []
     private var campAnnotations: [MLNAnnotation] = []
-    private var eventAnnotations: [MLNAnnotation] = []
     private var favoriteArtAnnotations: [MLNAnnotation] = []
     private var favoriteCampAnnotations: [MLNAnnotation] = []
+
+    /// Happening-now pins, kept as candidates for the same reason the favourites below are:
+    /// "is this event on right now" is a question about the clock, and the answer changes
+    /// while the database sits perfectly still. The SQL window is today (see
+    /// `startObserving()`); which of today's occurrences are *live* is re-derived on every
+    /// `allAnnotations()` read, so an event that ended a minute ago loses its pin on the next
+    /// reload instead of on the next database write.
+    private var activeEventCandidates: [TimedEventCandidate] = []
 
     /// Favourited-event pins with the occurrence times they live or die by. Kept apart from
     /// the other caches because this is the one layer whose membership changes with the clock
     /// and not with the database: an occurrence ages out of `recentlyEndedGrace` while nothing
     /// at all is written, so the set is re-derived on every `allAnnotations()` rather than
     /// frozen at delivery.
-    private var favoriteEventCandidates: [FavoriteEventCandidate] = []
+    private var favoriteEventCandidates: [TimedEventCandidate] = []
 
-    private struct FavoriteEventCandidate {
+    /// A pin plus the occurrence window it lives or dies by.
+    private struct TimedEventCandidate {
         let annotation: MLNAnnotation
         let startDate: Date
         let endDate: Date
@@ -96,7 +104,8 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         // on every reload (returning to the map, closing the filter sheet, any database
         // write), which is what makes a pin whose grace has run out actually leave the map
         // without a timer ticking behind it.
-        cachedAnnotations + favoriteEventAnnotations(now: .present)
+        let now = Date.present
+        return cachedAnnotations + activeEventAnnotations(now: now) + favoriteEventAnnotations(now: now)
     }
 
     private func favoriteEventAnnotations(now: Date) -> [MLNAnnotation] {
@@ -105,6 +114,20 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                                         endDate: candidate.endDate,
                                         now: now) ? candidate.annotation : nil
         }
+    }
+
+    private func activeEventAnnotations(now: Date) -> [MLNAnnotation] {
+        activeEventCandidates.compactMap { candidate in
+            Self.occurrenceIsHappeningNow(startDate: candidate.startDate,
+                                          endDate: candidate.endDate,
+                                          now: now) ? candidate.annotation : nil
+        }
+    }
+
+    /// The in-memory twin of `EventFilter(happeningNow:)`'s SQL predicate: `[start, end)`
+    /// contains `now`. Kept beside the query it replaces so the two can't drift.
+    static func occurrenceIsHappeningNow(startDate: Date, endDate: Date, now: Date) -> Bool {
+        startDate <= now && endDate > now
     }
 
     // MARK: - Observation Lifecycle
@@ -154,21 +177,31 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         // Active events
         if UserSettings.showActiveEventsOnMap {
             let selectedCodes = BRCEventType.eventTypeCodes(from: UserSettings.selectedEventTypesForMap)
+            // Today's occurrences rather than `happeningNow: true`: that predicate is
+            // evaluated once, when the observation starts, and then frozen — which is why a
+            // finished event kept its pin until something else wrote to the database. The
+            // window is still narrow enough to keep the fetch small, and `allAnnotations()`
+            // re-checks each row against the clock. `dayDidChange` moves the window.
             let filter = EventFilter(
-                happeningNow: true,
-                eventTypeCodes: selectedCodes
+                eventTypeCodes: selectedCodes,
+                activeWindow: Self.todayWindow(now: .present)
             )
             let token = playaDB.observeEvents(filter: filter) { [weak self] rows in
                 DispatchQueue.main.async {
                     guard let self else { return }
-                    self.eventAnnotations = rows.compactMap { row in
+                    self.activeEventCandidates = rows.compactMap { row in
                         // Every event happening now, pinned at its host — which draws the
                         // host camps' positions in bulk just as surely as the camp layer
                         // does, so it rides the same gates tier.
                         let allowed = (row.object.locatedAtArt?.isEmpty == false)
                             ? artAllowed
                             : campBulkAllowed
-                        return allowed ? PlayaObjectAnnotation(event: row.object) : nil
+                        guard allowed,
+                              let annotation = PlayaObjectAnnotation(event: row.object)
+                        else { return nil }
+                        return TimedEventCandidate(annotation: annotation,
+                                                   startDate: row.object.startDate,
+                                                   endDate: row.object.endDate)
                     }
                     self.rebuildCache()
                 }
@@ -223,7 +256,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
                         guard allowed,
                               let annotation = PlayaObjectAnnotation(event: row.object)?.markedFavorite()
                         else { return nil }
-                        return FavoriteEventCandidate(annotation: annotation,
+                        return TimedEventCandidate(annotation: annotation,
                                                       startDate: row.object.startDate,
                                                       endDate: row.object.endDate)
                     }
@@ -243,7 +276,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
         observationTokens.removeAll()
         artAnnotations.removeAll()
         campAnnotations.removeAll()
-        eventAnnotations.removeAll()
+        activeEventCandidates.removeAll()
         favoriteArtAnnotations.removeAll()
         favoriteCampAnnotations.removeAll()
         favoriteEventCandidates.removeAll()
@@ -343,7 +376,6 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     private func rebuildCache() {
         cachedAnnotations = artAnnotations
             + campAnnotations
-            + eventAnnotations
             + favoriteArtAnnotations
             + favoriteCampAnnotations
         delegate?.annotationDataSourceDidUpdate(self)

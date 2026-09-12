@@ -30,24 +30,68 @@ struct MapRegionAnnotationFilter {
     /// Zoom at or above which camp pins become eligible.
     static let campMinimumZoom: Double = 17.0
 
+    /// Picks the one occurrence that should put a pin on the map for each event.
+    ///
+    /// `fetchUpcomingEvents` returns occurrences, and a camp that runs the same thing three
+    /// times tonight returns three — but the map draws one pin per event (they all sit on the
+    /// host's coordinates anyway). The one that is actually running wins; otherwise the one
+    /// starting soonest, because that is the one the callout should be talking about.
+    ///
+    /// Only occurrences that belong on the map at all (`shouldShowOnMap`: happening now or
+    /// starting within 30 minutes, and not already in its last 15) are considered — which is
+    /// also what makes re-running this drop an occurrence that has since ended.
+    static func activeOccurrences(
+        from occurrences: [EventObjectOccurrence],
+        now: Date
+    ) -> [String: EventObjectOccurrence] {
+        var byUID: [String: EventObjectOccurrence] = [:]
+        for occurrence in occurrences where occurrence.shouldShowOnMap(now) {
+            let uid = occurrence.event.uid
+            guard let existing = byUID[uid] else {
+                byUID[uid] = occurrence
+                continue
+            }
+            if occurrence.isHappeningRightNow(now), !existing.isHappeningRightNow(now) {
+                byUID[uid] = occurrence
+            } else if occurrence.isHappeningRightNow(now) == existing.isHappeningRightNow(now),
+                      occurrence.startDate < existing.startDate {
+                byUID[uid] = occurrence
+            }
+        }
+        return byUID
+    }
+
     /// - Parameters:
     ///   - objects: whatever `PlayaDB.fetchObjects(in:)` returned for the viewport.
     ///   - zoomLevel: the map's current zoom.
-    ///   - activeEventUIDs: events the caller decided are happening/starting soon.
+    ///   - activeEventOccurrences: the fully-joined occurrence to draw for each event uid the
+    ///     caller decided is happening/starting soon — see `activeOccurrences(from:now:)`.
+    ///     Keyed rather than a bare `Set<String>` because the callout needs the host name and
+    ///     address, which only the joined occurrence carries.
     ///   - showArtOnlyZoomedIn: `UserSettings.showArtOnlyZoomedIn`.
     ///   - showCampsOnlyZoomedIn: `UserSettings.showCampsOnlyZoomedIn`.
+    ///   - showEvents: `UserSettings.showActiveEventsOnMap`. Without it this path kept
+    ///     drawing happening-now pins after the filter sheet's Events toggle was turned off,
+    ///     because only the observation layer ever read that setting.
+    ///   - selectedEventTypeCodes: `BRCEventType.eventTypeCodes(from:
+    ///     UserSettings.selectedEventTypesForMap)` — nil means every type, the same
+    ///     convention `EventFilter.eventTypeCodes` uses.
     ///   - artAllowed: `MapEmbargo.allowsArtLocation()`.
     ///   - campAllowed: `MapEmbargo.allowsBulkCampPlacement()` — this path draws every camp
     ///     in the viewport, so it is bulk placement and waits for gates. Passed in rather
     ///     than read here, so the tier choice stays at the call site.
+    ///   - now: the clock the event callouts are rendered against.
     static func annotations(
         from objects: [any PlayaDataObject],
         zoomLevel: Double,
-        activeEventUIDs: Set<String>,
+        activeEventOccurrences: [String: EventObjectOccurrence],
         showArtOnlyZoomedIn: Bool,
         showCampsOnlyZoomedIn: Bool,
+        showEvents: Bool,
+        selectedEventTypeCodes: Set<String>?,
         artAllowed: Bool,
-        campAllowed: Bool
+        campAllowed: Bool,
+        now: Date = .present
     ) -> [PlayaObjectAnnotation] {
         var annotations: [PlayaObjectAnnotation] = []
         for object in objects {
@@ -69,9 +113,14 @@ struct MapRegionAnnotationFilter {
                 // the caller passes for camps — the *bulk* one here, since a viewport full of
                 // event pins maps the camps hosting them.
                 let allowed = (event.locatedAtArt?.isEmpty == false) ? artAllowed : campAllowed
-                guard allowed,
-                      activeEventUIDs.contains(event.uid),
-                      let annotation = PlayaObjectAnnotation(event: event) else { continue }
+                guard showEvents,
+                      allowed,
+                      selectedEventTypeCodes?.contains(event.eventTypeCode) ?? true,
+                      // The joined occurrence, not the bare row: it is what names the host in
+                      // the callout and what the pin's status dot is coloured from.
+                      let occurrence = activeEventOccurrences[event.uid],
+                      let annotation = PlayaObjectAnnotation(event: occurrence, now: now)
+                else { continue }
                 annotations.append(annotation)
             }
         }
@@ -164,6 +213,16 @@ public class UserMapViewAdapter: MapViewAdapter {
     }
 
     private let mapRegionAnnotations = MapRegionDataSource()
+
+    /// The occurrences the last region refresh drew pins for.
+    ///
+    /// Read by `MapEventRefreshScheduler` to decide when the map next goes stale: the
+    /// interesting instants are these occurrences' own start/end edges, not a fixed tick.
+    private(set) var trackedOccurrences: [EventObjectOccurrence] = []
+
+    /// Fires on the main queue after each region refresh lands, so whoever is scheduling the
+    /// next one can re-arm against the occurrences that just went on the map.
+    var onRegionAnnotationsRefreshed: (() -> Void)?
 
     /// Set this if you want draggable
     var editingAnnotation: BRCMapPoint?
@@ -459,6 +518,8 @@ public class UserMapViewAdapter: MapViewAdapter {
         guard zoomLevel >= MapRegionAnnotationFilter.artMinimumZoom else {
             removeAnnotations(mapRegionAnnotations.allAnnotations())
             mapRegionAnnotations.annotations = []
+            trackedOccurrences = []
+            onRegionAnnotationsRefreshed?()
             return
         }
         let bounds = mapView.visibleCoordinateBounds
@@ -475,23 +536,16 @@ public class UserMapViewAdapter: MapViewAdapter {
         Task { @MainActor in
             guard let objects = try? await playaDB.fetchObjects(in: region) else { return }
             let now = Date.present
-            let startingSoonThreshold: TimeInterval = 30 * 60
-            let endingSoonThreshold: TimeInterval = 15 * 60
 
-            // Fetch current/upcoming events once for time filtering
+            // Fetched fully joined — host camp/art included — because the callout has to name
+            // the place the pin is standing on. Keeping only the uids here is what produced
+            // "Hosted by Camp" subtitles.
             let currentEvents = (try? await playaDB.fetchUpcomingEvents(within: 1, from: now)) ?? []
-            let activeEventUIDs = Set(currentEvents.compactMap { occ -> String? in
-                let hasEnded = now > occ.occurrence.endTime
-                let isHappening = now >= occ.occurrence.startTime && now <= occ.occurrence.endTime
-                let timeUntilStart = occ.occurrence.startTime.timeIntervalSince(now)
-                let isStartingSoon = timeUntilStart > 0 && timeUntilStart < startingSoonThreshold
-                let timeUntilEnd = occ.occurrence.endTime.timeIntervalSince(now)
-                let isEndingSoon = timeUntilEnd > 0 && timeUntilEnd < endingSoonThreshold
-                if !hasEnded && (isHappening || isStartingSoon) && !isEndingSoon {
-                    return occ.event.uid
-                }
-                return nil
-            })
+            let activeEventOccurrences = MapRegionAnnotationFilter.activeOccurrences(
+                from: currentEvents,
+                now: now
+            )
+            self.trackedOccurrences = Array(activeEventOccurrences.values)
 
             // `shouldDisplay` is applied to the result rather than left to `addAnnotations`
             // so `mapRegionAnnotations` holds only pins that really went on the map — the
@@ -500,17 +554,23 @@ public class UserMapViewAdapter: MapViewAdapter {
             let annotations = MapRegionAnnotationFilter.annotations(
                 from: objects,
                 zoomLevel: zoomLevel,
-                activeEventUIDs: activeEventUIDs,
+                activeEventOccurrences: activeEventOccurrences,
                 showArtOnlyZoomedIn: UserSettings.showArtOnlyZoomedIn,
                 showCampsOnlyZoomedIn: UserSettings.showCampsOnlyZoomedIn,
+                showEvents: UserSettings.showActiveEventsOnMap,
+                selectedEventTypeCodes: BRCEventType.eventTypeCodes(
+                    from: UserSettings.selectedEventTypesForMap
+                ),
                 artAllowed: MapEmbargo.allowsArtLocation(),
                 // Everything the viewport holds, camp-hosted events included: bulk
                 // placement, so the gates tier rather than the week-early camp release.
-                campAllowed: MapEmbargo.allowsBulkCampPlacement()
+                campAllowed: MapEmbargo.allowsBulkCampPlacement(),
+                now: now
             ).filter { self.shouldDisplay($0) }
             self.removeAnnotations(self.mapRegionAnnotations.allAnnotations())
             self.mapRegionAnnotations.annotations = annotations
             self.addAnnotations(annotations)
+            self.onRegionAnnotationsRefreshed?()
         }
     }
 }

@@ -718,23 +718,43 @@ final class EmbargoTierTests: XCTestCase {
         )
     }
 
+    /// Wraps the uid-based cases these tests were written against: the filter now takes the
+    /// joined occurrence for each active event (it needs the host to write the callout), so
+    /// one is synthesized here for every uid the case declares active.
     private func regionAnnotationTitles(
         _ objects: [any PlayaDataObject],
         zoomLevel: Double = 18,
         activeEventUIDs: Set<String> = [],
         showArtOnlyZoomedIn: Bool = true,
         showCampsOnlyZoomedIn: Bool = true,
+        showEvents: Bool = true,
+        selectedEventTypeCodes: Set<String>? = nil,
         artAllowed: Bool,
         campAllowed: Bool
     ) -> [String] {
-        MapRegionAnnotationFilter.annotations(
+        let now = Date()
+        var active: [String: EventObjectOccurrence] = [:]
+        for case let event as EventObject in objects where activeEventUIDs.contains(event.uid) {
+            active[event.uid] = EventObjectOccurrence(
+                event: event,
+                occurrence: EventOccurrence(
+                    eventId: event.uid,
+                    startTime: now.addingTimeInterval(-60),
+                    endTime: now.addingTimeInterval(60 * 60)
+                )
+            )
+        }
+        return MapRegionAnnotationFilter.annotations(
             from: objects,
             zoomLevel: zoomLevel,
-            activeEventUIDs: activeEventUIDs,
+            activeEventOccurrences: active,
             showArtOnlyZoomedIn: showArtOnlyZoomedIn,
             showCampsOnlyZoomedIn: showCampsOnlyZoomedIn,
+            showEvents: showEvents,
+            selectedEventTypeCodes: selectedEventTypeCodes,
             artAllowed: artAllowed,
-            campAllowed: campAllowed
+            campAllowed: campAllowed,
+            now: now
         ).compactMap(\.title)
     }
 
@@ -914,32 +934,5 @@ final class EmbargoTierTests: XCTestCase {
         )
         let source = StaticAnnotationDataSource(annotation: point)
         XCTAssertEqual(source.allAnnotations().count, 1)
-    }
-
-    /// The legacy Yap constructor behind `MapDetailViewController`'s pin, which used to build
-    /// an annotation from any object's coordinate with no check at all.
-    func testLegacyCampAnnotationIsNilWhileEmbargoedAndBuiltOnceCampsUnlock() throws {
-        let camp = try XCTUnwrap(BRCCampObject())
-        camp.coordinate = CLLocationCoordinate2D(latitude: brcLatitude, longitude: brcLongitude)
-        let metadata = try XCTUnwrap(BRCCampMetadata())
-
-        try timeTravel(to: "2026-08-10T12:00:00Z")
-        XCTAssertNil(camp.annotation(metadata: metadata))
-
-        try timeTravel(to: "2026-08-25T12:00:00Z")
-        XCTAssertNotNil(camp.annotation(metadata: metadata))
-    }
-
-    /// Art keeps its own tier through the same constructor.
-    func testLegacyArtAnnotationWaitsForGates() throws {
-        let art = try XCTUnwrap(BRCArtObject())
-        art.coordinate = CLLocationCoordinate2D(latitude: brcLatitude, longitude: brcLongitude)
-        let metadata = try XCTUnwrap(BRCArtMetadata())
-
-        try timeTravel(to: "2026-08-25T12:00:00Z")
-        XCTAssertNil(art.annotation(metadata: metadata))
-
-        try timeTravel(to: "2026-08-31T12:00:00Z")
-        XCTAssertNotNil(art.annotation(metadata: metadata))
     }
 }
