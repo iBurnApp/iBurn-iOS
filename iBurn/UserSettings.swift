@@ -261,9 +261,10 @@ public final class UserSettings: NSObject {
             UserDefaults.standard.set(newValue, forKey: Keys.showActiveEventsOnMap)
         }
         get {
-            // Default to false to reduce initial map clutter
+            // Default on: a fresh install should see what's happening around it. Event pins
+            // only appear at the zoomed-in region threshold anyway, so clutter is bounded.
             if UserDefaults.standard.object(forKey: Keys.showActiveEventsOnMap) == nil {
-                return false
+                return true
             }
             return UserDefaults.standard.bool(forKey: Keys.showActiveEventsOnMap)
         }
