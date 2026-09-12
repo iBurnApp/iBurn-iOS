@@ -774,7 +774,7 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
     
-    func fetchCurrentEvents(_ now: Date = Date()) async throws -> [EventObjectOccurrence] {
+    func fetchCurrentEvents(_ now: Date = PlayaDBClock.now()) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
             let occurrences = try EventOccurrence
                 .filter(Column("start_time") <= now && Column("end_time") > now)
@@ -784,7 +784,21 @@ internal class PlayaDBImpl: PlayaDB {
         }
     }
     
-    func fetchUpcomingEvents(within hours: Int = 24, from now: Date = Date()) async throws -> [EventObjectOccurrence] {
+    func fetchActiveEvents(startingWithin hours: Int, from now: Date = PlayaDBClock.now()) async throws -> [EventObjectOccurrence] {
+        return try await dbQueue.read { db in
+            let futureTime = now.addingTimeInterval(TimeInterval(hours * 3600))
+
+            // Running now (started already, not yet ended) or starting inside the window.
+            let occurrences = try EventOccurrence
+                .filter(Column("end_time") > now && Column("start_time") <= futureTime)
+                .order(Column("start_time"))
+                .fetchAll(db)
+
+            return try eventObjectOccurrences(for: occurrences, db: db)
+        }
+    }
+
+    func fetchUpcomingEvents(within hours: Int = 24, from now: Date = PlayaDBClock.now()) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
             let futureTime = now.addingTimeInterval(TimeInterval(hours * 3600))
 

@@ -113,6 +113,10 @@ class DependencyContainer {
             PlayaDBSeeder.restoreBundledSeedIfNeeded()
         }
 
+        // Every "not expired" / "happening now" query in the package follows the app's
+        // mockable clock, so the Mock Date scheme moves the Events tab and map with it.
+        PlayaDBClock.now = { Date.present }
+
         // Create PlayaDB once using factory method, or use injected instance
         self.playaDB = try playaDB ?? createPlayaDB()
 

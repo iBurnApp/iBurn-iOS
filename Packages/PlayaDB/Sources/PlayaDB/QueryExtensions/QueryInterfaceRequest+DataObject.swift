@@ -130,19 +130,19 @@ extension QueryInterfaceRequest where RowDecoder == ArtObject {
 
 extension QueryInterfaceRequest where RowDecoder == EventOccurrence {
     /// Only events that haven't expired.
-    public func notExpired(at date: Date = Date()) -> Self {
+    public func notExpired(at date: Date = PlayaDBClock.now()) -> Self {
         filter(EventOccurrence.Columns.endTime > date)
     }
 
     /// Events happening now.
-    public func happeningNow(at date: Date = Date()) -> Self {
+    public func happeningNow(at date: Date = PlayaDBClock.now()) -> Self {
         self
             .filter(EventOccurrence.Columns.startTime <= date)
             .filter(EventOccurrence.Columns.endTime > date)
     }
 
     /// Upcoming events (starting within X hours).
-    public func startingWithin(hours: Int, from date: Date = Date()) -> Self {
+    public func startingWithin(hours: Int, from date: Date = PlayaDBClock.now()) -> Self {
         let endDate = Calendar.current.date(byAdding: .hour, value: hours, to: date) ?? date
         return self
             .filter(EventOccurrence.Columns.startTime >= date)

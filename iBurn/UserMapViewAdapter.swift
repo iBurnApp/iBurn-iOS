@@ -32,7 +32,7 @@ struct MapRegionAnnotationFilter {
 
     /// Picks the one occurrence that should put a pin on the map for each event.
     ///
-    /// `fetchUpcomingEvents` returns occurrences, and a camp that runs the same thing three
+    /// `fetchActiveEvents` returns occurrences, and a camp that runs the same thing three
     /// times tonight returns three — but the map draws one pin per event (they all sit on the
     /// host's coordinates anyway). The one that is actually running wins; otherwise the one
     /// starting soonest, because that is the one the callout should be talking about.
@@ -540,7 +540,7 @@ public class UserMapViewAdapter: MapViewAdapter {
             // Fetched fully joined — host camp/art included — because the callout has to name
             // the place the pin is standing on. Keeping only the uids here is what produced
             // "Hosted by Camp" subtitles.
-            let currentEvents = (try? await playaDB.fetchUpcomingEvents(within: 1, from: now)) ?? []
+            let currentEvents = (try? await playaDB.fetchActiveEvents(startingWithin: 1, from: now)) ?? []
             let activeEventOccurrences = MapRegionAnnotationFilter.activeOccurrences(
                 from: currentEvents,
                 now: now

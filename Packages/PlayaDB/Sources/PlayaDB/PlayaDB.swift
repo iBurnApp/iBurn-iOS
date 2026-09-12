@@ -27,6 +27,10 @@ public protocol PlayaDB {
     /// Fetch upcoming events (starting within the next N hours)
     func fetchUpcomingEvents(within hours: Int, from now: Date) async throws -> [EventObjectOccurrence]
 
+    /// Fetch events that are running at `now` or start within the next N hours — the set a
+    /// map wants to pin, unlike `fetchUpcomingEvents` which is future-start only.
+    func fetchActiveEvents(startingWithin hours: Int, from now: Date) async throws -> [EventObjectOccurrence]
+
     /// Fetch all mutant vehicles
     func fetchMutantVehicles() async throws -> [MutantVehicleObject]
 
