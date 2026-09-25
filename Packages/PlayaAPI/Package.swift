@@ -6,9 +6,9 @@ import PackageDescription
 let package = Package(
     name: "PlayaAPI",
     platforms: [
-        .iOS(.v16),
+        .iOS("18.0"),
         .macOS(.v13),
-        .watchOS(.v10)
+        .watchOS("11.0")
     ],
     products: [
         .library(

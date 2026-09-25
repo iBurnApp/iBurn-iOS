@@ -35,9 +35,7 @@ final class NearbyCardHostingController: UIHostingController<NearbyCardView> {
         // The hosting view should only occupy (and intercept touches over) the card,
         // leaving the rest of the map interactive. Clear background + intrinsic sizing.
         view.backgroundColor = .clear
-        if #available(iOS 16.0, *) {
-            sizingOptions = [.intrinsicContentSize]
-        }
+        sizingOptions = [.intrinsicContentSize]
     }
 
     private func updateRootView() {

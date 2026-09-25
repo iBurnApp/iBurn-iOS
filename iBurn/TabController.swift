@@ -21,9 +21,8 @@ import UIKit
     /// returns, so building a *second* tab around a root that an existing tab already owns
     /// raises "UIViewController cannot be shared between multiple UITab" — which is what
     /// every rebuild after the first used to do (hiding a tab from Customize Tabs crashed
-    /// the app). Rebuilds reorder these instead of making new ones. Typed `AnyObject`
-    /// because stored properties can't carry an availability annotation.
-    private var tabCache: [ObjectIdentifier: AnyObject] = [:]
+    /// the app). Rebuilds reorder these instead of making new ones.
+    private var tabCache: [ObjectIdentifier: UITab] = [:]
     private var searchTabCache: AnyObject?
 
     /// Which of the two tab systems the last rebuild left the bar on. A tap arrives through
@@ -172,9 +171,7 @@ import UIKit
             // `.searchTab` must hand UIKit that same tab again. Wrapping the root in a
             // fresh tab there raised "UIViewController cannot be shared between multiple
             // UITab" (toggling the layout in Feature Flags crashed).
-            if #available(iOS 18.0, *) {
-                tabs = []
-            }
+            tabs = []
             self.viewControllers = arranged
         }
 
@@ -389,10 +386,9 @@ import UIKit
     }
 
     /// The one `UITab` wrapping this root, created on first use. See `tabCache`.
-    @available(iOS 18.0, *)
     private func tab(for viewController: UIViewController, fallbackIndex: Int) -> UITab {
         let key = ObjectIdentifier(viewController)
-        if let existing = tabCache[key] as? UITab { return existing }
+        if let existing = tabCache[key] { return existing }
         let tab = UITab(
             title: viewController.tabBarItem.title ?? "",
             image: viewController.tabBarItem.image,
@@ -446,7 +442,7 @@ import UIKit
             return
         }
 
-        if usesSearchTab, #available(iOS 18.0, *) {
+        if usesSearchTab {
             if let identifier = previousIdentifier,
                let tab = tabs.first(where: { $0.identifier == identifier.tabIdentifier }) {
                 selectedTab = tab
@@ -471,11 +467,10 @@ import UIKit
     /// Selects the map, wherever the user dragged it. The map can't be hidden, so this
     /// always lands somewhere sensible; deep links use it instead of assuming index 0.
     @objc public func selectMapTab() {
-        if #available(iOS 18.0, *), !tabs.isEmpty {
-            if let mapTab = tabs.first(where: { $0.identifier == TabIdentifier.map.tabIdentifier }) {
-                selectedTab = mapTab
-                return
-            }
+        if !tabs.isEmpty,
+           let mapTab = tabs.first(where: { $0.identifier == TabIdentifier.map.tabIdentifier }) {
+            selectedTab = mapTab
+            return
         }
         if let index = viewControllers?.firstIndex(where: { TabIdentifier.identifier(forRoot: $0) == .map }) {
             selectedIndex = index
@@ -572,7 +567,6 @@ extension TabController: UITabBarControllerDelegate {
     /// `UITab` mode (the iOS 26 search-tab layout). `shouldSelectTab` rather than
     /// `didSelectTab:previousTab:` because only the former is guaranteed to be asked when the
     /// tap doesn't change the selection — which is the entire case being handled.
-    @available(iOS 18.0, *)
     public func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
         guard usesSearchTab else { return true }
         handleTabSelection(

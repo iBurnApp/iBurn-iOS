@@ -279,11 +279,7 @@ public final class BRCAudioPlayer: NSObject {
             if let artworkURL = nowPlaying.artworkURL,
                let image = UIImage(contentsOfFile: artworkURL.path) {
                 nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size, requestHandler: { size in
-                    if #available(iOS 15.0, *) {
-                        return image.preparingThumbnail(of: size) ?? image
-                    } else {
-                        return image
-                    }
+                    image.preparingThumbnail(of: size) ?? image
                 })
             }
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo

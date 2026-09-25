@@ -2,13 +2,12 @@ import SwiftUI
 import PlayaDB
 
 /// Drops `List`'s own opaque scroll background so an overlay's material shows through.
-/// `scrollContentBackground` is iOS 16+; below that the list keeps its default fill.
 private struct TransparentListBackground: ViewModifier {
     let isEnabled: Bool
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if isEnabled, #available(iOS 16.0, *) {
+        if isEnabled {
             content.scrollContentBackground(.hidden)
         } else {
             content

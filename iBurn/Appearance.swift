@@ -200,9 +200,7 @@ extension Appearance {
             navBar.standardAppearance = appearance
             navBar.scrollEdgeAppearance = appearance
             navBar.compactAppearance = appearance
-            if #available(iOS 15.0, *) {
-                navBar.compactScrollEdgeAppearance = appearance
-            }
+            navBar.compactScrollEdgeAppearance = appearance
             navBar.tintColor = colors.primaryColor
             navBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
         }
@@ -243,9 +241,7 @@ extension Appearance {
     @objc public static func applyTabBarAppearance(_ tabBar: UITabBar, colors: BRCImageColors) {
         let appearance = makeTabBarAppearance(colors: colors)
         tabBar.standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            tabBar.scrollEdgeAppearance = appearance
-        }
+        tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = colors.primaryColor
         tabBar.unselectedItemTintColor = colors.detailColor
         tabBar.isTranslucent = !UIAccessibility.isReduceTransparencyEnabled
