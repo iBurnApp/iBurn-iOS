@@ -97,7 +97,7 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // userNotificationCenter:didReceiveNotificationResponse: below.
     
     [self setupRegionBasedUnlock];
-    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    [UNUserNotificationCenter.currentNotificationCenter setBadgeCount:0 withCompletionHandler:nil];
     
     [Appirater setAppId:@"388169740"];
     [Appirater setDaysUntilPrompt:2];
