@@ -44,22 +44,24 @@ Each document should include:
 ## Development Commands
 
 ### Building and Dependencies
-- `pod install` - Install CocoaPods dependencies (required after cloning)
-- `git submodule update --init` - Initialize git submodules (required after cloning)
-- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file)
+- `git submodule update --init --recursive` - Initialize git submodules (required after cloning). `Submodules/Onboard` and `Submodules/PermissionScope` are our forks, consumed as local Swift packages.
+- There is no CocoaPods step (removed 2026-09-24). All third-party code is SwiftPM: remote packages plus local ones (`Packages/*`, `Submodules/*`) referenced from `iBurn.xcodeproj`.
+- Build via Xcode: Open `iBurn.xcworkspace` (NOT the .xcodeproj file). The first build asks you to "Trust & Enable" the `LicensePlistBuildTool` plug-in.
+- Acknowledgements (Settings.app → iBurn → Acknowledgements) are generated at build time by the LicensePlistBuildTool SwiftPM plugin, configured in `license_plist.yml`. List any new local package there under `manual:`, because local packages aren't in `Package.resolved`.
 
 ### Build/Test Output Parsing (xcsift)
 
 This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
 Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
+Command-line `xcodebuild` needs `-skipPackagePluginValidation` (the LicensePlistBuildTool plugin is otherwise untrusted).
 
 Default destination: **iPhone 18 Pro Max, iOS 27.0, arm64 simulator** (Xcode 27.1; minimum iOS 18). iPhone Duo (foldable) is on the iOS 27.1 runtime. Schemes: `iBurn` (app), `iBurn (Mock Date)`, `iBurnTests`, `iBurnWatch`.
 
 ```bash
 DEST='platform=iOS Simulator,name=iPhone 18 Pro Max,OS=27.0,arch=arm64'
 
-xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
-xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
+xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination "$DEST" -skipPackagePluginValidation -quiet 2>&1 | xcsift -f toon -w
+xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination "$DEST" -skipPackagePluginValidation -quiet 2>&1 | xcsift -f toon -w
 swift test --package-path Packages/PlayaDB 2>&1 | xcsift -f toon -w   # SwiftPM packages run per-directory (PlayaDB, PlayaAPI, ...);
                                                                       # there is no root Package.swift. May need sandbox disabled.
 ```
@@ -102,7 +104,6 @@ Protocolize dependencies and use dependency injection with factory pattern. For 
 Before building, create these files (they are gitignored, so they won't exist in a fresh clone):
 - `iBurn/BRCSecrets.m` - API keys and configuration constants
 - `iBurn/InfoPlistSecrets.h` - Preprocessor defines for sensitive data
-- `iBurn/crashlytics.sh` - Crashlytics build script (optional)
 
 ### Domain Notes
 - Location data is embargoed by the Burning Man organization until gates open each year; year-based configuration lives in `YearSettings`.

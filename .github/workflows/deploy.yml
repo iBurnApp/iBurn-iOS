@@ -65,13 +65,18 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gems-
     
-    - name: Cache CocoaPods
+    - name: Cache Swift packages
       uses: actions/cache@v6
       with:
-        path: Pods
-        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        # SwiftPM's shared repository cache plus the checkouts/artifacts xcodebuild resolves
+        # into DerivedData. Keep the default DerivedData SourcePackages location: the
+        # Crashlytics phase and the LicensePlistBuildTool plugin both look there.
+        path: |
+          ~/Library/Caches/org.swift.swiftpm
+          ~/Library/Developer/Xcode/DerivedData/iBurn-*/SourcePackages
+        key: ${{ runner.os }}-spm-${{ hashFiles('iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
         restore-keys: |
-          ${{ runner.os }}-pods-
+          ${{ runner.os }}-spm-
     
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
@@ -83,8 +88,6 @@ jobs:
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
-        bundle exec pod repo update --silent
-        bundle exec pod install
     
     - name: Create Required Secret Files
       env:

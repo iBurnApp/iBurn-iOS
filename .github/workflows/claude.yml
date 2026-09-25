@@ -49,6 +49,6 @@ jobs:
           # Optional: tools and custom instructions (v1 dropped allowed_tools,
           # custom_instructions and claude_env inputs)
           # claude_args: |
-          #   --allowedTools "Bash(bundle exec pod install)"
+          #   --allowedTools "Bash(xcodebuild:*)"
           #   --append-system-prompt "Follow CLAUDE.md"
 
