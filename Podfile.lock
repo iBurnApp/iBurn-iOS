@@ -1,20 +1,16 @@
 PODS:
   - LicensePlist (3.28.2)
-  - Onboard (2.3.3)
 
 DEPENDENCIES:
   - LicensePlist (~> 3.28)
-  - Onboard (~> 2.1)
 
 SPEC REPOS:
   trunk:
     - LicensePlist
-    - Onboard
 
 SPEC CHECKSUMS:
   LicensePlist: 10b035732c9b304c52cfc513dfc1192104c3c96f
-  Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
 
-PODFILE CHECKSUM: 6731a7e9f532ac5f760ff40ca7093d7dc438b5d6
+PODFILE CHECKSUM: 0c89e5159171afc52b220d120cb8eff8ca5e68b8
 
 COCOAPODS: 1.17.0

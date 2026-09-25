@@ -48,6 +48,7 @@
 		B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */; };
 		CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */; };
 		5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC5EE0A8D36528A3F4C315B /* PermissionScope */; };
+		FFEF45E47F6D06D12B58AC25 /* Onboard in Frameworks */ = {isa = PBXBuildFile; productRef = 60B8A4256F3450ECD01ACABE /* Onboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -251,6 +252,7 @@
 				B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */,
 				CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */,
 				5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */,
+				FFEF45E47F6D06D12B58AC25 /* Onboard in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +467,7 @@
 				8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */,
 				60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */,
 				6DC5EE0A8D36528A3F4C315B /* PermissionScope */,
+				60B8A4256F3450ECD01ACABE /* Onboard */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -545,6 +548,7 @@
 				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */,
 				4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 				0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */,
+				A9906D84580EA8E37CC2726F /* XCLocalSwiftPackageReference "Submodules/Onboard" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -1116,6 +1120,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Submodules/PermissionScope;
 		};
+		A9906D84580EA8E37CC2726F /* XCLocalSwiftPackageReference "Submodules/Onboard" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Submodules/Onboard;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1263,6 +1271,10 @@
 		6DC5EE0A8D36528A3F4C315B /* PermissionScope */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PermissionScope;
+		};
+		60B8A4256F3450ECD01ACABE /* Onboard */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Onboard;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -5,3 +5,6 @@
 [submodule "Submodules/PermissionScope"]
 	path = Submodules/PermissionScope
 	url = git@github.com:Burning-Man-Earth/PermissionScope.git
+[submodule "Submodules/Onboard"]
+	path = Submodules/Onboard
+	url = git@github.com:iBurnApp/Onboard.git
