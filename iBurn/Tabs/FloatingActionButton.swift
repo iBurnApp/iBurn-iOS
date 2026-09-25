@@ -261,6 +261,11 @@ final class FloatingActionButton: UIView {
 
         configure(for: .favorites)
         applyTheme()
+
+        // `shadowColor` is a CGColor, which doesn't follow light/dark on its own.
+        registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, _: UITraitCollection) in
+            self.glow.layer.shadowColor = Appearance.currentColors.primaryColor.resolvedColor(with: self.traitCollection).cgColor
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -294,13 +299,6 @@ final class FloatingActionButton: UIView {
         // place on this button where "highlighted" is the intended reading.
         glow.backgroundColor = colors.primaryColor
         glow.layer.shadowColor = colors.primaryColor.resolvedColor(with: traitCollection).cgColor
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        // `shadowColor` is a CGColor, which doesn't follow light/dark on its own.
-        guard traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
-        glow.layer.shadowColor = Appearance.currentColors.primaryColor.resolvedColor(with: traitCollection).cgColor
     }
 
     /// A brief confirmation flourish for a favorite added anywhere in the app: the button

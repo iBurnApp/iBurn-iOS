@@ -13,11 +13,6 @@ private final class BRCMapView: MLNMapView {
     /// The appearance the current style was built for; the style JSON differs per light/dark.
     var styledAppearance: UIUserInterfaceStyle?
 
-    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        reloadStyleIfNeeded()
-    }
-
     public override func didMoveToWindow() {
         super.didMoveToWindow()
         // Catches an appearance change that happened while the map was off screen.
@@ -38,7 +33,7 @@ private final class BRCMapView: MLNMapView {
     /// tears its underlying map down on termination while the view is still in a window —
     /// setting a style after that throws `MLNUnderlyingMapUnavailableException`.
     /// `didMoveToWindow` and `appDidBecomeActive` pick up whatever was skipped.
-    private func reloadStyleIfNeeded() {
+    fileprivate func reloadStyleIfNeeded() {
         let appearance = traitCollection.userInterfaceStyle
         guard window != nil,
               UIApplication.shared.applicationState != .background,
@@ -54,6 +49,9 @@ extension MLNMapView {
         let mapView = BRCMapView()
         mapView.brc_setDefaults(moveToCenter: true)
         mapView.styledAppearance = mapView.traitCollection.userInterfaceStyle
+        mapView.registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (mapView: BRCMapView, _: UITraitCollection) in
+            mapView.reloadStyleIfNeeded()
+        }
         NotificationCenter.default.addObserver(
             mapView,
             selector: #selector(BRCMapView.appDidBecomeActive),

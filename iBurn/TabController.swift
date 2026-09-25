@@ -72,9 +72,11 @@ import UIKit
         floatingButtonInstalled ? floatingButton : nil
     }
 
-    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        refreshTheme()
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, _: UITraitCollection) in
+            self.refreshTheme()
+        }
     }
 
     public override func viewDidLayoutSubviews() {
