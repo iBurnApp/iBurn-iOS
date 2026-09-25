@@ -16,8 +16,8 @@ import UIKit
     /// delegate rebuilding anything.
     private var roots: [UIViewController] = []
 
-    /// One `UITab` per root view controller, for as long as the bar stays in the
-    /// `UITab`-based layout. A `UITab` takes ownership of the view controller its provider
+    /// One `UITab` per root view controller, kept for this controller's lifetime — across
+    /// switches to the plain `viewControllers` layout and back, too. A `UITab` takes ownership of the view controller its provider
     /// returns, so building a *second* tab around a root that an existing tab already owns
     /// raises "UIViewController cannot be shared between multiple UITab" — which is what
     /// every rebuild after the first used to do (hiding a tab from Customize Tabs crashed
@@ -166,13 +166,14 @@ import UIKit
             tabs = newTabs
         } else {
             // Clear any tabs left over from a previous `.searchTab` run before falling
-            // back to the plain view-controller arrangement. The cache goes with them:
-            // the roots are about to be owned by `viewControllers` instead, so the next
-            // `.searchTab` build has to wrap them in fresh tabs.
+            // back to the plain view-controller arrangement. The cache deliberately
+            // survives: a root stays bound to the first `UITab` that wrapped it even after
+            // `tabs` is emptied and `viewControllers` takes it over, so switching back to
+            // `.searchTab` must hand UIKit that same tab again. Wrapping the root in a
+            // fresh tab there raised "UIViewController cannot be shared between multiple
+            // UITab" (toggling the layout in Feature Flags crashed).
             if #available(iOS 18.0, *) {
                 tabs = []
-                tabCache.removeAll()
-                searchTabCache = nil
             }
             self.viewControllers = arranged
         }
