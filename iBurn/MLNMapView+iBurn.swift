@@ -10,9 +10,42 @@ import Foundation
 import MapLibre
 
 private final class BRCMapView: MLNMapView {
+    /// The appearance the current style was built for; the style JSON differs per light/dark.
+    var styledAppearance: UIUserInterfaceStyle?
+
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.brc_setDefaults(moveToCenter: false)
+        reloadStyleIfNeeded()
+    }
+
+    public override func didMoveToWindow() {
+        super.didMoveToWindow()
+        // Catches an appearance change that happened while the map was off screen.
+        reloadStyleIfNeeded()
+    }
+
+    /// Catches an appearance change that arrived while the app was in the background.
+    /// `didBecomeActive` rather than `willEnterForeground`: the application state still
+    /// reads `.background` during the latter, which `reloadStyleIfNeeded` skips.
+    @objc func appDidBecomeActive() {
+        reloadStyleIfNeeded()
+    }
+
+    /// Only light/dark picks a different style, so other trait changes are ignored.
+    ///
+    /// Nothing is reloaded off screen or in the background either. The system flips the
+    /// appearance to take light and dark snapshots of a backgrounded app, and MapLibre
+    /// tears its underlying map down on termination while the view is still in a window —
+    /// setting a style after that throws `MLNUnderlyingMapUnavailableException`.
+    /// `didMoveToWindow` and `appDidBecomeActive` pick up whatever was skipped.
+    private func reloadStyleIfNeeded() {
+        let appearance = traitCollection.userInterfaceStyle
+        guard window != nil,
+              UIApplication.shared.applicationState != .background,
+              appearance != styledAppearance
+        else { return }
+        styledAppearance = appearance
+        brc_setDefaults(moveToCenter: false)
     }
 }
 
@@ -20,6 +53,13 @@ extension MLNMapView {
     @objc public static func brcMapView() -> MLNMapView {
         let mapView = BRCMapView()
         mapView.brc_setDefaults(moveToCenter: true)
+        mapView.styledAppearance = mapView.traitCollection.userInterfaceStyle
+        NotificationCenter.default.addObserver(
+            mapView,
+            selector: #selector(BRCMapView.appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
         return mapView
     }
     
