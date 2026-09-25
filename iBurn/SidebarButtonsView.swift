@@ -12,7 +12,6 @@
 //
 
 import UIKit
-import PureLayout
 import CocoaLumberjack
 
 class SidebarButtonsView: UIView {
@@ -82,7 +81,7 @@ class SidebarButtonsView: UIView {
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
-        stackView.autoPinEdgesToSuperviewEdges()
+        stackView.pinEdgesToSuperview()
 
         applyTheme()
     }

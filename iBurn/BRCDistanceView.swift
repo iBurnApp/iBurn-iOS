@@ -6,9 +6,8 @@
 //  Copyright (c) 2015 Burning Man Earth. All rights reserved.
 //
 
+import CoreLocation
 import UIKit
-import BButton
-import PureLayout
 
 open class BRCDistanceView: UIView {
     
@@ -20,7 +19,7 @@ open class BRCDistanceView: UIView {
         super.init(frame: frame)
         distanceLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(distanceLabel)
-        distanceLabel.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets.zero)
+        distanceLabel.pinEdgesToSuperview()
         backgroundColor = UIColor.clear
         distanceLabel.backgroundColor = UIColor.clear
     }

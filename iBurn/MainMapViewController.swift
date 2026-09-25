@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreLocation
-import BButton
 import CocoaLumberjack
 import PlayaGeocoder
 import SafariServices
@@ -205,11 +204,11 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
         let card = nearbyCardController.view!
         card.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(card)
-        card.autoPinEdgesToSuperviewEdges()
+        card.pinEdgesToSuperview()
 
         view.addSubview(container)
         container.translatesAutoresizingMaskIntoConstraints = false
-        container.autoAlignAxis(toSuperviewAxis: .vertical)
+        container.centerXInSuperview()
         container.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12).isActive = true
 
         nearbyCardController.didMove(toParent: self)
@@ -318,7 +317,7 @@ public class MainMapViewController: BaseMapViewController, ListButtonHelper, UIG
 
         view.addSubview(tooltip)
         tooltip.translatesAutoresizingMaskIntoConstraints = false
-        tooltip.autoAlignAxis(toSuperviewAxis: .vertical)
+        tooltip.centerXInSuperview()
         // The label is constrained to the effect view itself, not to `contentView`:
         // `contentView` is laid out by `UIVisualEffectView` rather than by Auto Layout, so
         // pinning to it leaves the effect view with no intrinsic size and the tooltip
