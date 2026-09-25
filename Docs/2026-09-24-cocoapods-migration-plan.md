@@ -76,9 +76,11 @@ These override the recommendations listed below where they differ.
   PermissionScope as they are, but ship them as **local Swift packages we control**, not pods:
   - PermissionScope is already a submodule of our fork (`Burning-Man-Earth/PermissionScope`).
     Add a `Package.swift` there and commit/push it in the fork.
-  - Onboard (mamaral/Onboard 2.3.3, unmaintained, ObjC) is currently a trunk pod. Vendor
-    its source into a local package (e.g. `Packages/Onboard` or a fork as a submodule),
-    as an ObjC target with `publicHeadersPath`.
+  - Onboard (mamaral/Onboard 2.3.3, unmaintained, ObjC) is currently a trunk pod. **Use our
+    fork `github.com/iBurnApp/Onboard` (default branch `master`) as a submodule** at
+    `Submodules/Onboard`, like PermissionScope. Add a `Package.swift` in the fork (ObjC
+    target over `Source/`, `publicHeadersPath`), push it there, and reference it as a local
+    package. Don't copy the source into this repo.
   - That moves both out of Phase 3 and into Phase 1. The SwiftUI onboarding rewrite and
     native permission prompts become optional later work, no longer a blocker for removing
     CocoaPods.
