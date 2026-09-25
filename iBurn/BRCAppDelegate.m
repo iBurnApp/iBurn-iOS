@@ -31,7 +31,7 @@ static int ddLogLevel = DDLogLevelVerbose;
 
 static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIdentifier";
 
-@interface BRCAppDelegate() <UINavigationControllerDelegate, UNUserNotificationCenterDelegate>
+@interface BRCAppDelegate() <UNUserNotificationCenterDelegate>
 @property (nonatomic, strong) CLCircularRegion *burningManRegion;
 
 @end
@@ -74,6 +74,15 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     // Background fetch is now handled by BackgroundTasks framework
     // [application setMinimumBackgroundFetchInterval:dailyInterval];
         
+    // Before anything touches `dependencies`: DependencyContainer wraps this manager in its
+    // CoreLocationProvider at init, and the data update check below is the first access.
+    self.locationManager = [CLLocationManager brc_locationManager];
+    self.locationManager.delegate = self;
+    // The delegate's authorization callback normally starts updates, but be explicit so a
+    // relaunch with existing permission never leaves Nearby waiting on a manager that was
+    // never started (the map and detail screens use their own managers).
+    [self startLocationUpdatesIfAuthorized];
+    
     // Bundled data lands in PlayaDB via PlayaDBSeeder (see DependencyContainer); the
     // only launch-time network work left is the PlayaDB-native OTA check, which
     // throttles itself to once a day and imports straight into PlayaDB.
@@ -83,29 +92,9 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
         [self checkForDataUpdates];
     }
     
-    // Handle launch from notification
-    if (launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]) {
-        [self handleNotification:launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]];
-    }
-    
-    // Handle launch from URL
-    NSURL *launchURL = launchOptions[UIApplicationLaunchOptionsURLKey];
-    if (launchURL) {
-        // Delay to ensure UI is ready
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            BOOL handled = [[BRCDeepLinkRouter shared] handleURL:launchURL];
-            if (!handled) {
-                DDLogWarn(@"Failed to handle launch URL: %@", launchURL);
-            }
-        });
-    }
-    
-    self.locationManager = [CLLocationManager brc_locationManager];
-    self.locationManager.delegate = self;
-    // The delegate's authorization callback normally starts updates, but be explicit so a
-    // relaunch with existing permission never leaves Nearby waiting on a manager that was
-    // never started (the map and detail screens use their own managers).
-    [self startLocationUpdatesIfAuthorized];
+    // Launch URLs / universal links arrive in the scene's connection options now
+    // (SceneDelegate), and a notification tap that launches the app still reaches
+    // userNotificationCenter:didReceiveNotificationResponse: below.
     
     [self setupRegionBasedUnlock];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
@@ -121,29 +110,10 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     [Appirater setOpenInAppStore:NO];
     [Appirater appLaunched:YES];
     
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.backgroundColor = UIColor.systemBackgroundColor;
-
-    // Show onboarding.. or not
-    BOOL hasViewedOnboarding = [[NSUserDefaults standardUserDefaults] hasViewedOnboarding];
-    if (!hasViewedOnboarding) {
-        OnboardingViewController *onboardingVC = [[BRCOnboardingViewController alloc] initWithCompletion:^{
-            [UIView transitionWithView:self.window
-                              duration:1.0
-                               options:UIViewAnimationOptionTransitionCrossDissolve
-                            animations:^{
-                                [self handleOnboardingCompletion];
-                            }
-                            completion:nil];
-        }];
-        self.window.rootViewController = onboardingVC;
-    } else {
-        [self setupNormalRootViewController];
-    }
-    
     [LocationStorage setup:nil];
     
-    [self.window makeKeyAndVisible];
+    // The window, root view controller and onboarding are created by SceneDelegate
+    // (UIApplicationSceneManifest in iBurn-Info.plist).
     return YES;
 }
 
@@ -181,40 +151,12 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
                                                     handler:nil];
     [alert addAction:okAction];
     
-    // Get the active window scene and its root view controller
-    UIWindowScene *windowScene = nil;
-    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
-        if ([scene isKindOfClass:[UIWindowScene class]]) {
-            windowScene = (UIWindowScene *)scene;
-            break;
-        }
-    }
-    
-    UIViewController *rootVC = windowScene.windows.firstObject.rootViewController;
-    [rootVC presentViewController:alert animated:YES completion:nil];
+    [[UIApplication sharedApplication] brc_presentOnFrontmostViewController:alert];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
-{
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
-    [self startLocationUpdatesIfAuthorized];
-}
+// applicationDidBecomeActive: (and the other foreground/background callbacks) are not
+// called under the UIScene lifecycle; SceneDelegate.sceneDidBecomeActive: calls
+// startLocationUpdatesIfAuthorized instead. The UIApplication state notifications still post.
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
@@ -224,38 +166,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (void) applicationDidReceiveMemoryWarning:(UIApplication *)application {
     DDLogWarn(@"applicationDidReceiveMemoryWarning:");
-}
-
-- (void)setupDefaultTabBarController
-{
-    self.mapViewController = [[MainMapViewController alloc] init];
-    UINavigationController *mapNavController = [[NavigationController alloc] initWithRootViewController:self.mapViewController];
-    mapNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMapIcon"];
-    
-    UIViewController *nearbyVC = [self createNearbyViewController];
-    UINavigationController *nearbyNav = [[NavigationController alloc] initWithRootViewController:nearbyVC];
-    nearbyNav.tabBarItem.image = [UIImage imageNamed:@"BRCCompassIcon"];
-    
-    UIViewController *favoritesVC = [self createFavoritesViewController];
-    UINavigationController *favoritesNavController = [[NavigationController alloc] initWithRootViewController:favoritesVC];
-    favoritesNavController.tabBarItem.image = [UIImage imageNamed:@"BRCHeartIcon"];
-    favoritesNavController.tabBarItem.selectedImage = [UIImage imageNamed:@"BRCHeartFilledIcon"];
-    
-    UIViewController *eventsVC = [self createEventsViewController];
-    eventsVC.title = @"Events";
-    UINavigationController *eventsNavController = [[NavigationController alloc] initWithRootViewController:eventsVC];
-    eventsNavController.tabBarItem.image = [UIImage imageNamed:@"BRCEventIcon"];
-    
-    MoreViewController *moreViewController = [[MoreViewController alloc] init];
-    moreViewController.title = @"More";
-    UINavigationController *moreNavController = [[NavigationController alloc] initWithRootViewController:moreViewController];
-    moreNavController.tabBarItem.image = [UIImage imageNamed:@"BRCMoreIcon"];
-    
-    self.tabBarController = [[TabController alloc] init];
-    
-    [self.tabBarController configureWithRootViewControllers:@[mapNavController, nearbyNav, favoritesNavController, eventsNavController, moreNavController]];
-
-    self.tabBarController.moreNavigationController.delegate = self;
 }
 
 - (void) setupRegionBasedUnlock {
@@ -283,7 +193,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Data Unlocked" message:@"Looks like you're at Burning Man! The restricted data is now unlocked." preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Sweet!" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
-        [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
+        [[UIApplication sharedApplication] brc_presentOnFrontmostViewController:alert];
     }
 }
 
@@ -308,7 +218,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Location Services Unavailable" message:@"Please press your iPhone's Home button and go into Settings -> Privacy -> Location and enable location services for iBurn. The app is way better with GPS.\n\np.s. GPS still works during Airplane Mode on iOS 8.3 and higher. Save that battery!" preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"OK I'll totally enable it!" style:UIAlertActionStyleCancel handler:nil];
         [alert addAction:cancel];
-        [self.window.rootViewController presentViewController:alert animated:YES completion:nil];
+        [[UIApplication sharedApplication] brc_presentOnFrontmostViewController:alert];
     }
 }
 
@@ -318,17 +228,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         [self enteredBurningManRegion];
     }
     // Breadcrumb tracking is handled by LocationStorage (GRDB-backed)
-}
-
-#pragma mark UINavigationControllerDelegate
-
-- (void)navigationController:(UINavigationController *)navigationController
-      willShowViewController:(UIViewController *)viewController
-                    animated:(BOOL)animated {
-    // Remove "Edit" from More tab
-    UINavigationBar *morenavbar = navigationController.navigationBar;
-    UINavigationItem *morenavitem = morenavbar.topItem;
-    morenavitem.rightBarButtonItem = nil;
 }
 
 #pragma mark Permissions
@@ -343,41 +242,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 - (void) requestLocationPermission {
     [self.locationManager requestWhenInUseAuthorization];  // For foreground access
     [self.locationManager startUpdatingLocation];
-}
-
-#pragma mark Onboarding
-
-- (void)setupNormalRootViewController {
-    [self setupDefaultTabBarController];
-    self.window.rootViewController = self.tabBarController;
-    
-    // Configure deep link router
-    [[BRCDeepLinkRouter shared] configureWithTabController:self.tabBarController];
-    
-    // do it again just in case
-    [[self class] registerForRemoteNotifications];
-    [self requestLocationPermission];
-
-    // Show informational alert about embargo if needed
-    if (![BRCEmbargo allowEmbargoedData]) {
-        UIAlertController *alert = [UIAlertController 
-            alertControllerWithTitle:@"Locations Are Hidden"
-            message:@"Camp location data is restricted until one week before gates open, and art location data is restricted until the event starts. This is due to an embargo imposed by the Burning Man organization.\n\nThe app unlocks itself once you're on playa and those dates have passed. Until you arrive, locations stay hidden unless you enter the embargo passcode."
-            preferredStyle:UIAlertControllerStyleAlert];
-        
-        UIAlertAction *okAction = [UIAlertAction 
-            actionWithTitle:@"Ok cool whatever"
-            style:UIAlertActionStyleDefault
-            handler:nil];
-        
-        [alert addAction:okAction];
-        [self.tabBarController presentViewController:alert animated:YES completion:nil];
-    }
-}
-
-- (void)handleOnboardingCompletion {
-    [[NSUserDefaults standardUserDefaults] setHasViewedOnboarding:YES];
-    [self setupNormalRootViewController];
 }
 
 - (void)scheduleBackgroundFetch {
@@ -408,20 +272,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     });
 }
 
-#pragma mark - Deep Linking
-
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
-    return [[BRCDeepLinkRouter shared] handleURL:url];
-}
-
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
-    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-        NSURL *url = userActivity.webpageURL;
-        if (url) {
-            return [[BRCDeepLinkRouter shared] handleURL:url];
-        }
-    }
-    return NO;
-}
+// Deep links (application:openURL:options: / continueUserActivity:) moved to SceneDelegate:
+// UIKit delivers them to the scene once scenes are adopted.
 
 @end

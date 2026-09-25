@@ -23,9 +23,7 @@ extension UIViewController {
 
     /// Push a detail view controller by walking the responder chain to find a navigation controller.
     func pushDetailFromAnyContext(_ viewController: UIViewController, animated: Bool = true) {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let navController = window.rootViewController?.findNavigationController() else {
+        guard let navController = UIApplication.shared.mainWindow?.rootViewController?.findNavigationController() else {
             return
         }
         navController.pushViewController(viewController, animated: animated)

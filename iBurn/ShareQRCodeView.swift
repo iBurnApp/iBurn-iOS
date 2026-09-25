@@ -187,9 +187,7 @@ struct ShareQRCodeView: View {
         )
         
         // iPad support
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootViewController = window.rootViewController {
+        if let rootViewController = UIApplication.shared.mainWindow?.rootViewController {
             
             if let popover = activityController.popoverPresentationController {
                 popover.sourceView = rootViewController.view

@@ -8,7 +8,7 @@
 
 import UIKit
 
-/// Stable identity for the roots `BRCAppDelegate.setupDefaultTabBarController` builds.
+/// Stable identity for the roots `SceneDelegate.setupDefaultTabBarController` builds.
 /// Raw values are persisted in the tab-order preference, so they must never change.
 enum TabIdentifier: String, CaseIterable {
     case map

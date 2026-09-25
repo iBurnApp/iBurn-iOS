@@ -90,9 +90,7 @@ struct PlayaHostedEventsView: View {
     private func pushDetail(for event: EventObjectOccurrence) {
         let detailVC = DetailViewControllerFactory.create(with: event, playaDB: playaDB)
         // Walk the responder chain to find a navigation controller
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let navController = window.rootViewController?.findNavigationController() else {
+        guard let navController = UIApplication.shared.mainWindow?.rootViewController?.findNavigationController() else {
             return
         }
         navController.pushViewController(detailVC, animated: true)
