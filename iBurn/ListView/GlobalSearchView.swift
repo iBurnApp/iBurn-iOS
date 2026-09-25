@@ -286,8 +286,15 @@ struct GlobalSearchView: View {
                                     entries: entries,
                                     accessibilityLabel: "Search result index"
                                 ) { anchorID in
+                                    // Re-checked against the results as they are now, not
+                                    // as the rail last rendered them. See `scrollTarget`.
+                                    guard let target = SearchResultIndex.scrollTarget(
+                                        for: anchorID,
+                                        in: viewModel.sections,
+                                        isUpdating: viewModel.isAISearching
+                                    ) else { return }
                                     withAnimation(.easeOut(duration: 0.15)) {
-                                        proxy.scrollTo(anchorID, anchor: .top)
+                                        proxy.scrollTo(target, anchor: .top)
                                     }
                                 }
                                 .padding(.trailing, 2)

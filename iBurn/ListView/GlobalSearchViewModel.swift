@@ -198,6 +198,9 @@ final class GlobalSearchViewModel: ObservableObject {
 
         isSearching = true
         aiSuggestedUIDs = []
+        // A cancelled AI pass returns without clearing its flag, and the index rail stays
+        // inert while it's set — so every new search starts from a clean slate.
+        isAISearching = false
 
         let scope = self.scope
         let filter = self.filter
