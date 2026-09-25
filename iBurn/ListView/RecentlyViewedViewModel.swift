@@ -120,7 +120,7 @@ final class RecentlyViewedViewModel: ObservableObject {
     /// Walk/bike estimate for the row's subtitle, or nil when there is nothing to measure
     /// (no fix, no placement) or the item's embargo tier still hides its coordinates.
     ///
-    /// The same `TTTLocationFormatter` humanizer every other list uses, rather than a raw
+    /// The same `TravelTimeFormatter` humanizer every other list uses, rather than a raw
     /// "417.3km": distance on the playa is a question of how long it takes to get there, and
     /// a bare kilometre figure in one screen out of ten reads as a different app. Returning
     /// nil drops the line entirely, exactly as Nearby and search results do — see

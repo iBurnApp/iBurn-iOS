@@ -26,7 +26,7 @@ open class BRCDistanceView: UIView {
     
     open func updateDistanceFromLocation(_ fromLocation: CLLocation) {
         let distance = destination.distance(from: fromLocation)
-        let distanceString = TTTLocationFormatter.brc_humanizedString(forDistance: distance)
+        let distanceString = TravelTimeFormatter.attributedString(forDistance: distance)
         distanceLabel.attributedText = distanceString
         distanceLabel.sizeToFit()
         self.frame = CGRect(x: frame.origin.x, y: frame.origin.y, width: distanceLabel.frame.size.width, height: distanceLabel.frame.size.height)

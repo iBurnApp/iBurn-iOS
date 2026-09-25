@@ -62,7 +62,7 @@ enum PlayaDistanceString {
         }
         let distance = userLocation.distance(from: objectLocation)
         guard isPlausible(distance),
-              let humanized = TTTLocationFormatter.brc_humanizedString(forDistance: distance) else {
+              let humanized = TravelTimeFormatter.attributedString(forDistance: distance) else {
             return nil
         }
         return AttributedString(humanized)

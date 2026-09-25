@@ -4,7 +4,6 @@
 
 #import "BRCAppDelegate.h"
 #import "BRCEventType.h"
-#import "TTTLocationFormatter+iBurn.h"
 #import "BRCEmbargo.h"
 #import "NSDate+iBurn.h"
 #import "BRCMapPoint.h"
