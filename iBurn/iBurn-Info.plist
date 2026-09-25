@@ -72,10 +72,6 @@
 	<string>iBurn does not use the microphone.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>iBurn does not use motion tracking.</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>FontAwesome.ttf</string>
-	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
