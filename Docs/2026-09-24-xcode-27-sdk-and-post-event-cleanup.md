@@ -129,6 +129,30 @@ The Xcode MCP `GetTopCrashIssues` (App Store Connect) only covers the last 14 da
 - **The old location recorder** (`LocationStorage`) is on by default with no opt-in. See the Live Tracks spike, and consider making it opt-in before 2027.
 - The package tools version is 5.9; moving to 6.0 would switch on Swift 6 language mode, which would be a separate project.
 
+## Dependency updates (`maintenance-deps`, stacked on `xcode-27-sdk`)
+
+| Commit | Change |
+|---|---|
+| `1bc5c075` | SPM: MapLibre 6.18.0-patch0 (exact) → 6.31.0 (upToNextMajor; no 7.x exists; VoiceOver crash fixed upstream in 6.20.0). Firebase 12.1.0 → 12.19.2. Siren 6.1.3 → 7.0.3 (iOS 17 min, no API change). Zip/GRDB already latest (2.1.2 / 7.11.1). swift-protobuf dropped out of Firebase's graph. LicensePlist output regenerated. |
+| `ca7943c2` | `bundle update`: fastlane 2.240.1, cocoapods 1.17.0, Bundler 4.0.21. dotenv held at 2.8.1 (fastlane requires `< 3`). CI Ruby 3.1 → 3.4, because excon/rbs/google-apis-* now need Ruby ≥ 3.2/3.3. Fixes all 8 open Dependabot alerts (json, excon, faraday, concurrent-ruby ×3, jwt, addressable); they close once the lock reaches the default branch. |
+| `51435780` | `pod update`: CocoaLumberjack 3.9.0 → 3.10.0, LicensePlist 3.27.1 → 3.28.2; every other pod was already at its latest release. |
+| `25369328` | Actions: checkout v7, cache v6, upload-artifact v7, github-script v9, claude-code-action @beta → @v1 (`direct_prompt` → `prompt`, tools via `claude_args`). |
+
+**CocoaPods CDN workaround.** `pod update` under cocoapods 1.17 kept failing with `CDN: trunk URL couldn't be downloaded … Error in the HTTP2 framing layer`, although plain `curl` fetched the same URL fine. Forcing HTTP/1.1 in Typhoeus got past it:
+```ruby
+# h1.rb, used via RUBYOPT="-r/path/h1.rb" bundle exec pod update
+require 'typhoeus'
+module ForceH1
+  def initialize(url, options = {}) = super(url, options.merge(http_version: :httpv1_1))
+end
+Typhoeus::Request.prepend(ForceH1)
+```
+`pod install` also rewrites the pbxproj in the xcodeproj gem's style (it renames the `XCLocalSwiftPackageReference` comments and adds empty lists). That rewrite is only cosmetic and was reverted.
+
+**CI Xcode.** The workflows pin `Xcode_26.6` on `macos-26-arm64`. For Xcode 27, GitHub's preview image needs `runs-on: xcode-27` (actions/runner-images#14404), plus a matching `DEVELOPER_DIR` and `xcode-version`. Not changed yet.
+
+**Submodules (unchanged).** DOFavoriteButton is 2 commits ahead of okmr-d/DOFavoriteButton (Swift 5, 2019), with nothing new upstream. PermissionScope is 7 ahead of nickoneill/PermissionScope, which is archived; the one upstream commit we lack is a 2017 ISSUE_TEMPLATE edit.
+
 ## Cross-References
 - [2026-09-12-yap-removal-and-playa-bug-fixes.md](2026-09-12-yap-removal-and-playa-bug-fixes.md): known follow-ups closed here (EKEventEditViewDelegate, DetailAction tests, doc comment).
 - [2026-08-28-maplibre-voiceover-crash-and-boundary-passcode.md](2026-08-28-maplibre-voiceover-crash-and-boundary-passcode.md): MapLibre pin context.
