@@ -14,12 +14,12 @@ target 'iBurn' do
 
 	pod 'Anchorage'
 
-	pod 'CocoaLumberjack/Swift'
+	pod 'CocoaLumberjack/Swift', '~> 3.10'
 	pod 'FormatterKit/LocationFormatter', '~> 1.8'
 	pod 'FormatterKit/TimeIntervalFormatter', '~> 1.8'
 	pod 'PureLayout', '~> 3.0'
 	pod 'BButton', '~> 4.0'
-	pod 'LicensePlist', '~> 3.24'
+	pod 'LicensePlist', '~> 3.28'
 	pod 'TTTAttributedLabel', '~> 2.0'
 	pod 'Appirater', '~> 2.0'
 	pod 'CupertinoYankee', '~> 1.0'
