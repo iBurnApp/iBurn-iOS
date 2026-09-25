@@ -12,7 +12,6 @@
 #import "BRCEmbargo.h"
 #import "NSUserDefaults+iBurn.h"
 #import "CLLocationManager+iBurn.h"
-#import "Appirater.h"
 #import <WebKit/WebKit.h>
 #import "iBurn-Swift.h"
 #import "NSUserDefaults+iBurn.h"
@@ -96,17 +95,6 @@ static NSString * const kBRCBackgroundFetchIdentifier = @"kBRCBackgroundFetchIde
     
     [self setupRegionBasedUnlock];
     [UNUserNotificationCenter.currentNotificationCenter setBadgeCount:0 withCompletionHandler:nil];
-    
-    [Appirater setAppId:@"388169740"];
-    [Appirater setDaysUntilPrompt:2];
-    [Appirater setUsesUntilPrompt:5];
-    [Appirater setSignificantEventsUntilPrompt:-1];
-    [Appirater setTimeBeforeReminding:2];
-    [Appirater setCustomAlertTitle:@"We ❤️ You"];
-    [Appirater setCustomAlertMessage:@"We put a lot of work into iBurn this year.. so we hope you find it useful! Have a moment to write something nice?"];
-    [Appirater setDebug:NO];
-    [Appirater setOpenInAppStore:NO];
-    [Appirater appLaunched:YES];
     
     [LocationStorage setup:nil];
     

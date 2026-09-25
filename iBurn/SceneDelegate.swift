@@ -33,6 +33,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate, UINavigationContr
 
     private var appDelegate: BRCAppDelegate { BRCAppDelegate.shared }
 
+    /// App Store review prompt (was Appirater in the app delegate).
+    private let reviewPolicy = ReviewPromptFactory.makePolicy()
+    private let reviewRequester = ReviewPromptFactory.makeRequester()
+
+    /// Lets launch finish (and any launch alert appear) before a review prompt is considered.
+    private static let reviewPromptDelay: TimeInterval = 2
+
     // MARK: - Connection
 
     func scene(
@@ -63,6 +70,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate, UINavigationContr
 
         window.makeKeyAndVisible()
 
+        // One scene per launch (UIApplicationSupportsMultipleScenes is off), so this counts
+        // launches the way Appirater's `appLaunched:` did.
+        reviewPolicy.recordUse(now: Date())
+
         handleColdLaunchLinks(connectionOptions)
     }
 
@@ -73,6 +84,31 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate, UINavigationContr
         // adopted. `UIApplication.didBecomeActiveNotification` still posts (map, embargo
         // scheduler, event refresh observe it), so only the delegate callback moved.
         appDelegate.startLocationUpdatesIfAuthorized()
+
+        if let windowScene = scene as? UIWindowScene {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.reviewPromptDelay) { [weak self, weak windowScene] in
+                guard let self, let windowScene else { return }
+                self.requestReviewIfAppropriate(in: windowScene)
+            }
+        }
+    }
+
+    // MARK: - Review prompt
+
+    /// Asks StoreKit for a review once the policy allows it, but only on the main tabs with
+    /// nothing presented over them: never during onboarding or on top of an alert.
+    private func requestReviewIfAppropriate(in windowScene: UIWindowScene) {
+        guard windowScene.activationState == .foregroundActive,
+              UserDefaults.standard.hasViewedOnboarding(),
+              let tabController,
+              window?.rootViewController === tabController,
+              tabController.presentedViewController == nil else {
+            return
+        }
+        let now = Date()
+        guard reviewPolicy.shouldRequestReview(now: now) else { return }
+        reviewPolicy.recordReviewRequested(now: now)
+        reviewRequester.requestReview(in: windowScene)
     }
 
     // MARK: - Deep links
