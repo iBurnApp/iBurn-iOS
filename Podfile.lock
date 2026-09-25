@@ -1,27 +1,20 @@
 PODS:
   - LicensePlist (3.28.2)
   - Onboard (2.3.3)
-  - PermissionScope (1.1.1)
 
 DEPENDENCIES:
   - LicensePlist (~> 3.28)
   - Onboard (~> 2.1)
-  - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
 
 SPEC REPOS:
   trunk:
     - LicensePlist
     - Onboard
 
-EXTERNAL SOURCES:
-  PermissionScope:
-    :path: Submodules/PermissionScope/PermissionScope.podspec
-
 SPEC CHECKSUMS:
   LicensePlist: 10b035732c9b304c52cfc513dfc1192104c3c96f
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
-  PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
 
-PODFILE CHECKSUM: 78891ccdc064bbecba139d756cd408ea9694241a
+PODFILE CHECKSUM: 6731a7e9f532ac5f760ff40ca7093d7dc438b5d6
 
 COCOAPODS: 1.17.0

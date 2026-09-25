@@ -47,6 +47,7 @@
 		FD85D157B336583A81D32C2F /* libPods-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB96268D89F9A7279AC9200B /* libPods-iBurnTests.a */; };
 		B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */; };
 		CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */; };
+		5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC5EE0A8D36528A3F4C315B /* PermissionScope */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -249,6 +250,7 @@
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
 				B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */,
 				CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */,
+				5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,6 +464,7 @@
 				D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */,
 				8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */,
 				60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */,
+				6DC5EE0A8D36528A3F4C315B /* PermissionScope */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -541,6 +544,7 @@
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */,
 				4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
+				0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -1108,6 +1112,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaAPI;
 		};
+		0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Submodules/PermissionScope;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1251,6 +1259,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
+		};
+		6DC5EE0A8D36528A3F4C315B /* PermissionScope */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PermissionScope;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

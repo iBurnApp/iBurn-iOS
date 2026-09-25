@@ -15,7 +15,6 @@
 #import <WebKit/WebKit.h>
 #import "iBurn-Swift.h"
 #import "NSUserDefaults+iBurn.h"
-@import PermissionScope;
 #import "NSDate+iBurn.h"
 @import AVFoundation;
 @import CocoaLumberjack;
