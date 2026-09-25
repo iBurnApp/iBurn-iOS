@@ -20,7 +20,7 @@ jobs:
     
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: recursive
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -33,7 +33,7 @@ jobs:
         xcode-version: '26.6'
     
     - name: Cache Ruby Gems
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
@@ -41,7 +41,7 @@ jobs:
           ${{ runner.os }}-gems-
     
     - name: Cache CocoaPods
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: Pods
         key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
@@ -108,7 +108,7 @@ jobs:
     
     - name: Upload Test Results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: pr-test-results-${{ github.event.pull_request.number }}
         path: |
@@ -118,7 +118,7 @@ jobs:
         
     - name: Comment PR
       if: always()
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const fs = require('fs');
