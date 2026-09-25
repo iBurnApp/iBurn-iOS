@@ -8,7 +8,7 @@
 
 import UIKit
 import MapLibre
-import CocoaLumberjack
+import CocoaLumberjackSwift
 import SafariServices
 import EventKitUI
 import PlayaDB

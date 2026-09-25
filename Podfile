@@ -12,7 +12,6 @@ target 'iBurn' do
 		inherit! :search_paths
 	end
 
-	pod 'CocoaLumberjack/Swift', '~> 3.10'
 	pod 'LicensePlist', '~> 3.28'
 	pod 'Onboard', '~> 2.1'
 	pod 'PermissionScope', :path => 'Submodules/PermissionScope/PermissionScope.podspec'

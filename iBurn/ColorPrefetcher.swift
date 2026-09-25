@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 import PlayaDB
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 /// Background color extraction for thumbnails.
 /// Computes missing colors for all objects with local thumbnail images,

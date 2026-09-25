@@ -1,5 +1,5 @@
 {
-  "originHash" : "85d5d0a7275d3b2936980ab5be2eeddb9db284e1186a7e4f811f307013d791c6",
+  "originHash" : "2c5232876ce877db6772716f700099b9fdaf2e3445a6c356aa63553b541990d4",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "97f7d74dd0e8f3d0fe5fc75cc8957aa73bdc948a",
         "version" : "11.3.2"
+      }
+    },
+    {
+      "identity" : "cocoalumberjack",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CocoaLumberjack/CocoaLumberjack",
+      "state" : {
+        "revision" : "b75d3c3198a2930b4491b04fd47cb504b359c750",
+        "version" : "3.10.0"
       }
     },
     {
@@ -143,6 +152,15 @@
       "state" : {
         "revision" : "d43c63eff4114f9de0bdaa1f4e786029b0513362",
         "version" : "7.0.3"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log",
+      "state" : {
+        "revision" : "9c6fb14227f55d8f711ce3847dc2f419fb0ecacb",
+        "version" : "1.15.1"
       }
     },
     {

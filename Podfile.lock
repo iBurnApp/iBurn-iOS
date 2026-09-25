@@ -1,20 +1,15 @@
 PODS:
-  - CocoaLumberjack/Core (3.10.0)
-  - CocoaLumberjack/Swift (3.10.0):
-    - CocoaLumberjack/Core
   - LicensePlist (3.28.2)
   - Onboard (2.3.3)
   - PermissionScope (1.1.1)
 
 DEPENDENCIES:
-  - CocoaLumberjack/Swift (~> 3.10)
   - LicensePlist (~> 3.28)
   - Onboard (~> 2.1)
   - PermissionScope (from `Submodules/PermissionScope/PermissionScope.podspec`)
 
 SPEC REPOS:
   trunk:
-    - CocoaLumberjack
     - LicensePlist
     - Onboard
 
@@ -23,11 +18,10 @@ EXTERNAL SOURCES:
     :path: Submodules/PermissionScope/PermissionScope.podspec
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: 12545b2899dcaeec69b82c27b174042259c1ec27
   LicensePlist: 10b035732c9b304c52cfc513dfc1192104c3c96f
   Onboard: 4d6e943e20bdd6bc229df967a347dd7514bc2a6f
   PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
 
-PODFILE CHECKSUM: d1e8130d2606dac2b5226c7fe4047ace25e24797
+PODFILE CHECKSUM: 78891ccdc064bbecba139d756cd408ea9694241a
 
 COCOAPODS: 1.17.0

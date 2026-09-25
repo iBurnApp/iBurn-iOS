@@ -12,7 +12,7 @@
 //
 
 import UIKit
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 class SidebarButtonsView: UIView {
     enum ButtonType: CaseIterable {

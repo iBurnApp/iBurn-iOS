@@ -6,7 +6,7 @@
 //  Copyright © 2026 Burning Man Earth. All rights reserved.
 //
 
-import CocoaLumberjack
+import CocoaLumberjackSwift
 import UIKit
 
 /// Owns the app's window and everything scene-scoped: the root view controller (onboarding

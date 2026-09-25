@@ -8,7 +8,7 @@
 
 import UIKit
 import CoreLocation
-import CocoaLumberjack
+import CocoaLumberjackSwift
 import PlayaGeocoder
 import SafariServices
 import EventKitUI

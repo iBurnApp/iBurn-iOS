@@ -45,6 +45,8 @@
 		D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9EB0A002EAB000000000002 /* YearSettings.plist */; };
 		F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = 5E05B7773440522D30BDA948 /* PlayaDB */; };
 		FD85D157B336583A81D32C2F /* libPods-iBurnTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB96268D89F9A7279AC9200B /* libPods-iBurnTests.a */; };
+		B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */; };
+		CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -245,6 +247,8 @@
 				D99D57EE2E1CE8CF00D5A3DE /* iBurn2026MediaFiles in Frameworks */,
 				D9CB2A68211897FB00A0F2AE /* PlayaGeocoder.framework in Frameworks */,
 				BD9A2E296D2BFBBD1A948A37 /* libPods-iBurn.a in Frameworks */,
+				B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */,
+				CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,7 +433,6 @@
 				D9915F632A76D2D40015C87D /* LicensePlist */,
 				63CE2A521987140F00F65B01 /* Resources */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
-				53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */,
 				00F14D6A9BA2DC60398A7732 /* Embed Watch Content */,
 				D907AD6821215F20004A255A /* Crashlytics */,
 			);
@@ -457,6 +460,8 @@
 				D902564A2E1F41060058AEF8 /* GRDB */,
 				D93440322E3E756F00199902 /* FirebaseCore */,
 				D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */,
+				8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */,
+				60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */,
 			);
 			productName = iBurn;
 			productReference = 63CE2A541987140F00F65B01 /* iBurn.app */;
@@ -535,6 +540,7 @@
 				D90256692E1F3FE00058AEF9 /* XCLocalSwiftPackageReference "Packages/PlayaColors" */,
 				D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */,
+				4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -636,27 +642,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		53B58DC0D493DF731BDDB99A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iBurn/Pods-iBurn-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D7B18F91C1AE7095AA93FD85 /* [CP] Check Pods Manifest.lock */ = {
@@ -1166,6 +1151,14 @@
 				minimumVersion = 7.0.3;
 			};
 		};
+		4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.10.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1248,6 +1241,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalyticsCore;
+		};
+		8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

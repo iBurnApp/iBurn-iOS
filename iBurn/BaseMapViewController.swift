@@ -8,7 +8,7 @@
 
 import UIKit
 import MapLibre
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 public class BaseMapViewController: UIViewController {
     
