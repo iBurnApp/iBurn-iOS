@@ -73,7 +73,7 @@ extension MLNMapView {
         }
         do {
             // Load style JSON template and replace mbtiles path
-            let styleJSONString = try String(contentsOf: styleJSONURL)
+            let styleJSONString = try String(contentsOf: styleJSONURL, encoding: .utf8)
                 .replacingOccurrences(of: "{{mbtiles_path}}", with: mbtilesURL.path)
             
             // Save style JSON to cache directory alongside mbtiles
