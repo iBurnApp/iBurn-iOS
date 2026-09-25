@@ -59,7 +59,38 @@ Actions: (a) switch to SPM, (b) replace with native API or small in-repo code,
 (c) vendor into a local SPM package, (d) delete. **No pod needs (c).** Everything still in
 use is either on SPM already or small enough to rewrite with Apple APIs.
 
-### Decisions needed from the user
+### Decisions made (2026-09-24, user)
+
+These override the recommendations listed below where they differ.
+
+- **D1 – LicensePlist:** the user leans toward SPM and asked what upstream recommends.
+  Upstream's README (mono0926/LicensePlist) still lists CocoaPods, Homebrew and Mint as
+  "recommended", and says SPM isn't supported for installing the tool itself. SPM *is*
+  supported through the `LicensePlistBuildTool` build-tool plugin, configured by
+  `license_plist.yml`. That needs a copy-to-Settings.bundle script phase,
+  `-skipPackagePluginValidation` in CI, a one-time "Trust & Enable" in Xcode, and
+  `packageSourcesPath` so the sandboxed plugin can read SPM package licenses. **Going with
+  option B, the SPM build-tool plugin.** Fall back to option A (the pinned artifactbundle
+  binary run by a script) if the plugin can't reach the SPM checkouts under Xcode 27.
+- **D2/D3 – Onboarding and permissions:** **defer the rewrites.** Keep Onboard and
+  PermissionScope as they are, but ship them as **local Swift packages we control**, not pods:
+  - PermissionScope is already a submodule of our fork (`Burning-Man-Earth/PermissionScope`).
+    Add a `Package.swift` there and commit/push it in the fork.
+  - Onboard (mamaral/Onboard 2.3.3, unmaintained, ObjC) is currently a trunk pod. Vendor
+    its source into a local package (e.g. `Packages/Onboard` or a fork as a submodule),
+    as an ObjC target with `publicHeadersPath`.
+  - That moves both out of Phase 3 and into Phase 1. The SwiftUI onboarding rewrite and
+    native permission prompts become optional later work, no longer a blocker for removing
+    CocoaPods.
+- **D4 – Review prompt:** native StoreKit `AppStore.requestReview` behind a small tested policy,
+  with no custom pre-alert.
+- **D6 – Logging:** CocoaLumberjack via SPM now; `os.Logger` possibly later.
+- **D5, D7:** not asked. Default to the recommendations: keep the workspace, and leave the
+  privacy strings until the PermissionScope rewrite (if one ever happens).
+- **DOFavoriteButton** (`chrisballinger/DOFavoriteButton` fork, unused): delete it along with
+  its submodule in Phase 0.
+
+### Decisions needed from the user (original list)
 
 - **D1 – LicensePlist runner.** Pick one:
   - (A, recommended) Drop the always-run build phase. Add `scripts/update-acknowledgements.sh`,
