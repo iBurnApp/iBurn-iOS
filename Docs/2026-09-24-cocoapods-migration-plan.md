@@ -1,6 +1,6 @@
 # CocoaPods → SwiftPM / Native Migration Plan
 
-Date: 2026-09-24 (plan only; nothing implemented yet)
+Date: 2026-09-24 (plan written, then implemented the same day; see "Outcome" at the end)
 Branch at time of research: `maintenance-deps` (clean, HEAD `a9b82f72`)
 
 ## High-Level Plan
@@ -470,3 +470,113 @@ shares the workspace), `pod install` producing a clean `Podfile.lock` diff (phas
   SPM. A fresh clone builds with `git submodule update --init` plus opening the workspace.
 - Remaining after the plan: optionally move from CocoaLumberjack to `os.Logger` (D6), and
   optionally retire the workspace in favor of the project (D5).
+
+---
+
+## Outcome (2026-09-24, implemented)
+
+**CocoaPods is gone.** There is no Podfile, Pods/, `[CP]` phase, Pods xcconfig, cocoapods gem
+or `pod install` step. A fresh `git clone` + `git submodule update --init --recursive`
+builds with `xcodebuild … -skipPackagePluginValidation`, or in Xcode after a one-time
+"Trust & Enable" of the LicensePlist plug-in.
+
+### Commits (branch `maintenance-deps`)
+
+Phases 0 and 2 (the dead pods, Anchorage/PureLayout, FormatterKit, BButton, Appirater):
+`58992e12`, `ee057a24`, `d3a9baed`, `c996ed04`, `19135535`, `acfe3e7c`.
+
+Phases 1, 3 (as re-scoped by D2/D3) and 4:
+
+| Commit | Change |
+|---|---|
+| `4b595d0c` | CocoaLumberjack → SPM 3.10.0 (`CocoaLumberjack` + `CocoaLumberjackSwift` products). Swift files `import CocoaLumberjackSwift`; `BRCAppDelegate.m` keeps `@import CocoaLumberjack;` and the DEBUG TTY + file loggers. The privacy manifest ships as `CocoaLumberjack_CocoaLumberjack.bundle`. `pod install` dropped the now-empty `[CP] Copy Pods Resources` phase. |
+| `9463aaf3` | PermissionScope → local package from the `Submodules/PermissionScope` fork. The fork's new branch **`swiftpm`** (`806d397`, pushed to Burning-Man-Earth/PermissionScope) branches from `xcode-16.0`, which the submodule was already pinned to (it is not on the fork's `master`). It adds a `Package.swift` (iOS 18, Swift 5 mode, `-suppress-warnings`) and an explicit `import UIKit` in Permissions.swift, which the CocoaPods prefix header used to provide. The unused `@import PermissionScope;` in `BRCAppDelegate.m` is removed. |
+| `17c5e984` | Onboard → new submodule `Submodules/Onboard` (git@github.com:iBurnApp/Onboard.git). The fork's `master` gains a `Package.swift` (`11c4e60`, pushed): an ObjC target over `Source/` with a hand-written module map in `Source/include`, so the podspec, framework project and demo keep their layout. The unused `_Private.h` is excluded, it links AVFoundation/AVKit/Accelerate, and it builds with `-w`. The fork's source is byte-identical to the 2.3.3 pod. `@import Onboard;` is gone from `BRCAppDelegate.h`. |
+| `dc03e44d` | LicensePlist → `LicensePlistBuildTool` SPM plugin (D1 = B), configured by `license_plist.yml`. A "Copy Acknowledgements to Settings.bundle" phase runs after Resources. The generated plists are un-committed and gitignored. CI and fastlane pass `-skipPackagePluginValidation -skipMacroValidation`. |
+| `a68548ca` | Deintegration: the Podfile/lock, the workspace Pods FileRef, the `[CP] Check Pods Manifest.lock` phases, the Pods base configs and libs, the Pods group, the orphaned PlayaKit/iBurnAbstract refs, `-D COCOAPODS`, the cocoapods gem (`bundle lock`, deletions only), the CI pod steps (replaced by an SPM cache), and `crashlytics.sh.example`. README and CLAUDE.md updated. |
+| `8c215932` | `CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO` on the iBurn and iBurnTests targets (see "Deviations"). |
+
+### LicensePlist: why the plugin works
+
+The plugin runs `license-plist --sandbox-mode --package-sources-path <DerivedData>/SourcePackages`,
+so SPM licenses are read from the local checkouts with no GitHub API calls. That makes
+Xcode and command-line builds produce the same output, which fixes the old phase that
+lost the SPM entries on CLI runs. It also computes the SourcePackages path from its own
+work directory, which works under Xcode 27.1 (it handles the Xcode 16.3+
+`BuildToolPluginIntermediates` layout). Option A was not needed.
+
+Local packages are not in `Package.resolved`, and the old phase silently dropped
+Onboard and PermissionScope once they became local packages. `license_plist.yml` now
+lists them under `manual:` (version, source, license file inside the submodule).
+LicensePlist's build-only dependencies (APIKit, Yams, XcodeEdit, …) are excluded.
+
+Verified after a CLI `xcodebuild`: `iBurn.app/Settings.bundle/com.mono0926.LicensePlist.plist`
+lists 21 entries. Diffed against the last committed pod-generated list, the only
+changes are:
+```
+< "GRDB.swift (7.11.1)"            > "GRDB (7.11.1)"            (name from Package.swift)
+< "gtm-session-fetcher (5.0.0)"    > "GTMSessionFetcher (5.0.0)"
+< "LicensePlist (3.28.2)"          (removed: build tool, not shipped)
+                                   > "swift-log (1.15.1)"       (CocoaLumberjack's SPM dependency)
+```
+An incremental rebuild keeps them, and so does a fresh clone with clean DerivedData.
+The copy script fails the build with an explicit error if the plug-in didn't run.
+
+### Deviations from the plan
+
+- **D2/D3 re-scope**: Onboard and PermissionScope stay; they became local packages
+  instead of being rewritten. Their privacy strings (D7) are untouched.
+- **Warnings**: the Pods xcconfig had silently set
+  `CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO`. Without it, a clean build
+  emitted 233 `-Wquoted-include-in-framework-header` warnings from MapLibre headers
+  during the explicit-module precompile. An A/B clean build of `acfe3e7c` with pods
+  showed 0, so the setting was restored on the targets (`8c215932`). The other xcconfig
+  settings (`-ObjC`, `ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES`, search paths) were not
+  needed: all builds and tests pass without them.
+- **No explicit AVFoundation/AVKit imports were needed** after removing `@import Onboard`
+  from the bridging path. Only `MoreViewController.swift` referenced an Onboard type
+  (`OnboardingViewController?`), and it now uses `BRCOnboardingViewController?`.
+- `pod install`/`pod deintegrate` rewrote the pbxproj in xcodeproj-gem style. Each time
+  the functional removals were re-applied by hand to keep the diff minimal (the
+  deintegrate object list was diffed by ID).
+- The drive-app skill had no pod steps. flows.md §1 gained notes on the late
+  notification alert and the BRC "Data Unlocked" alert.
+
+### Validation
+
+- iPhone 18 Pro Max / iOS 27.0, after every step: app build ✅, `iBurnTests` **699
+  passed** ✅, `iBurnWatch` build ✅. The Release configuration builds ✅.
+- Fresh clone of `maintenance-deps` in `$TMPDIR` with `~/Library/Developer/Xcode/DerivedData/iBurn-*`
+  deleted first, then `git submodule update --init --recursive` (the forks are fetched
+  from GitHub) and the three gitignored secret files copied in: **BUILD SUCCEEDED in 86 s,
+  0 warnings** after `8c215932`, with no Ruby or pod step.
+- Simulator (erased), fresh-install onboarding: the Onboard pages and looping video,
+  PermissionScope location → system alert, the late notification alert, PermissionScope
+  Reminders → calendar full access, then swipe to "Ok let's burn" → map. Settings.app →
+  iBurn shows Location While Using / Calendars Full Access / Notifications, and
+  Licenses lists GRDB, MapLibre Native, Firebase, CocoaLumberjack, Onboard (2.3.3),
+  PermissionScope (1.1.1) and the rest, with the full GRDB license text. The DEBUG file
+  logger writes `Library/Caches/Logs/com.trailbehind.iBurn2010 <date>.log`, and the
+  console shows DDLog output.
+
+### Remaining / optional follow-ups
+
+- **SwiftUI onboarding rewrite** (the original Phase 3 plan above). Retires Onboard and
+  the `Submodules/Onboard` fork.
+- **Native permission prompts** (`CLLocationManager`, `UNUserNotificationCenter`,
+  `requestFullAccessToEvents`) plus a SwiftUI calendar pre-prompt. Retires PermissionScope
+  and its submodule, and unblocks D7 (pruning the unused privacy strings) and the
+  "Don't you want reminders?" copy.
+- **`os.Logger`** instead of CocoaLumberjack (D6). The console already warns
+  "Usage of DDTTYLogger detected when DDOSLogger is available"; swapping in
+  `DDOSLogger` is a one-line interim fix.
+- The Settings.bundle `Root.plist` still has a "Modern List Views" toggle
+  (`featureFlag.lists.useSwiftUI`), which the Sept 2026 cleanup retired. Remove it.
+- CI still pins Xcode 26.6. The first CI run on this branch validates the SPM cache
+  paths and the plugin flags. Verify `upload_symbols_to_crashlytics` on the first
+  post-migration `fastlane beta`.
+- D5: `iBurn.xcworkspace` now wraps only `iBurn.xcodeproj`, so it could be retired later.
+  The stale second `Package.resolved` under `iBurn.xcodeproj/project.xcworkspace` is
+  untouched.
+- The CocoaPods CDN HTTP/2 workaround in `2026-09-24-xcode-27-sdk-and-post-event-cleanup.md`
+  is now historical. The last `pod install` runs in this migration worked without it.

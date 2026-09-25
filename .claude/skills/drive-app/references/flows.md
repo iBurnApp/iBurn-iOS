@@ -18,6 +18,13 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 
 1. `build_run_sim` — app launches to a springboard **notifications permission
    alert** → tap "Allow" (or "Don't Allow"; flows below assume Allow).
+   The alert can arrive late: on 2026-09-24 (iOS 27.0 sim) it didn't appear until
+   after step 4's "⏰ Continue with Notifications" tap, on top of the PermissionScope
+   sheet, and the AX snapshot came back nearly empty until it was answered. Take a
+   `screenshot` whenever the snapshot looks empty.
+   If the sim location is inside BRC (`simctl location … 40.7864,-119.2065`), a
+   **"Data Unlocked"** alert follows the location grant → tap **"Sweet!"**. The embargo
+   alert in step 7 then doesn't appear.
 2. Onboarding page "Welcome to iBurn" → tap **"📍 Continue with Location"**.
 3. PermissionScope sheet → tap **"CONTINUE WITH LOCATION"** → system location
    alert → tap **"Allow While Using App"**.
