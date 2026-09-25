@@ -13,9 +13,7 @@
 #import "NSUserDefaults+iBurn.h"
 #import "CLLocationManager+iBurn.h"
 #import "Appirater.h"
-#import "TUSafariActivity.h"
 #import <WebKit/WebKit.h>
-@import TTTAttributedLabel;
 #import "iBurn-Swift.h"
 #import "NSUserDefaults+iBurn.h"
 @import PermissionScope;
