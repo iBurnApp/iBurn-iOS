@@ -262,7 +262,11 @@ final class EmojiImageRenderer {
         return image
     }
     
-    /// Pre-render commonly used emojis for better performance
+    /// Pre-render commonly used emojis for better performance.
+    ///
+    /// Main-actor only: it's a batch of UIKit drawing, and running it off-main during
+    /// launch crashed inside UIKit's class initialization. See `AppDelegate`.
+    @MainActor
     func preloadCommonEmojis() {
         let commonEmojis = [
             "🎨", "⛺", "🎉", "🧑‍🏫", "💃", "🏥", "🔮", "🎯", 

@@ -16,8 +16,11 @@ final class AppDelegate: BRCAppDelegate {
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
         Siren.shared.wail()
         
-        // Preload common emojis for better map performance
-        DispatchQueue.global(qos: .background).async {
+        // Preload common emojis for better map performance. On main, after launch returns:
+        // rendering touches UIKit (`UIGraphicsImageRenderer`), and doing that on a
+        // background queue this early raced UIKit's own class initialization and crashed
+        // in `+[_UIReusePool initialize]`.
+        DispatchQueue.main.async {
             EmojiImageRenderer.shared.preloadCommonEmojis()
         }
         
