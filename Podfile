@@ -5,7 +5,12 @@ inhibit_all_warnings!
 use_modular_headers!
 
 target 'iBurn' do
-	target 'iBurnTests'
+	# The tests run inside the app (TEST_HOST), which already links every pod. Linking them
+	# into the test bundle a second time duplicated each class ("Class X is implemented in
+	# both iBurn.debug.dylib and the test bundle"); search paths are all the tests need.
+	target 'iBurnTests' do
+		inherit! :search_paths
+	end
 
 	pod 'Anchorage'
 

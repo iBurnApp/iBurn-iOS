@@ -2,21 +2,9 @@ name: Anchorage, nameSpecified:
 body: The MIT License (MIT…
 version: 4.5.0
 
-name: Anchorage, nameSpecified: 
-body: The MIT License (MIT…
-version: 4.5.0
-
 name: Appirater, nameSpecified: 
 body: Copyright 2017. Aras…
 version: 2.3.1
-
-name: Appirater, nameSpecified: 
-body: Copyright 2017. Aras…
-version: 2.3.1
-
-name: BButton, nameSpecified: 
-body: BButton - copyright …
-version: 4.0.2
 
 name: BButton, nameSpecified: 
 body: BButton - copyright …
@@ -26,21 +14,9 @@ name: CocoaLumberjack, nameSpecified:
 body: BSD 3-Clause License…
 version: 3.9.0
 
-name: CocoaLumberjack, nameSpecified: 
-body: BSD 3-Clause License…
-version: 3.9.0
-
 name: CupertinoYankee, nameSpecified: 
 body: Copyright (c) 2012–2…
 version: 1.0.2
-
-name: CupertinoYankee, nameSpecified: 
-body: Copyright (c) 2012–2…
-version: 1.0.2
-
-name: DOFavoriteButton, nameSpecified: 
-body: The MIT License (MIT…
-version: 0.0.4
 
 name: DOFavoriteButton, nameSpecified: 
 body: The MIT License (MIT…
@@ -50,23 +26,9 @@ name: FormatterKit, nameSpecified:
 body: Copyright (c) 2011–2…
 version: 1.9.0
 
-name: FormatterKit, nameSpecified: 
-body: Copyright (c) 2011–2…
-version: 1.9.0
-
 name: JTSImageViewController, nameSpecified: 
 body: The MIT License (MIT…
 version: 1.5.1
-
-name: JTSImageViewController, nameSpecified: 
-body: The MIT License (MIT…
-version: 1.5.1
-
-name: KVOController, nameSpecified: 
-body: BSD License
-
-For KVO…
-version: 1.2.0
 
 name: KVOController, nameSpecified: 
 body: BSD License
@@ -80,23 +42,9 @@ body: MIT License
 Copyrig…
 version: 3.27.1
 
-name: LicensePlist, nameSpecified: 
-body: MIT License
-
-Copyrig…
-version: 3.27.1
-
 name: Onboard, nameSpecified: 
 body: Copyright (c) 2014 M…
 version: 2.3.3
-
-name: Onboard, nameSpecified: 
-body: Copyright (c) 2014 M…
-version: 2.3.3
-
-name: PermissionScope, nameSpecified: 
-body: Copyright (c) 2015 T…
-version: 1.1.1
 
 name: PermissionScope, nameSpecified: 
 body: Copyright (c) 2015 T…
@@ -106,21 +54,9 @@ name: PureLayout, nameSpecified:
 body: This code is distrib…
 version: 3.1.9
 
-name: PureLayout, nameSpecified: 
-body: This code is distrib…
-version: 3.1.9
-
 name: TTTAttributedLabel, nameSpecified: 
 body: Copyright (c) 2011 M…
 version: 2.0.0
-
-name: TTTAttributedLabel, nameSpecified: 
-body: Copyright (c) 2011 M…
-version: 2.0.0
-
-name: TUSafariActivity, nameSpecified: 
-body: Copyright (c) 2012 T…
-version: 1.0.4
 
 name: TUSafariActivity, nameSpecified: 
 body: Copyright (c) 2012 T…
