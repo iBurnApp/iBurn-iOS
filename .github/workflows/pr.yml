@@ -85,6 +85,8 @@ jobs:
     - name: Build App
       run: |
         xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
                    -scheme iBurn \
                    -sdk iphonesimulator \
                    -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
@@ -94,6 +96,8 @@ jobs:
       run: |
         # Run iBurnTests
         xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
                    -scheme iBurnTests \
                    -sdk iphonesimulator \
                    -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
@@ -101,6 +105,8 @@ jobs:
         
         # Run PlayaKitTests
         xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
                    -scheme PlayaKitTests \
                    -sdk iphonesimulator \
                    -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \

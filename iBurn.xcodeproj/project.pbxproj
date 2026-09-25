@@ -434,8 +434,8 @@
 				D7B18F91C1AE7095AA93FD85 /* [CP] Check Pods Manifest.lock */,
 				63CE2A501987140F00F65B01 /* Sources */,
 				63CE2A511987140F00F65B01 /* Frameworks */,
-				D9915F632A76D2D40015C87D /* LicensePlist */,
 				63CE2A521987140F00F65B01 /* Resources */,
+				D9AC0E1A2F4B8C0000A1C0DE /* Copy Acknowledgements to Settings.bundle */,
 				D960F2601F74E65A00144290 /* Embed Frameworks */,
 				00F14D6A9BA2DC60398A7732 /* Embed Watch Content */,
 				D907AD6821215F20004A255A /* Crashlytics */,
@@ -445,6 +445,7 @@
 			dependencies = (
 				D9CB2A572117E7EE00A0F2AE /* PBXTargetDependency */,
 				AAF3E09B3FD0401CF5726CF0 /* PBXTargetDependency */,
+				EF9882E7ED7DC46133E9399C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D9029F322EA45CB500ED87D5 /* iBurn */,
@@ -549,6 +550,7 @@
 				4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 				0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */,
 				A9906D84580EA8E37CC2726F /* XCLocalSwiftPackageReference "Submodules/Onboard" */,
+				7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 63CE2A551987140F00F65B01 /* Products */;
@@ -695,7 +697,7 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n\n";
 		};
-		D9915F632A76D2D40015C87D /* LicensePlist */ = {
+		D9AC0E1A2F4B8C0000A1C0DE /* Copy Acknowledgements to Settings.bundle */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -705,15 +707,15 @@
 			);
 			inputPaths = (
 			);
-			name = LicensePlist;
+			name = "Copy Acknowledgements to Settings.bundle";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/iBurn/Settings.bundle/com.mono0926.LicensePlist.plist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${PODS_ROOT}/LicensePlist/license-plist --output-path $PRODUCT_NAME/Settings.bundle --add-version-numbers --suppress-opening-directory || true\n\n";
+			shellScript = "# Moves the LicensePlistBuildTool plugin output (see license_plist.yml) into Settings.bundle,\n# where Root.plist links to com.mono0926.LicensePlist.\nset -euo pipefail\nSRC=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/com.mono0926.LicensePlist.Output\"\nDEST=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Settings.bundle\"\nif [ -d \"${SRC}\" ]; then\n    rm -rf \"${DEST}/com.mono0926.LicensePlist\"\n    cp -R \"${SRC}\"/. \"${DEST}\"/\n    rm -rf \"${SRC}\"\nfi\nif [ ! -f \"${DEST}/com.mono0926.LicensePlist.plist\" ]; then\n    echo \"error: Acknowledgements are missing from Settings.bundle. Is the LicensePlistBuildTool plug-in enabled (Trust & Enable, or -skipPackagePluginValidation)?\"\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -757,6 +759,10 @@
 			isa = PBXTargetDependency;
 			name = "PlayaGeocoder (iOS)";
 			targetProxy = D9CB2A562117E7EE00A0F2AE /* PBXContainerItemProxy */;
+		};
+		EF9882E7ED7DC46133E9399C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = A240549471898D1C345FB22F /* plugin:LicensePlistBuildTool */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1175,6 +1181,14 @@
 				minimumVersion = 3.10.0;
 			};
 		};
+		7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mono0926/LicensePlist";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.28.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1275,6 +1289,11 @@
 		60B8A4256F3450ECD01ACABE /* Onboard */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Onboard;
+		};
+		A240549471898D1C345FB22F /* plugin:LicensePlistBuildTool */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */;
+			productName = "plugin:LicensePlistBuildTool";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

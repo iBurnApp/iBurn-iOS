@@ -12,7 +12,6 @@ target 'iBurn' do
 		inherit! :search_paths
 	end
 
-	pod 'LicensePlist', '~> 3.28'
 	# UIImageColors was replaced by Packages/PlayaColors, a CoreGraphics port shared
 	# with the playa-seed tool so baked and runtime colours match.
 end

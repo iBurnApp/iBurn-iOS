@@ -99,6 +99,8 @@ jobs:
       if: matrix.scheme == 'iBurn'
       run: |
         xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
                    -scheme iBurn \
                    -sdk iphonesimulator \
                    -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
@@ -108,6 +110,8 @@ jobs:
       if: matrix.scheme != 'iBurn'
       run: |
         xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
                    -scheme ${{ matrix.scheme }} \
                    -sdk iphonesimulator \
                    -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \

@@ -106,3 +106,9 @@ iBurn/crashlytics.sh
 
 .vscode/
 buildServer.json
+
+# Acknowledgements are generated at build time by the LicensePlistBuildTool plugin
+# (license_plist.yml); these are leftovers from the old committed output.
+iBurn/Settings.bundle/com.mono0926.LicensePlist/
+iBurn/Settings.bundle/com.mono0926.LicensePlist.plist
+iBurn/Settings.bundle/com.mono0926.LicensePlist.latest_result.txt

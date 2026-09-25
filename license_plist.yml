@@ -1,0 +1,41 @@
+# LicensePlist configuration, read by the LicensePlistBuildTool SwiftPM plugin on every
+# build of the iBurn app target (Build Phases > Run Build Tool Plug-ins).
+#
+# The plugin runs `license-plist --sandbox-mode` with `--package-sources-path` pointing at
+# the build's SourcePackages checkouts, so Swift package licenses are read from disk (no
+# GitHub API calls, same result in Xcode and command-line xcodebuild). Its output lands in
+# the app bundle and the "Copy Acknowledgements to Settings.bundle" run script moves it
+# into Settings.bundle, where Root.plist links to com.mono0926.LicensePlist.
+#
+# The plugin ignores outputPath and packageSourcesPath here.
+options:
+  xcworkspacePath: "iBurn.xcworkspace"
+  prefix: com.mono0926.LicensePlist
+  addVersionNumbers: true
+
+# Local packages (git submodules) aren't in Package.resolved, so list them by hand.
+manual:
+  - name: Onboard
+    version: 2.3.3
+    source: https://github.com/iBurnApp/Onboard
+    licenseType: MIT
+    file: Submodules/Onboard/LICENSE.txt
+  - name: PermissionScope
+    version: 1.1.1
+    source: https://github.com/Burning-Man-Earth/PermissionScope
+    licenseType: MIT
+    file: Submodules/PermissionScope/LICENSE
+
+# LicensePlist itself and its tool-only dependencies run at build time and don't ship in
+# the app.
+exclude:
+  - name: LicensePlist
+  - name: swift-argument-parser
+  - name: APIKit
+  - name: HeliumLogger
+  - name: LoggerAPI
+  - name: swift-html-entities
+  - name: SwiftParamTest
+  - name: XcodeEdit
+  - name: Yams
+  - name: TOMLKit
