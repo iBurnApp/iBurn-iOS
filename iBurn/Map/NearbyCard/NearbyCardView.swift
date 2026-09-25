@@ -30,7 +30,8 @@ struct NearbyCardView: View {
     /// doesn't jitter as you swipe between items with different text lengths, and capped
     /// to the screen so it never overflows on small devices.
     private var cardWidth: CGFloat {
-        min(380, UIScreen.main.bounds.width - 32)
+        let screenWidth = UIApplication.shared.mainWindowScene?.screen.bounds.width ?? (380 + 32)
+        return min(380, screenWidth - 32)
     }
 
     /// The one inset every edge uses: the thumbnail's leading and top edge, and the
