@@ -53,10 +53,10 @@ Each document should include:
 This repo uses `xcsift` to parse and format `xcodebuild` and SwiftPM `swift test` output for coding agents.
 Key rule: always redirect stderr to stdout (`2>&1`) before piping into `xcsift`.
 
-Default destination: **iPhone 17 Pro Max, iOS 26.5, arm64 simulator**. Schemes: `iBurn` (app), `iBurn (Mock Date)`, `iBurnTests`, `iBurnWatch`.
+Default destination: **iPhone 18 Pro Max, iOS 27.0, arm64 simulator** (Xcode 27.1; minimum iOS 18). iPhone Duo (foldable) is on the iOS 27.1 runtime. Schemes: `iBurn` (app), `iBurn (Mock Date)`, `iBurnTests`, `iBurnWatch`.
 
 ```bash
-DEST='platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.5,arch=arm64'
+DEST='platform=iOS Simulator,name=iPhone 18 Pro Max,OS=27.0,arch=arm64'
 
 xcodebuild -workspace iBurn.xcworkspace -scheme iBurn -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
 xcodebuild test -workspace iBurn.xcworkspace -scheme iBurnTests -destination "$DEST" -quiet 2>&1 | xcsift -f toon -w
