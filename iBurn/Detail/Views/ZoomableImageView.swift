@@ -133,7 +133,7 @@ public struct ZoomableImageView: View {
             .onAppear {
                 containerSize = geometry.size
             }
-            .onChange(of: geometry.size) { newSize in
+            .onChange(of: geometry.size) { _, newSize in
                 containerSize = newSize
                 // Re-validate pan offset when container size changes
                 if steadyStateZoomScale > 1.01 {

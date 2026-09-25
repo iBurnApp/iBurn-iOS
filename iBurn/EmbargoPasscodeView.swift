@@ -41,7 +41,7 @@ struct EmbargoPasscodeView: View {
                                 .foregroundColor(.black)
                                 .modifier(ShakeEffect(shakes: viewModel.shouldShowUnlockError ? 3 : 0))
                                 .animation(viewModel.shouldShowUnlockError ? .default : nil, value: viewModel.shouldShowUnlockError)
-                                .onChange(of: viewModel.shouldShowUnlockError) { newValue in
+                                .onChange(of: viewModel.shouldShowUnlockError) { _, newValue in
                                     if newValue {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             viewModel.shouldShowUnlockError = false
@@ -92,7 +92,7 @@ struct EmbargoPasscodeView: View {
         .onAppear {
             viewModel.handleAlreadyUnlocked()
         }
-        .onChange(of: viewModel.isDataUnlocked) { newIsDataUnlockedValue in
+        .onChange(of: viewModel.isDataUnlocked) { _, newIsDataUnlockedValue in
             if newIsDataUnlockedValue {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     viewModel.dismissAction?()

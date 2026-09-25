@@ -51,7 +51,7 @@ struct EventDayPickerView: View {
             .onAppear {
                 proxy.scrollTo(selectedDay, anchor: .center)
             }
-            .onChange(of: selectedDay) { newDay in
+            .onChange(of: selectedDay) { _, newDay in
                 withAnimation {
                     proxy.scrollTo(newDay, anchor: .center)
                 }
