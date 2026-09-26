@@ -262,9 +262,11 @@ final class FavoritesViewModel: ObservableObject {
         filter.includeExpired = UserSettings.showExpiredEventsInFavorites
 
         if UserSettings.showTodayOnlyInFavorites {
-            let calendar = Calendar.current
+            // "Today" is the Black Rock City day, whatever zone the device is set to.
+            let calendar = Calendar.burningMan
             let startOfDay = calendar.startOfDay(for: .present)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)
+                ?? startOfDay.addingTimeInterval(24 * 60 * 60)
             filter.startDate = startOfDay
             filter.endDate = endOfDay
         }

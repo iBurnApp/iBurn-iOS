@@ -98,7 +98,7 @@ struct GlobalSearchFilterSheet: View {
         filter: .constant(GlobalSearchFilter()),
         scope: .all,
         festivalDays: (0..<8).compactMap {
-            Calendar.current.date(byAdding: .day, value: $0, to: Date())
+            Calendar.burningMan.date(byAdding: .day, value: $0, to: Calendar.burningMan.startOfDay(for: Date()))
         }
     )
 }
