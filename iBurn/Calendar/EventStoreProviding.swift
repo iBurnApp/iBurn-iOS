@@ -134,22 +134,12 @@ final class EKEventStoreProvider: EventStoreProviding {
 
     var authorization: CalendarAuthorization {
         let status = EKEventStore.authorizationStatus(for: .event)
-        if #available(iOS 17.0, *) {
-            switch status {
-            case .notDetermined: return .notDetermined
-            case .restricted, .denied: return .denied
-            case .fullAccess: return .fullAccess
-            case .writeOnly: return .writeOnly
-            @unknown default: return .denied
-            }
-        }
-        // Pre-iOS 17 the only "yes" is `.authorized` (raw value 3, the same raw value
-        // iOS 17 reuses for `.fullAccess`). Matched by raw value so the deprecated
-        // case name never has to be referenced.
-        switch status.rawValue {
-        case 0: return .notDetermined
-        case 3: return .fullAccess
-        default: return .denied
+        switch status {
+        case .notDetermined: return .notDetermined
+        case .restricted, .denied: return .denied
+        case .fullAccess: return .fullAccess
+        case .writeOnly: return .writeOnly
+        @unknown default: return .denied
         }
     }
 

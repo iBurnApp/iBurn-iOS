@@ -79,8 +79,8 @@ struct FavoritesView: View {
             .sheet(isPresented: $showingFilterSheet) {
                 NavigationView {
                     FavoritesFilterView(viewModel: FavoritesFilterViewModel(
-                        onFilterChanged: { [weak viewModel] in
-                            viewModel?.reloadEventFilter()
+                        onFilterChanged: { [viewModel] in
+                            viewModel.reloadEventFilter()
                         }
                     ))
                 }

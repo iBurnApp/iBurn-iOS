@@ -27,6 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #import "BRCUserTrackingBarButtonItem.h"
+#import "iBurn-Swift.h"
 
 #define RMPostVersion7 (floor(NSFoundationVersionNumber) >  NSFoundationVersionNumber_iOS_6_1)
 #define RMPreVersion7  (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
@@ -191,13 +192,7 @@ typedef enum : NSUInteger {
 
 - (void)updateSize:(NSNotification *)notification {
     // Get the current interface orientation from the window scene
-    UIWindowScene *windowScene = nil;
-    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
-        if ([scene isKindOfClass:[UIWindowScene class]]) {
-            windowScene = (UIWindowScene *)scene;
-            break;
-        }
-    }
+    UIWindowScene *windowScene = UIApplication.sharedApplication.mainWindowScene;
     
     UIInterfaceOrientation orientation = windowScene.interfaceOrientation;
     

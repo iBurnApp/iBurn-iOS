@@ -1,11 +1,16 @@
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '16.0'
+platform :ios, '18.0'
 inhibit_all_warnings!
 use_modular_headers!
 
 target 'iBurn' do
-	target 'iBurnTests'
+	# The tests run inside the app (TEST_HOST), which already links every pod. Linking them
+	# into the test bundle a second time duplicated each class ("Class X is implemented in
+	# both iBurn.debug.dylib and the test bundle"); search paths are all the tests need.
+	target 'iBurnTests' do
+		inherit! :search_paths
+	end
 
 	pod 'Anchorage'
 
@@ -32,8 +37,8 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 16.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 18.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '18.0'
       end
     end
   end

@@ -92,10 +92,8 @@ final class ImageAnnotationView: MLNAnnotationView {
 extension ImageAnnotationView {
     func hapticFeedback() {
         // Give the user more haptic feedback when they drop the annotation.
-        if #available(iOS 10.0, *) {
-            let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
-            hapticFeedback.impactOccurred()
-        }
+        let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
+        hapticFeedback.impactOccurred()
     }
     
     // When the user interacts with an annotation, animate opacity and scale changes.

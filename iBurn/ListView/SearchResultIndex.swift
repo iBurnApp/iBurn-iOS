@@ -240,6 +240,26 @@ enum SearchResultIndex {
     /// Trailing room a row must leave for the rail.
     static let railRowInset: CGFloat = 26
 
+    // MARK: - Scrolling
+
+    /// The row a rail tap or scrub may scroll to, or nil when the scroll must be skipped.
+    ///
+    /// The rail's entries come from the last render, but the results can change under it —
+    /// the AI pass re-sorts and grows the sections while the list is on screen. Asking the
+    /// `List`'s collection view to scroll to a row it no longer has (or hasn't applied yet)
+    /// traps inside UIKit with an out-of-bounds index path, so a tap is only honored when
+    /// the anchor is still one of the current rows and the results aren't mid-update.
+    static func scrollTarget(
+        for anchorID: String,
+        in sections: [SearchResultSection],
+        isUpdating: Bool
+    ) -> String? {
+        guard !isUpdating,
+              sections.contains(where: { section in section.items.contains { $0.id == anchorID } })
+        else { return nil }
+        return anchorID
+    }
+
     // MARK: - Calendar
 
     /// Black Rock City local time, matching the Yap grouping formatter.

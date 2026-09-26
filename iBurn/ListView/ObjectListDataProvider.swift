@@ -18,7 +18,11 @@ import PlayaDB
 ///
 /// Note: The Object type should conform to PlayaDB's DataObject protocol, not the legacy
 /// iBurn DataObject class. This is enforced through the concrete implementations.
-protocol ObjectListDataProvider<Object, Filter> {
+///
+/// `SendableMetatype` rules out main-actor-isolated conformances: the `@MainActor` view model
+/// calls `toggleFavorite` (a nonisolated async requirement, so it runs off the main actor),
+/// which is only safe when the conformance itself isn't tied to an actor.
+protocol ObjectListDataProvider<Object, Filter>: SendableMetatype {
     /// The type of object this provider manages (ArtObject, CampObject, etc.)
     /// This should be a type conforming to PlayaDB.DataObject protocol
     associatedtype Object

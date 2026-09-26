@@ -567,6 +567,39 @@ final class GlobalSearchFilterTests: XCTestCase {
         }
     }
 
+    // MARK: Scroll target
+
+    func testScrollTargetIsTheAnchorWhenItIsStillACurrentRow() {
+        let sections = [
+            section(.art, title: "Art", names: ["Aeshtah", "Bell"]),
+            section(.camp, title: "Camps", names: ["Anchor", "Zoo"]),
+        ]
+        let anchor = sections[1].items[1].id
+        XCTAssertEqual(
+            SearchResultIndex.scrollTarget(for: anchor, in: sections, isUpdating: false),
+            anchor
+        )
+    }
+
+    /// A rail entry rendered against an earlier result set must not send the list to a
+    /// row it no longer has — that is the UICollectionView out-of-bounds crash.
+    func testScrollTargetIsNilForAnAnchorThatLeftTheResults() {
+        let before = [section(.camp, title: "Camps", names: ["Anchor", "Beta", "Zoo"])]
+        let staleAnchor = before[0].items[2].id
+        let after = [section(.camp, title: "Camps", names: ["Anchor"])]
+        XCTAssertNil(SearchResultIndex.scrollTarget(for: staleAnchor, in: after, isUpdating: false))
+        XCTAssertNil(SearchResultIndex.scrollTarget(for: staleAnchor, in: [], isUpdating: false))
+    }
+
+    func testScrollTargetIsNilWhileResultsAreUpdating() {
+        let sections = [section(.camp, title: "Camps", names: ["Anchor", "Zoo"])]
+        let anchor = sections[0].items[0].id
+        XCTAssertNil(
+            SearchResultIndex.scrollTarget(for: anchor, in: sections, isUpdating: true),
+            "The AI pass can replace the sections mid-scroll, so the rail sits it out"
+        )
+    }
+
     // MARK: - Name Sorting
 
     func testSortedByNameIsCaseInsensitive() {

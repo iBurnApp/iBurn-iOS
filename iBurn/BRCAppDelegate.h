@@ -10,18 +10,16 @@
 @import Onboard;
 @import CoreLocation;
 
-@class MainMapViewController;
-@class TabController;
-
 NS_ASSUME_NONNULL_BEGIN
+/**
+ App-wide setup: Firebase, notifications, background tasks, the shared location manager,
+ data updates. The window, root view controller, onboarding and incoming links live in
+ `SceneDelegate` (UIScene lifecycle, required by the iOS 27 SDK). Use
+ `UIApplication.sharedApplication.mainWindow` to reach the window.
+ */
 @interface BRCAppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
-@property (strong, nonatomic) UIWindow *window;
-@property (nonatomic, strong) TabController *tabBarController;
-
 @property (nonatomic, strong) CLLocationManager *locationManager;
-
-@property (nonatomic, strong) MainMapViewController *mapViewController;
 
 /** Don't use this unless you really have to... */
 @property (nonatomic, class, readonly) BRCAppDelegate *shared;
@@ -32,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (void) registerForRemoteNotifications;
 /** Asks for location and starts updating */
 - (void) requestLocationPermission;
+/** Starts the shared location manager if permission was already granted. Called on scene activation. */
+- (void) startLocationUpdatesIfAuthorized;
 
 @end
 NS_ASSUME_NONNULL_END

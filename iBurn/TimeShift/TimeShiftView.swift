@@ -307,10 +307,10 @@ struct LocationComparisonView: View {
         .onAppear {
             geocodeLocations()
         }
-        .onChange(of: realLocation?.coordinate.latitude) { _ in
+        .onChange(of: realLocation?.coordinate.latitude) {
             geocodeLocations()
         }
-        .onChange(of: warpedLocation?.coordinate.latitude) { _ in
+        .onChange(of: warpedLocation?.coordinate.latitude) {
             geocodeLocations()
         }
     }
@@ -393,10 +393,10 @@ struct LocationAddressView: View {
         .onAppear {
             geocodeLocation()
         }
-        .onChange(of: location.coordinate.latitude) { _ in
+        .onChange(of: location.coordinate.latitude) {
             geocodeLocation()
         }
-        .onChange(of: location.coordinate.longitude) { _ in
+        .onChange(of: location.coordinate.longitude) {
             geocodeLocation()
         }
     }

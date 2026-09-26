@@ -32,10 +32,9 @@ import PlayaDB
 /// written once instead of being installed on each screen — and it survives navigation
 /// pushes and tab switches, which a per-screen overlay would not.
 ///
-/// The window comes from `BRCAppDelegate.shared.window` rather than a `connectedScenes`
-/// lookup: iBurn predates scenes (no `UIApplicationSceneManifest`; the app delegate makes
-/// its own window), so walking the implicit `UIWindowScene` is not guaranteed to hand back
-/// the window that is actually on screen.
+/// The window comes from `UIApplication.shared.mainWindow` — the window `SceneDelegate`
+/// installs the root view controller in — rather than `windows.first` of some scene, which
+/// can be an overlay window (Siren's alert, for one) instead of the one the app lives in.
 @MainActor
 final class FavoriteSeriesToastPresenter {
 
@@ -147,7 +146,7 @@ final class FavoriteSeriesToastPresenter {
 
     private func present(_ candidate: FavoriteSeriesToast) {
         guard let root = Self.frontmostViewController() else { return }
-        let window = BRCAppDelegate.shared.window
+        guard let window = UIApplication.shared.mainWindow else { return }
 
         // Replace rather than stack: a second offer while one is up means the user has
         // moved on to another event.
@@ -235,13 +234,10 @@ final class FavoriteSeriesToastPresenter {
     /// sheet, the filter sheets — are *presented* over the tab controller and have no tab
     /// bar of their own to clear.
     private static func frontmostViewController() -> UIViewController? {
-        // `BRCAppDelegate.shared.window`, not a scene lookup: this app predates scenes and
-        // makes its own window, so the implicit `UIWindowScene` UIKit synthesizes for it
-        // does not necessarily list that window. Walking `connectedScenes` can hand back a
-        // different window entirely — whose hierarchy accepts subviews, lays them out, and
+        // `mainWindow`, not `connectedScenes.first?.windows.first`: the first window of a
+        // scene can be an overlay whose hierarchy accepts subviews, lays them out, and
         // reports them to accessibility while nothing ever appears on screen.
-        let window = BRCAppDelegate.shared.window
-        var controller = window.rootViewController
+        var controller = UIApplication.shared.mainWindow?.rootViewController
         while let presented = controller?.presentedViewController {
             controller = presented
         }

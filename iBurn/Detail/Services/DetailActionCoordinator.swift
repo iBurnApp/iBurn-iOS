@@ -8,7 +8,7 @@
 
 import UIKit
 import SafariServices
-import EventKitUI
+import CoreLocation
 import SwiftUI
 import PlayaDB
 
@@ -74,7 +74,7 @@ enum DetailActionCoordinatorFactory {
 
 // MARK: - Private Implementation
 
-private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EKEventEditViewDelegate {
+private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator {
     private var dependencies: DetailActionCoordinatorDependencies
     
     init(dependencies: DetailActionCoordinatorDependencies) {
@@ -246,29 +246,5 @@ private class DetailActionCoordinatorImpl: NSObject, DetailActionCoordinator, EK
         alertController.addAction(saveAction)
         
         return alertController
-    }
-}
-
-
-// MARK: - EKEventEditViewDelegate
-
-extension DetailActionCoordinatorImpl {
-    func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
-        // Dismiss the event edit controller
-        dependencies.presenter?.dismiss(animated: true, completion: nil)
-        
-        // Log the action for debugging
-        switch action {
-        case .cancelled:
-            print("📅 Event creation cancelled")
-        case .canceled:
-            print("📅 Event creation canceled")
-        case .saved:
-            print("📅 Event saved to calendar")
-        case .deleted:
-            print("📅 Event deleted")
-        @unknown default:
-            print("📅 Unknown event edit action: \(action.rawValue)")
-        }
     }
 }

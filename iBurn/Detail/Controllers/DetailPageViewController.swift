@@ -8,8 +8,8 @@
 
 import UIKit
 
-/// Custom UIPageViewController that properly handles navigation item forwarding
-/// for both SwiftUI (DetailHostingController) and UIKit (BRCDetailViewController) children
+/// Custom UIPageViewController that forwards navigation items from its
+/// `DetailHostingController` children to its own navigation item
 class DetailPageViewController: UIPageViewController {
     
     // MARK: - Properties

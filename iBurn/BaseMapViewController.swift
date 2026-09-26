@@ -57,6 +57,9 @@ public class BaseMapViewController: UIViewController {
         view.addSubview(mapView)
         view.tintColor = Appearance.currentColors.primaryColor
         mapView.autoPinEdgesToSuperviewEdges()
+        registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, _: UITraitCollection) in
+            self.navigationItem.rightBarButtonItem?.tintColor = self.view.tintColor
+        }
         setupTrackingButton(mapView: mapView)
         setupMapView(mapView)
         
@@ -93,11 +96,6 @@ public class BaseMapViewController: UIViewController {
     
     @objc public func centerMapAtManCoordinatesAnimated(_ animated: Bool) {
         mapView.brc_moveToBlackRockCityCenter(animated: animated)
-    }
-    
-    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        navigationItem.rightBarButtonItem?.tintColor = view.tintColor
     }
 }
 

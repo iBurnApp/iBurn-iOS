@@ -55,7 +55,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3C4B2720384847AC347443FF"
             BuildableName = "iBurn.app"
-            BlueprintName = "iBurnWatch"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -76,7 +75,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3C4B2720384847AC347443FF"
             BuildableName = "iBurn.app"
-            BlueprintName = "iBurnWatch"
             ReferencedContainer = "container:iBurn.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

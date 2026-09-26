@@ -74,7 +74,7 @@ private extension PlayaGeocoder {
             }
         }
         guard let path = Bundle(for: PlayaGeocoder.self).path(forResource: "bundle", ofType: "js"),
-            let file = try? String(contentsOfFile: path) else {
+            let file = try? String(contentsOfFile: path, encoding: .utf8) else {
             return
         }
         let _ = context?.evaluateScript("var window = this")

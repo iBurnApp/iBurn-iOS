@@ -69,7 +69,10 @@ extension BRCImageColors {
         case .dark:
             return dark
         case .system:
-            switch UIScreen.main.traitCollection.userInterfaceStyle {
+            // The system appearance, regardless of any per-view override — the screen's
+            // traits, not the resolving view's.
+            let systemTraits = UIApplication.shared.mainWindowScene?.screen.traitCollection ?? UITraitCollection.current
+            switch systemTraits.userInterfaceStyle {
             case .unspecified, .light:
                 return light
             case .dark:

@@ -81,7 +81,7 @@ struct FeatureFlagsView: View {
             // Date Override Section
             Section {
                 Toggle("Override Current Date", isOn: $mockDateEnabled)
-                    .onChange(of: mockDateEnabled) { newValue in
+                    .onChange(of: mockDateEnabled) { _, newValue in
                         updateMockDate(enabled: newValue)
                     }
                 
@@ -98,7 +98,7 @@ struct FeatureFlagsView: View {
                               selection: $mockDateValue,
                               in: createDateRange(),
                               displayedComponents: [.date, .hourAndMinute])
-                        .onChange(of: mockDateValue) { newValue in
+                        .onChange(of: mockDateValue) { _, newValue in
                             NSDate.brc_setOverrideDate(newValue)
                             UserDefaults.standard.set(newValue, forKey: "BRCMockDateValue")
                             updateCurrentDate()
@@ -114,7 +114,7 @@ struct FeatureFlagsView: View {
             // SwiftUI Lists Section
             Section {
                 Toggle("AI Search Merge", isOn: $useAISearch)
-                    .onChange(of: useAISearch) { newValue in
+                    .onChange(of: useAISearch) { _, newValue in
                         PreferenceServiceFactory.shared.setValue(newValue, for: Preferences.FeatureFlags.useAISearch)
                     }
             } header: {
@@ -133,7 +133,7 @@ struct FeatureFlagsView: View {
                 }
                 .pickerStyle(.inline)
                 .labelsHidden()
-                .onChange(of: searchLayout) { newValue in
+                .onChange(of: searchLayout) { _, newValue in
                     MapSearchLayout.current = newValue
                 }
             } header: {
