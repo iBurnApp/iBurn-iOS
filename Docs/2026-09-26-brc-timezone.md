@@ -127,3 +127,9 @@ fallback chain (fixed −7h, then `.gmt`) is unreachable on Apple platforms.
 - `Docs/2026-09-26-ci-xcode-27.md`: #256, which found the bug in global search and added the
   original app-local `Calendar.burningMan`.
 - `Docs/2026-08-10-per-occurrence-event-favorites.md`: PlayaDB's `playaTimeZone` formatters.
+
+## Outcome (2026-09-26)
+- PR #257 (base `ci-xcode-27`): https://github.com/iBurnApp/iBurn-iOS/pull/257.
+- `pr.yml` only triggers for PRs into `master`/`develop`, so the stacked PR ran no checks of its
+  own. CI was dispatched on the branch instead: https://github.com/iBurnApp/iBurn-iOS/actions/runs/36268547527.
+  It passed on the UTC runner: app build + iBurnTests, and `swift test` for the local packages.
