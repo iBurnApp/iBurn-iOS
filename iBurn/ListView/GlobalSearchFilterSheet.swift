@@ -30,7 +30,7 @@ struct GlobalSearchFilterSheet: View {
         f.dateFormat = "EEEE, MMM d"
         // Festival days are Black Rock City midnights; label them in that zone so a phone
         // set west of Pacific time doesn't show the previous day.
-        f.timeZone = .burningManTimeZone
+        f.timeZone = .burningMan
         return f
     }()
 
@@ -98,7 +98,7 @@ struct GlobalSearchFilterSheet: View {
         filter: .constant(GlobalSearchFilter()),
         scope: .all,
         festivalDays: (0..<8).compactMap {
-            Calendar.current.date(byAdding: .day, value: $0, to: Date())
+            Calendar.burningMan.date(byAdding: .day, value: $0, to: Calendar.burningMan.startOfDay(for: Date()))
         }
     )
 }

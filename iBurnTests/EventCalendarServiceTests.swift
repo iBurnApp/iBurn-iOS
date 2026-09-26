@@ -262,7 +262,7 @@ final class EventCalendarServiceTests: XCTestCase {
         XCTAssertEqual(draft.title, "Fairycore Tarot Meetup")
         XCTAssertEqual(draft.notes, "Test event")
         XCTAssertEqual(draft.location, "Esplanade & 6:30 - Test Camp")
-        XCTAssertEqual(draft.timeZone, TimeZone.burningManTimeZone)
+        XCTAssertEqual(draft.timeZone, TimeZone.burningMan)
         XCTAssertFalse(draft.isAllDay)
         // Legacy alarms: 1.5 hours and 10 minutes before the start.
         XCTAssertEqual(draft.alarmOffsets, [-90 * 60, -10 * 60])

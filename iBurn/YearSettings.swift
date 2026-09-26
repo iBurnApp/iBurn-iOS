@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreLocation
+import PlayaAPI
 
 @objc
 public final class YearSettings: NSObject {
@@ -89,16 +90,24 @@ public final class YearSettings: NSObject {
         // Missing key falls back to eventStart: the pre-tiered (fully embargoed) behavior.
         self.campLocationUnlock = allSettings[Keys.campLocationUnlock] as? Date ?? eventStart
         
-        // End-inclusive so the final festival day (Exodus) is browsable, matching the legacy day picker.
-        let numberOfDays = Calendar.current.dateComponents([.day], from: self.eventStart, to: self.eventEnd).day ?? 0
-        self.festivalDays = (0...numberOfDays).compactMap {
-            var day = DateComponents()
-            day.day = $0
-            let date = Calendar.current.date(byAdding: day, to: eventStart)
-            return date
-        }
+        self.festivalDays = Self.festivalDays(from: eventStart, to: self.eventEnd)
         let manCenterLatitude = allSettings[Keys.manCenterLatitude] as! Double
         let manCenterLongitude = allSettings[Keys.manCenterLongitude] as! Double
         self.manCenterCoordinate = CLLocationCoordinate2D(latitude: manCenterLatitude, longitude: manCenterLongitude)
+    }
+
+    /// One date per festival day: the Black Rock City midnight starting it, from `start`'s
+    /// day through `end`'s. End-inclusive so the final festival day (Exodus) is browsable,
+    /// matching the legacy day picker.
+    ///
+    /// BRC days (`Calendar.burningMan`), not device days: these are the keys the event list
+    /// looks its day buckets up by, and the days the pickers label, so they have to be the
+    /// same days the event rows' times are shown in.
+    static func festivalDays(from start: Date, to end: Date, calendar: Calendar = .burningMan) -> [Date] {
+        let firstDay = calendar.startOfDay(for: start)
+        let numberOfDays = calendar.dateComponents([.day], from: firstDay, to: end).day ?? 0
+        return (0...max(numberOfDays, 0)).compactMap {
+            calendar.date(byAdding: .day, value: $0, to: firstDay)
+        }
     }
 }

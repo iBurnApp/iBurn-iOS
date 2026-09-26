@@ -140,7 +140,8 @@ public protocol PlayaDB {
     ) -> PlayaDBObservationToken
 
     /// Observe event occurrences bucketed by start-day then hour-of-day. The day key is
-    /// the device-calendar `startOfDay` for each occurrence's start time. Use this for the
+    /// the Black Rock City `startOfDay` (`Calendar.burningMan`) for each occurrence's start
+    /// time, and hours are BRC hours, whatever zone the device is set to. Use this for the
     /// browse list: subscribe once with a full-festival filter, then slice the result by
     /// day in the UI so day-tab switching never re-hits the database.
     @discardableResult

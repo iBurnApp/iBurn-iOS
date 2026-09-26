@@ -304,7 +304,7 @@ final class GlobalSearchFilterTests: XCTestCase {
         components.month = 8
         components.day = day
         components.hour = hour
-        return try XCTUnwrap(SearchResultIndex.brcCalendar.date(from: components))
+        return try XCTUnwrap(Calendar.burningMan.date(from: components))
     }
 
     private func names(_ count: Int, prefix: String) -> [String] {

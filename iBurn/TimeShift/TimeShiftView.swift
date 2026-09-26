@@ -63,6 +63,9 @@ public struct TimeShiftView: View {
                         )
                         .datePickerStyle(.wheel)
                         .labelsHidden()
+                        // Playa time: the quick actions pick BRC sunrise/noon/sunset, and
+                        // event times everywhere are shown in BRC time.
+                        .environment(\.timeZone, .burningMan)
                         
                         // Quick Actions
                         quickActionButtons
@@ -153,6 +156,7 @@ public struct TimeShiftView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, h:mm a"
+        formatter.timeZone = .burningMan
         return formatter.string(from: date)
     }
     

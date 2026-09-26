@@ -60,6 +60,11 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// restart so a torn-down data source never resurrects its observations.
     private var isObserving = false
 
+    /// Fires at the next Black Rock City midnight to move the "today" windows. The
+    /// `NSCalendarDayChanged` observer below only fires at *device* midnight, which on a
+    /// phone still set to another zone is hours away from the BRC day boundary.
+    private var brcMidnightTimer: Timer?
+
     // MARK: - Init
 
     init(playaDB: PlayaDB) {
@@ -88,6 +93,19 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     @objc private func embargoDidClear() {
         guard isObserving else { return }
         startObserving()
+    }
+
+    /// Arms a one-shot timer for just after the end of today's BRC window. `now` may be the
+    /// mock date, so the timer is armed for the same *interval* from the wall clock.
+    private func scheduleBRCMidnightRefresh(now: Date) {
+        brcMidnightTimer?.invalidate()
+        let interval = max(Self.todayWindow(now: now).end.timeIntervalSince(now), 0) + 1
+        let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+            self?.dayDidChange()
+        }
+        timer.tolerance = 5
+        RunLoop.main.add(timer, forMode: .common)
+        brcMidnightTimer = timer
     }
 
     @objc private func dayDidChange() {
@@ -136,6 +154,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     func startObserving() {
         stopObserving()
         isObserving = true
+        scheduleBRCMidnightRefresh(now: .present)
 
         // Snapshotted per observation start; embargoDidClear() restarts observations.
         let artAllowed = MapEmbargo.allowsArtLocation()
@@ -270,6 +289,8 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// Cancel all observations and clear caches.
     func stopObserving() {
         isObserving = false
+        brcMidnightTimer?.invalidate()
+        brcMidnightTimer = nil
         for token in observationTokens {
             token.cancel()
         }
@@ -285,8 +306,9 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
 
     // MARK: - Favourite-event filter
 
-    /// Today, as the map means it: `[startOfDay, startOfDay + 1 day)` in the device calendar.
-    static func todayWindow(now: Date, calendar: Calendar = .current) -> DateInterval {
+    /// Today, as the map means it: `[startOfDay, startOfDay + 1 day)` in Black Rock City
+    /// time (`Calendar.burningMan`), the same day the event list and pin times use.
+    static func todayWindow(now: Date, calendar: Calendar = .burningMan) -> DateInterval {
         let startOfDay = calendar.startOfDay(for: now)
         let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)
             ?? startOfDay.addingTimeInterval(24 * 60 * 60)
@@ -303,7 +325,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     static func occurrenceIsToday(startDate: Date,
                                   endDate: Date,
                                   now: Date,
-                                  calendar: Calendar = .current) -> Bool {
+                                  calendar: Calendar = .burningMan) -> Bool {
         let window = todayWindow(now: now, calendar: calendar)
         return startDate < window.end && endDate > window.start
     }
@@ -324,7 +346,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// Only the *start* of today's window moves. Anything still running has an end time later
     /// than `now`, so it is never trimmed, and an occurrence starting later today is untouched
     /// — the trim can only ever remove things that are already over.
-    static func mapWindow(now: Date, calendar: Calendar = .current) -> DateInterval {
+    static func mapWindow(now: Date, calendar: Calendar = .burningMan) -> DateInterval {
         let today = todayWindow(now: now, calendar: calendar)
         let graceStart = now.addingTimeInterval(-recentlyEndedGrace)
         return DateInterval(start: max(today.start, graceStart), end: today.end)
@@ -338,7 +360,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     static func occurrenceBelongsOnMap(startDate: Date,
                                        endDate: Date,
                                        now: Date,
-                                       calendar: Calendar = .current) -> Bool {
+                                       calendar: Calendar = .burningMan) -> Bool {
         occurrenceIsToday(startDate: startDate, endDate: endDate, now: now, calendar: calendar)
             && endDate > now.addingTimeInterval(-recentlyEndedGrace)
     }
@@ -365,7 +387,7 @@ final class PlayaDBAnnotationDataSource: NSObject, AnnotationDataSource {
     /// mock-date scheme) rather than calling `Date()` itself.
     static func favoriteEventFilter(includeExpired: Bool,
                                     now: Date,
-                                    calendar: Calendar = .current) -> EventFilter {
+                                    calendar: Calendar = .burningMan) -> EventFilter {
         var filter = EventFilter(onlyFavorites: true, includeExpired: includeExpired)
         filter.activeWindow = mapWindow(now: now, calendar: calendar)
         return filter

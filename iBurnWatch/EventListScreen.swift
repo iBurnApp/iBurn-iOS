@@ -28,9 +28,12 @@ struct EventListScreen: View {
     /// this screen; dropping the token cancels the observation.
     @State private var observationToken: PlayaDBObservationToken?
 
+    // Day tabs, row times and "today" are all Black Rock City time, like the phone:
+    // the day keys PlayaDB buckets by are BRC midnights, whatever zone the watch is in.
     private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate("EEEd")
+        formatter.timeZone = .burningMan
         return formatter
     }()
 
@@ -38,6 +41,7 @@ struct EventListScreen: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
+        formatter.timeZone = .burningMan
         return formatter
     }()
 
@@ -133,7 +137,7 @@ struct EventListScreen: View {
             DispatchQueue.main.async {
                 sectionsByDay = bucket
                 if selectedDay.flatMap({ bucket[$0] }) == nil {
-                    let today = Calendar.current.startOfDay(for: Date())
+                    let today = Calendar.burningMan.startOfDay(for: Date())
                     selectedDay = bucket[today] != nil ? today : bucket.keys.sorted().first
                 }
                 loadError = nil

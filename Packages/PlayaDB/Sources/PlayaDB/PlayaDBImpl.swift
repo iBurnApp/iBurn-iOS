@@ -750,7 +750,8 @@ internal class PlayaDBImpl: PlayaDB {
     
     func fetchEvents(on date: Date) async throws -> [EventObjectOccurrence] {
         return try await dbQueue.read { db in
-            let calendar = Calendar.current
+            // Festival days are Black Rock City days, whatever zone the device is in.
+            let calendar = Calendar.burningMan
             let dayStart = calendar.startOfDay(for: date)
             let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
 
@@ -1600,11 +1601,12 @@ internal class PlayaDBImpl: PlayaDB {
         )
     }
 
-    /// Groups rows by start-time hour-of-day in the device's current calendar.
+    /// Groups rows by start-time hour-of-day in Black Rock City time (`Calendar.burningMan`),
+    /// matching the times rows display, whatever zone the device is in.
     /// Sections are sorted ascending; rows within a section preserve input order
     /// (which is `orderedByStartTime` from `eventOccurrenceRequest`).
     static func groupByHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [EventHourSection] {
-        let calendar = Calendar.current
+        let calendar = Calendar.burningMan
         return Dictionary(grouping: rows, by: { calendar.component(.hour, from: $0.object.startDate) })
             .sorted { $0.key < $1.key }
             .map { EventHourSection(hour: $0.key, rows: $0.value) }
@@ -1618,8 +1620,12 @@ internal class PlayaDBImpl: PlayaDB {
     /// call `Calendar.startOfDay`/`component` when the row crosses a boundary. Avoids
     /// ~16k Calendar method calls for a 8k-row dataset (devices show 50–100x latency
     /// without this — Calendar isn't free under thermal load).
+    ///
+    /// Days and hours are Black Rock City time (`Calendar.burningMan`): day keys are BRC
+    /// midnights, the same instants as `YearSettings.festivalDays`, so a phone or watch set
+    /// to another zone still files a 9 PM Thursday event under Thursday, in the 9 PM section.
     static func bucketByDayThenHour(_ rows: [ListRow<EventObjectOccurrence>]) -> [Date: [EventHourSection]] {
-        let calendar = Calendar.current
+        let calendar = Calendar.burningMan
         var result: [Date: [EventHourSection]] = [:]
         var currentDay: Date?
         var currentDayEnd: Date?       // exclusive upper bound (day + 1d) for cheap "same day?" check
@@ -3326,11 +3332,7 @@ internal class PlayaDBImpl: PlayaDB {
     private static let maxReasonableOccurrenceDuration: TimeInterval = 24 * 60 * 60
 
     /// Calendar configured for Black Rock City timezone (Pacific Time)
-    private static var playaCalendar: Calendar = {
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "America/Los_Angeles")!
-        return cal
-    }()
+    private static var playaCalendar: Calendar { .burningMan }
 
     /// Corrects corrupted event occurrence times from the API.
     ///

@@ -199,7 +199,7 @@ final class PlayaDBRealDataTests: XCTestCase {
         
         // Check for events spanning midnight
         let crossMidnightEvents = thursdayEvents.filter { event in
-            let calendar = Calendar.current
+            let calendar = Calendar.burningMan
             let startDay = calendar.startOfDay(for: event.startDate)
             let endDay = calendar.startOfDay(for: event.endDate)
             return startDay != endDay

@@ -49,8 +49,7 @@ final class RightNowViewModel: ObservableObject {
     /// first festival day. Used as the default for the day-of-week selector.
     static func defaultFestivalDay() -> Date {
         let now = Date.present
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
+        let calendar = Calendar.burningMan
         if let today = YearSettings.festivalDays.first(where: { calendar.isDate($0, inSameDayAs: now) }) {
             return today
         }

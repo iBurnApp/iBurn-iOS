@@ -24,9 +24,14 @@ struct FeatureFlagsView: View {
     // AI semantic merge in global search — off by default, see the flag's doc comment
     @State private var useAISearch = PreferenceServiceFactory.shared.getValue(Preferences.FeatureFlags.useAISearch)
 
-    // Dynamically calculated Burning Man dates based on Labor Day
+    // Dynamically calculated Burning Man dates based on Labor Day. These are festival
+    // instants, so they're built in Black Rock City time (`Calendar.burningMan`): with a
+    // device calendar, "the day before Labor Day" in Tokyo is already Labor Day, and the
+    // Temple Burn preset landed a day late.
+    private var brc: Calendar { .burningMan }
+
     private var eventYear: Int {
-        Calendar.current.component(.year, from: Date())
+        brc.component(.year, from: Date())
     }
     
     private var laborDay: Date {
@@ -37,32 +42,28 @@ struct FeatureFlagsView: View {
         components.weekday = 2 // Monday
         components.weekdayOrdinal = 1 // First Monday
         components.hour = 18 // Gates close at 6pm
-        components.timeZone = TimeZone(identifier: "America/Los_Angeles")
-        return Calendar.current.date(from: components) ?? Date()
+        return brc.date(from: components) ?? Date()
     }
     
     private var gatesOpen: Date {
         // Event starts 9 days before Labor Day (Sunday of the week before)
-        Calendar.current.date(byAdding: .day, value: -8, to: laborDay) ?? Date()
+        brc.date(byAdding: .day, value: -8, to: laborDay) ?? Date()
     }
     
     private var earlyBurn: Date {
         // Wednesday of the first week
-        Calendar.current.date(byAdding: .day, value: -6, to: laborDay) ?? Date()
+        brc.date(byAdding: .day, value: -6, to: laborDay) ?? Date()
     }
     
     private var midBurn: Date {
         // Friday of the first week
-        Calendar.current.date(byAdding: .day, value: -4, to: laborDay) ?? Date()
+        brc.date(byAdding: .day, value: -4, to: laborDay) ?? Date()
     }
     
     private var templeBurn: Date {
         // Sunday night before Labor Day
-        let date = Calendar.current.date(byAdding: .day, value: -1, to: laborDay) ?? Date()
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: date)
-        components.hour = 20 // Temple burn at 8pm
-        components.timeZone = TimeZone(identifier: "America/Los_Angeles")
-        return Calendar.current.date(from: components) ?? date
+        let date = brc.date(byAdding: .day, value: -1, to: laborDay) ?? Date()
+        return brc.date(bySettingHour: 20, minute: 0, second: 0, of: date) ?? date // Temple burn at 8pm
     }
     
     private var gatesClose: Date {
@@ -73,6 +74,7 @@ struct FeatureFlagsView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        formatter.timeZone = .burningMan
         return formatter
     }()
     
@@ -98,6 +100,7 @@ struct FeatureFlagsView: View {
                               selection: $mockDateValue,
                               in: createDateRange(),
                               displayedComponents: [.date, .hourAndMinute])
+                        .environment(\.timeZone, .burningMan)
                         .onChange(of: mockDateValue) { _, newValue in
                             NSDate.brc_setOverrideDate(newValue)
                             UserDefaults.standard.set(newValue, forKey: "BRCMockDateValue")
@@ -107,7 +110,7 @@ struct FeatureFlagsView: View {
             } header: {
                 Text("Date Override")
             } footer: {
-                Text("Override the current date for testing time-sensitive features like event status colors.")
+                Text("Override the current date for testing time-sensitive features like event status colors. Dates and times here are Black Rock City time.")
                     .font(.footnote)
             }
 
@@ -233,14 +236,15 @@ struct FeatureFlagsView: View {
     
     private func createDateRange() -> ClosedRange<Date> {
         // Allow testing from 2 weeks before to 1 week after the event
-        let start = Calendar.current.date(byAdding: .day, value: -14, to: gatesOpen) ?? Date()
-        let end = Calendar.current.date(byAdding: .day, value: 7, to: gatesClose) ?? Date()
+        let start = brc.date(byAdding: .day, value: -14, to: gatesOpen) ?? Date()
+        let end = brc.date(byAdding: .day, value: 7, to: gatesClose) ?? Date()
         return start...end
     }
     
     private func formatPresetDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
+        formatter.timeZone = .burningMan
         return formatter.string(from: date)
     }
 }
