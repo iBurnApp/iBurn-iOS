@@ -1,0 +1,169 @@
+name: Build and Test (reusable)
+
+# Shared by ci.yml (pushes, manual runs) and pr.yml (pull requests) so a PR doesn't build
+# the same thing twice on two macOS runners.
+#
+# Runner: `xcode-27` is GitHub's macOS 27 image with Xcode 27.x
+# (https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md).
+# `macos-26*` only ships Xcode 26, which can't build the iOS 27 SDK project.
+# Its only iOS simulator runtime is 27.0, so the destination pins OS=27.0 (OS=latest would ask
+# for 27.1, the SDK version, and find no device).
+
+on:
+  workflow_call:
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+  DESTINATION: platform=iOS Simulator,name=iPhone 18 Pro Max,OS=27.0,arch=arm64
+
+defaults:
+  run:
+    # Explicit bash adds -o pipefail, so `xcodebuild | xcbeautify` fails when xcodebuild does.
+    shell: bash
+
+jobs:
+  app:
+    name: App build + iBurnTests
+    runs-on: xcode-27
+    timeout-minutes: 75
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+
+    - name: Show toolchain
+      run: |
+        xcodebuild -version
+        xcrun simctl list runtimes
+
+    - name: Cache Swift packages
+      uses: actions/cache@v6
+      with:
+        # SwiftPM's shared repository cache plus the checkouts/artifacts xcodebuild resolves
+        # into DerivedData. Keep the default DerivedData SourcePackages location: the
+        # Crashlytics phase and the LicensePlistBuildTool plugin both look there.
+        path: |
+          ~/Library/Caches/org.swift.swiftpm
+          ~/Library/Developer/Xcode/DerivedData/iBurn-*/SourcePackages
+        key: ${{ runner.os }}-xcode27-spm-${{ hashFiles('iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode27-spm-
+
+    - name: Create Required Secret Files (stubs)
+      run: |
+        # These are gitignored. CI only builds for the simulator and runs tests, so stub
+        # values are enough and no repository secrets are needed (PRs from forks get none).
+        # GoogleService-Info.plist must be a valid plist (CopyPlistFile rejects an empty file)
+        # and a well-formed Firebase config: BRCAppDelegate calls [FIRApp configure] at
+        # launch, which throws on a missing or malformed file and would take down the test
+        # host. The values are fake placeholders in the formats Firebase validates.
+        cat > iBurn/GoogleService-Info.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>API_KEY</key><string>AIzaSyCI0000000000000000000000000000000</string>
+          <key>GCM_SENDER_ID</key><string>123456789012</string>
+          <key>PLIST_VERSION</key><string>1</string>
+          <key>BUNDLE_ID</key><string>com.trailbehind.iBurn2010</string>
+          <key>PROJECT_ID</key><string>iburn-ci-placeholder</string>
+          <key>STORAGE_BUCKET</key><string>iburn-ci-placeholder.appspot.com</string>
+          <key>IS_ADS_ENABLED</key><false/>
+          <key>IS_ANALYTICS_ENABLED</key><false/>
+          <key>IS_APPINVITE_ENABLED</key><false/>
+          <key>IS_GCM_ENABLED</key><false/>
+          <key>IS_SIGNIN_ENABLED</key><false/>
+          <key>GOOGLE_APP_ID</key><string>1:123456789012:ios:0000000000000000</string>
+        </dict>
+        </plist>
+        EOF
+        plutil -lint iBurn/GoogleService-Info.plist
+
+        cat > ./iBurn/InfoPlistSecrets.h << EOF
+        #define MAPBOX_ACCESS_TOKEN test
+        #define CRASHLYTICS_API_TOKEN test
+        EOF
+
+        cat > ./iBurn/BRCSecrets.m << EOF
+        #import <Foundation/Foundation.h>
+
+        NSString * const kBRCHockeyBetaIdentifier = @"";
+        NSString * const kBRCHockeyLiveIdentifier = @"";
+        NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";
+        NSString * const kBRCUpdatesURLString = @"";
+        NSString * const kBRCMapBoxStyleURL = @"https://example.com";
+        NSString * const kBRCMapBoxAccessToken = @"";
+        EOF
+
+    - name: Build App (iBurn scheme, includes iBurnWatch)
+      run: |
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
+                   -scheme iBurn \
+                   -destination "$DESTINATION" \
+                   build | xcbeautify --renderer github-actions
+
+    - name: Run Tests (iBurnTests, PlayaKitTests, PlayaGeocoderTests)
+      # The runner is on UTC, not Pacific time, which is useful: it catches code that
+      # buckets event times on the device's clock instead of Calendar.burningMan.
+      # -collect-test-diagnostics never: after a failure, xcodebuild otherwise waits out a
+      # 600s timeout collecting simulator diagnostics; the uploaded xcresult is enough.
+      run: |
+        xcodebuild -workspace iBurn.xcworkspace \
+                   -skipPackagePluginValidation \
+                   -skipMacroValidation \
+                   -scheme iBurnTests \
+                   -destination "$DESTINATION" \
+                   -resultBundlePath "$RUNNER_TEMP/iBurnTests.xcresult" \
+                   -collect-test-diagnostics never \
+                   test | xcbeautify --renderer github-actions
+
+    - name: Archive Test Results
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: iBurnTests-xcresult-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/iBurnTests.xcresult
+        retention-days: 14
+
+  packages:
+    # One runner for all five: each suite takes a minute or two, and a 5-way matrix used up
+    # the account's macOS concurrency, queueing the app job behind it.
+    name: swift test (local packages)
+    runs-on: xcode-27
+    timeout-minutes: 40
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+
+    - name: Cache SwiftPM builds
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/Library/Caches/org.swift.swiftpm
+          Packages/*/.build
+        key: ${{ runner.os }}-xcode27-swiftpm-packages-${{ hashFiles('Packages/*/Package.resolved', 'Packages/*/Package.swift') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode27-swiftpm-packages-
+
+    - name: swift test
+      run: |
+        failed=()
+        for package in PlayaAPI PlayaColors PlayaDB PlayaGeo PlayaSeed; do
+          echo "::group::swift test $package"
+          if ! swift test --package-path "Packages/$package" 2>&1 | xcbeautify --renderer github-actions; then
+            failed+=("$package")
+            echo "::error::swift test failed for $package"
+          fi
+          echo "::endgroup::"
+        done
+        if [ ${#failed[@]} -gt 0 ]; then
+          echo "Failed: ${failed[*]}"
+          exit 1
+        fi

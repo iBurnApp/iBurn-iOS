@@ -149,7 +149,7 @@ Typhoeus::Request.prepend(ForceH1)
 ```
 `pod install` also rewrites the pbxproj in the xcodeproj gem's style (it renames the `XCLocalSwiftPackageReference` comments and adds empty lists). That rewrite is only cosmetic and was reverted.
 
-**CI Xcode.** The workflows pin `Xcode_26.6` on `macos-26-arm64`. For Xcode 27, GitHub's preview image needs `runs-on: xcode-27` (actions/runner-images#14404), plus a matching `DEVELOPER_DIR` and `xcode-version`. Not changed yet.
+**CI Xcode.** The workflows pin `Xcode_26.6` on `macos-26-arm64`. For Xcode 27, GitHub's preview image needs `runs-on: xcode-27` (actions/runner-images#14404), plus a matching `DEVELOPER_DIR` and `xcode-version`. **Done 2026-09-26** on `ci-xcode-27` (PR #256); see `Docs/2026-09-26-ci-xcode-27.md`.
 
 **Submodules (unchanged).** DOFavoriteButton is 2 commits ahead of okmr-d/DOFavoriteButton (Swift 5, 2019), with nothing new upstream. PermissionScope is 7 ahead of nickoneill/PermissionScope, which is archived; the one upstream commit we lack is a 2017 ISSUE_TEMPLATE edit.
 
