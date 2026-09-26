@@ -167,22 +167,20 @@ struct RightNowView: View {
     // MARK: - Day labels
 
     private func isToday(_ day: Date) -> Bool {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
-        return calendar.isDate(day, inSameDayAs: Date.present)
+        return Calendar.burningMan.isDate(day, inSameDayAs: Date.present)
     }
 
     private func dayChipLabel(_ day: Date) -> String {
         if isToday(day) { return "Today" }
         let formatter = DateFormatter()
-        formatter.timeZone = .burningManTimeZone
+        formatter.timeZone = .burningMan
         formatter.dateFormat = "EEE"
         return formatter.string(from: day)
     }
 
     private func dayMenuLabel(_ day: Date) -> String {
         let formatter = DateFormatter()
-        formatter.timeZone = .burningManTimeZone
+        formatter.timeZone = .burningMan
         formatter.dateFormat = "EEE MMM d"
         let base = formatter.string(from: day)
         return isToday(day) ? "\(base) · Today" : base

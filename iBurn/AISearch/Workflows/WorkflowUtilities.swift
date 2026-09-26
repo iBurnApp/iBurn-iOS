@@ -62,16 +62,15 @@ func buildScheduleTips(from events: [EventObjectOccurrence]) -> [ScheduleTip] {
     let now = Date()
 
     // Formatters in BRC timezone
-    var brcCalendar = Calendar(identifier: .gregorian)
-    brcCalendar.timeZone = TimeZone.burningManTimeZone
+    let brcCalendar = Calendar.burningMan
 
     let dayFormatter = DateFormatter()
     dayFormatter.dateFormat = "EEE"
-    dayFormatter.timeZone = TimeZone.burningManTimeZone
+    dayFormatter.timeZone = TimeZone.burningMan
 
     let timeFormatter = DateFormatter()
     timeFormatter.dateFormat = "h:mma"
-    timeFormatter.timeZone = TimeZone.burningManTimeZone
+    timeFormatter.timeZone = TimeZone.burningMan
     timeFormatter.amSymbol = "am"
     timeFormatter.pmSymbol = "pm"
 
@@ -80,7 +79,7 @@ func buildScheduleTips(from events: [EventObjectOccurrence]) -> [ScheduleTip] {
         if minute == 0 {
             let hourFormatter = DateFormatter()
             hourFormatter.dateFormat = "ha"
-            hourFormatter.timeZone = TimeZone.burningManTimeZone
+            hourFormatter.timeZone = TimeZone.burningMan
             hourFormatter.amSymbol = "am"
             hourFormatter.pmSymbol = "pm"
             return hourFormatter.string(from: date)

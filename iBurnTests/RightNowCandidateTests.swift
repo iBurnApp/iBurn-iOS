@@ -51,7 +51,7 @@ final class RightNowCandidateTests: XCTestCase {
         components.year = year; components.month = month; components.day = day
         components.hour = hour; components.minute = minute
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
+        calendar.timeZone = .burningMan
         return calendar.date(from: components) ?? Date.distantPast
     }
 

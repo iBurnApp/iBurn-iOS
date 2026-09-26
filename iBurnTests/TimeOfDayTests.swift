@@ -13,7 +13,7 @@ final class TimeOfDayTests: XCTestCase {
 
     private var brcCalendar: Calendar {
         var c = Calendar(identifier: .gregorian)
-        c.timeZone = .burningManTimeZone
+        c.timeZone = .burningMan
         return c
     }
 

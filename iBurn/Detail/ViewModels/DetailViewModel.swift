@@ -1099,11 +1099,11 @@ class DetailViewModel: ObservableObject {
     private func formatPlayaEventSchedule(occ: EventObjectOccurrence) -> NSAttributedString {
         let dayFormatter = DateFormatter()
         dayFormatter.dateFormat = "EEEE M/d"
-        dayFormatter.timeZone = TimeZone.burningManTimeZone
+        dayFormatter.timeZone = TimeZone.burningMan
 
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
+        timeFormatter.timeZone = TimeZone.burningMan
 
         let dayString = dayFormatter.string(from: occ.startDate)
         let timeString: String
@@ -1146,7 +1146,7 @@ class DetailViewModel: ObservableObject {
         let calendar = Calendar.current
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
+        timeFormatter.timeZone = TimeZone.burningMan
 
         var timeString: String
         if calendar.isDateInToday(startDate) {
@@ -1156,7 +1156,7 @@ class DetailViewModel: ObservableObject {
         } else {
             let dayFormatter = DateFormatter()
             dayFormatter.dateFormat = "EEEE M/d"
-            dayFormatter.timeZone = TimeZone.burningManTimeZone
+            dayFormatter.timeZone = TimeZone.burningMan
             timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
         }
 
