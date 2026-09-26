@@ -107,6 +107,10 @@ jobs:
                    build | xcbeautify --renderer github-actions
 
     - name: Run Tests (iBurnTests, PlayaKitTests, PlayaGeocoderTests)
+      # The runner is on UTC, not Pacific time, which is useful: it catches code that
+      # buckets event times on the device's clock instead of Calendar.burningMan.
+      # -collect-test-diagnostics never: after a failure, xcodebuild otherwise waits out a
+      # 600s timeout collecting simulator diagnostics; the uploaded xcresult is enough.
       run: |
         xcodebuild -workspace iBurn.xcworkspace \
                    -skipPackagePluginValidation \
@@ -114,6 +118,7 @@ jobs:
                    -scheme iBurnTests \
                    -destination "$DESTINATION" \
                    -resultBundlePath "$RUNNER_TEMP/iBurnTests.xcresult" \
+                   -collect-test-diagnostics never \
                    test | xcbeautify --renderer github-actions
 
     - name: Archive Test Results
