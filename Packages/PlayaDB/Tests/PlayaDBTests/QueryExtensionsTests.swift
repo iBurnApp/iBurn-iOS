@@ -338,7 +338,7 @@ final class QueryExtensionsTests: XCTestCase {
         }
 
         // Then: All results should start within the time window
-        let endDate = Calendar.current.date(byAdding: .hour, value: hours, to: now) ?? now
+        let endDate = now.addingTimeInterval(TimeInterval(hours) * 3600)
         XCTAssertTrue(upcoming.allSatisfy {
             $0.startTime >= now && $0.startTime <= endDate
         }, "All events should start within \(hours) hours")
