@@ -18,6 +18,13 @@ Preconditions: simulator erased; feature flag set if you want the SwiftUI stack
 
 1. `build_run_sim` — app launches to a springboard **notifications permission
    alert** → tap "Allow" (or "Don't Allow"; flows below assume Allow).
+   The alert can arrive late: on 2026-09-24 (iOS 27.0 sim) it didn't appear until
+   after step 4's "⏰ Continue with Notifications" tap, on top of the PermissionScope
+   sheet, and the AX snapshot came back nearly empty until it was answered. Take a
+   `screenshot` whenever the snapshot looks empty.
+   If the sim location is inside BRC (`simctl location … 40.7864,-119.2065`), a
+   **"Data Unlocked"** alert follows the location grant → tap **"Sweet!"**. The embargo
+   alert in step 7 then doesn't appear.
 2. Onboarding page "Welcome to iBurn" → tap **"📍 Continue with Location"**.
 3. PermissionScope sheet → tap **"CONTINUE WITH LOCATION"** → system location
    alert → tap **"Allow While Using App"**.
@@ -1323,15 +1330,17 @@ IS NOT NULL;` on either DB. Un-favoriting syncs too (rows persist with
 values 0=unvisited/1=visited/2=wantToVisit): setting "Want to Visit" on the
 watch shows up in the phone's PlayaDB `visit_status`; setting a status in the
 phone detail's VISIT STATUS cell (below USER NOTES) appears on the watch.
-The rating prompt ("Enjoying iBurn?") can block phone UI automation — it's not
-in the AX tree, so there's no elementRef to tap. Appirater is configured with
-`setTimeBeforeReminding:2` (`BRCAppDelegate.m`), so a plain terminate + relaunch
-can bring it straight back. Suppress it at the defaults layer instead, then
-relaunch:
+The StoreKit rating prompt ("Enjoying iBurn?") can block phone UI automation — it's
+not in the AX tree, so there's no elementRef to tap. `ReviewPromptPolicy`
+(`iBurn/Review/`, driven from `SceneDelegate.sceneDidBecomeActive`) asks once per app
+version after 5 launches and 2 days, and StoreKit always shows it in debug/simulator
+builds. Suppress it at the defaults layer by marking the current version as already
+asked, then relaunch:
 
 ```bash
-xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 kAppiraterDeclinedToRate -bool YES
-xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 kAppiraterRatedCurrentVersion -bool YES
+APP=$(xcrun simctl get_app_container <UDID> com.trailbehind.iBurn2010)
+VER=$(plutil -extract CFBundleShortVersionString raw "$APP/Info.plist")
+xcrun simctl spawn <UDID> defaults write com.trailbehind.iBurn2010 ReviewPrompt.requestedVersion -string "$VER"
 ```
 
 Pre-embargo note: the bundled data has **zero GPS rows**, so Nearby shows an

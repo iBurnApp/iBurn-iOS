@@ -7,7 +7,6 @@
 //
 
 #import "NSDateFormatter+iBurn.h"
-#import "NSDate+CupertinoYankee.h" // For timeZone
 #import "iBurn-Swift.h"
 
 @implementation NSDateFormatter (iBurn)

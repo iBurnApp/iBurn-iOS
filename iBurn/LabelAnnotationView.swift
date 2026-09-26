@@ -7,7 +7,8 @@
 //
 
 import Foundation
-import Anchorage
+import MapLibre
+import UIKit
 
 final class LabelAnnotationView: MLNAnnotationView {
 
@@ -72,7 +73,8 @@ final class LabelAnnotationView: MLNAnnotationView {
         addSubview(imageView)
         addSubview(label)
         imageView.contentMode = .scaleAspectFit
-        imageView.sizeAnchors == CGSize(width: Self.imageSide, height: Self.imageSide)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 10)
         label.textColor = .label
@@ -80,10 +82,15 @@ final class LabelAnnotationView: MLNAnnotationView {
         // Top-anchored, not centre-anchored: the tip's distance from the view's top edge is
         // then a constant (`imageSide`) that `tipAnchoringCenterOffset` can be derived from,
         // and the frame can grow downwards to fit the label without moving the pin.
-        imageView.topAnchor == topAnchor
-        imageView.centerXAnchor == centerXAnchor
-        label.topAnchor == imageView.bottomAnchor + Self.labelTopGap
-        label.horizontalAnchors == horizontalAnchors
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: Self.imageSide),
+            imageView.heightAnchor.constraint(equalToConstant: Self.imageSide),
+            imageView.topAnchor.constraint(equalTo: topAnchor),
+            imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            label.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: Self.labelTopGap),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
 
         frame = CGRect(origin: .zero, size: Self.frameSize)
         centerOffset = Self.tipAnchoringCenterOffset

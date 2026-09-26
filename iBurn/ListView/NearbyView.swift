@@ -170,7 +170,7 @@ struct NearbyView: View {
 
     private var distanceLabel: some View {
         let distance = viewModel.searchDistance
-        if let nsAttr = TTTLocationFormatter.brc_humanizedString(forDistance: distance) {
+        if let nsAttr = TravelTimeFormatter.attributedString(forDistance: distance) {
             let attributed = AttributedString(nsAttr)
             return Text("Within ") + Text(attributed)
         } else {

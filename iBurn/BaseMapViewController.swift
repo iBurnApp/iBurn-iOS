@@ -8,8 +8,7 @@
 
 import UIKit
 import MapLibre
-import PureLayout
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 public class BaseMapViewController: UIViewController {
     
@@ -56,7 +55,7 @@ public class BaseMapViewController: UIViewController {
         extendedLayoutIncludesOpaqueBars = true
         view.addSubview(mapView)
         view.tintColor = Appearance.currentColors.primaryColor
-        mapView.autoPinEdgesToSuperviewEdges()
+        mapView.pinEdgesToSuperview()
         registerForTraitChanges(UITraitCollection.systemTraitsAffectingColorAppearance) { (self: Self, _: UITraitCollection) in
             self.navigationItem.rightBarButtonItem?.tintColor = self.view.tintColor
         }

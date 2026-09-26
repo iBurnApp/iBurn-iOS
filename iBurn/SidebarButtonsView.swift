@@ -12,8 +12,7 @@
 //
 
 import UIKit
-import PureLayout
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 class SidebarButtonsView: UIView {
     enum ButtonType: CaseIterable {
@@ -82,7 +81,7 @@ class SidebarButtonsView: UIView {
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
-        stackView.autoPinEdgesToSuperviewEdges()
+        stackView.pinEdgesToSuperview()
 
         applyTheme()
     }

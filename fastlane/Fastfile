@@ -18,7 +18,13 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    build_app(workspace: "iBurn.xcworkspace", scheme: "iBurn")
+    # The LicensePlistBuildTool SwiftPM plugin (license_plist.yml) needs trusting;
+    # these flags do that non-interactively.
+    build_app(
+      workspace: "iBurn.xcworkspace",
+      scheme: "iBurn",
+      xcargs: "-skipPackagePluginValidation -skipMacroValidation"
+    )
     upload_to_testflight
     upload_symbols_to_crashlytics
   end

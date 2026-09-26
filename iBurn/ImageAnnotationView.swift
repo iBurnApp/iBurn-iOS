@@ -6,8 +6,8 @@
 //  Copyright © 2017 Burning Man Earth. All rights reserved.
 //
 
+import MapLibre
 import UIKit
-import PureLayout
 
 final class ImageAnnotationView: MLNAnnotationView {
     
@@ -121,6 +121,6 @@ private extension ImageAnnotationView {
     func commonInit() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
-        imageView.autoPinEdgesToSuperviewEdges()
+        imageView.pinEdgesToSuperview()
     }
 }

@@ -6,7 +6,7 @@
 //  Copyright 2016 Burning Man Earth. All rights reserved.
 
 import Foundation
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 
 extension Bundle {

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/iBurnApp/iBurn-iOS/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/iBurnApp/iBurn-iOS/actions/workflows/ci.yml)
 
-iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. Persistence is [GRDB](https://github.com/groue/GRDB.swift) via the in-repo `Packages/PlayaDB` package (YapDatabase + Mantle were retired in 2026), and we use [MapLibre](https://github.com/maplibre/maplibre-gl-native) instead of MapKit for our [offline map tiles](https://github.com/iBurnApp/iBurn-Maps). For a more complete list check out our `Podfile`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/iBurnApp/iBurn-Android).
+iBurn is an offline map and guide for the [Burning Man](http://www.burningman.com) art festival. Following the 2014 rewrite, the 2015 release has been updated for iOS 8 and we're starting to write new code in Swift. Persistence is [GRDB](https://github.com/groue/GRDB.swift) via the in-repo `Packages/PlayaDB` package (YapDatabase + Mantle were retired in 2026), and we use [MapLibre](https://github.com/maplibre/maplibre-gl-native) instead of MapKit for our [offline map tiles](https://github.com/iBurnApp/iBurn-Maps). Third-party code comes in through Swift Package Manager; see the package dependencies of `iBurn.xcodeproj`. For users of Android devices, we also develop a version of [iBurn for Android](https://github.com/iBurnApp/iBurn-Android).
 
 [![iBurn App Store Link](https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg)](https://itunes.apple.com/us/app/iburn-2013-burning-man-map/id388169740?mt=8) [![iBurn Google Play Store Link](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.iburnapp.iburn3)
 
@@ -12,14 +12,13 @@ iBurn is an offline map and guide for the [Burning Man](http://www.burningman.co
 
 ## Installation
 
-* Install [Cocoapods](http://cocoapods.org) and the most recent version of Xcode.
-* Fetch submodules and install Pods.
+* Install the most recent version of Xcode.
+* Fetch submodules. Some of them (`Submodules/Onboard`, `Submodules/PermissionScope`, `Submodules/iBurn-Data`) are local Swift packages the project builds from; everything else is resolved by Swift Package Manager when you open or build the workspace.
 
 ```
 $ git clone https://github.com/iBurnApp/iBurn-iOS.git
 $ cd iBurn-iOS/
-$ git submodule update --init
-$ pod install
+$ git submodule update --init --recursive
 ```
     
 * Download camp data from PlayaEvents (we can't ship ours due to BMorg's location data embargo)
@@ -64,14 +63,7 @@ $ echo -e "#define MAPBOX_ACCESS_TOKEN test\n#define CRASHLYTICS_API_TOKEN test\
 CRASHLYTICS_API_TOKEN=""
 ```
 
-* Create `iBurn/crashlytics.sh` file: (optional)
-
-```
-"${PODS_ROOT}/Fabric/run" $CRASHLYTICS_API_TOKEN $CRASHLYTICS_BUILD_SECRET
-```
-
-
-* Compile and Run!
+* Compile and Run! On the first build Xcode asks you to trust the `LicensePlistBuildTool` package plug-in, which generates the Settings.app acknowledgements from `license_plist.yml`; choose "Trust & Enable". For command-line builds pass `-skipPackagePluginValidation` to `xcodebuild`.
 
 **Note**: Camp, Art and Event location data are embargoed by BMorg until the gates open each year. There isn't anything we can do about this until BMorg changes their policy. Sorry!
 

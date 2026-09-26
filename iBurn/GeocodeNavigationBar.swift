@@ -9,7 +9,6 @@
 
 import UIKit
 import CoreLocation
-import BButton
 import PlayaGeocoder
 
 extension CLLocation {
@@ -20,15 +19,15 @@ extension CLLocation {
 }
 
 extension String {
-    /// The playa address prefixed with a Font Awesome crosshairs glyph.
+    /// The playa address prefixed with a crosshairs (SF Symbol `scope`) glyph.
     var brc_attributedLocationStringWithCrosshairs: NSAttributedString {
         let colors = Appearance.currentColors
         let string = NSMutableAttributedString()
-        let crosshairsFont = UIFont(name: kFontAwesomeFont, size: 17) ?? UIFont.systemFont(ofSize: 17)
-        string.append(NSAttributedString(
-            string: NSString.fa_string(forFontAwesomeIcon: .FACrosshairs),
-            attributes: [.font: crosshairsFont, .foregroundColor: colors.detailColor]
-        ))
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 17)
+        if let crosshairs = UIImage(systemName: "scope", withConfiguration: symbolConfig)?
+            .withTintColor(colors.detailColor, renderingMode: .alwaysOriginal) {
+            string.append(NSAttributedString(attachment: NSTextAttachment(image: crosshairs)))
+        }
         string.append(NSAttributedString(string: " "))
         string.append(NSAttributedString(
             string: self,

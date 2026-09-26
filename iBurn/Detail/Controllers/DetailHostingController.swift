@@ -50,7 +50,8 @@ class DetailHostingController: UIHostingController<DetailView>, DynamicViewContr
     }
     
     // MARK: - DynamicViewController
-    var eventHandler: DynamicViewControllerEventHandler?
+    /// Weak: the handler is the containing page view controller, which owns us.
+    weak var eventHandler: DynamicViewControllerEventHandler?
     
     init(
         viewModel: DetailViewModel,

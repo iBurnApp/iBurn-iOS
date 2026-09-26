@@ -16,11 +16,24 @@ description: Build, launch, and drive the iBurn app in the iOS Simulator via Xco
    not set, set them:
    - workspacePath: `/Users/chrisbal/Documents/Code/iBurn-iOS/iBurn.xcworkspace`
    - scheme: `iBurn`
-   - simulator: iPhone 17 Pro Max (look up the UDID with `list_sims`)
+   - simulator: iPhone 18 Pro Max, iOS 27.0 (look up the UDID with `list_sims`).
+     Xcode 27.1 beta also has the iPhone Duo (foldable), which only exists on the
+     iOS 27.1 runtime.
    - bundleId: `com.trailbehind.iBurn2010`
+3. **Xcode MCP (Xcode 27+) is an alternative** for building, running and testing
+   against the user's open Xcode: `mcp__xcode__BuildProject`, `RunProject`,
+   `RunAllTests` / `RunSomeTests`, `GetBuildLog`, `GetConsoleOutput`. Call
+   `XcodeOpenWorkspace` first; that call triggers the user's approval prompt in
+   Xcode. Xcode tends to switch the run destination back to iPhone 18 Pro. If the
+   permission classifier blocks raw `xcodebuild`, use this path.
 
 ## Critical setup facts (learned the hard way)
 
+- **UIScene lifecycle (since 2026-09-24).** Apps built with the iOS 27 SDK abort at
+  launch (`_UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`) unless
+  they adopt scenes. `SceneDelegate.swift` owns the window, onboarding and deep
+  links; look up the window with `UIApplication.shared.mainWindow`, not `keyWindow`.
+  Minimum iOS is 18.
 - **The SwiftUI/PlayaDB stack is the only stack.** YapDatabase, Mantle and every
   legacy UIKit list/detail screen were deleted in Sept 2026, along with the
   `featureFlag.lists.useSwiftUI` kill-switch and the Appearance > "Use New Detail

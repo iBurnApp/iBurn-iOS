@@ -1,6 +1,6 @@
 import Foundation
 import PlayaDB
-import CocoaLumberjack
+import CocoaLumberjackSwift
 
 /// Downloads mutant vehicle thumbnail images from remote URLs and caches them locally.
 /// Uses the same `<uid>.jpg` naming convention as `BRCMediaDownloader` so that

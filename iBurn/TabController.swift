@@ -147,7 +147,7 @@ import UIKit
     @objc public func rebuildTabs() {
         guard !roots.isEmpty else { return }
         let selectedRoot = selectedViewController
-        let previousIdentifier = selectedRoot.flatMap(TabIdentifier.identifier(forRoot:))
+        let wasUsingSearchTab = self.usesSearchTab
 
         let configuration = TabConfiguration.current
         // `current` already clamps to capacity; the prefix is a last-resort guard so a
@@ -157,6 +157,13 @@ import UIKit
         var usesSearchTab = false
         defer { self.usesSearchTab = usesSearchTab }
 
+        // Whether UIKit was handed a new arrangement. Reassigning `tabs` or
+        // `viewControllers` resets the bar's highlight while UIKit can keep the old
+        // selected controller, so the selection has to be re-applied as a real change
+        // afterwards (see `applySelection`). An unchanged arrangement is left alone
+        // entirely — switching between the two classic layouts (Top ↔ Bottom accessory)
+        // changes nothing on the bar.
+        let didReassign: Bool
         if MapSearchLayout.current == .searchTab, #available(iOS 26.0, *) {
             usesSearchTab = true
             var newTabs: [UITab] = arranged.enumerated().map { index, viewController in
@@ -164,23 +171,33 @@ import UIKit
             }
             newTabs.append(searchTab())
 
-            tabs = newTabs
+            didReassign = !wasUsingSearchTab || !tabs.elementsEqual(newTabs, by: ===)
+            if didReassign {
+                tabs = newTabs
+            }
         } else {
-            // Clear any tabs left over from a previous `.searchTab` run before falling
+            // Clear the tabs left over from a previous `.searchTab` run before falling
             // back to the plain view-controller arrangement. The cache deliberately
             // survives: a root stays bound to the first `UITab` that wrapped it even after
             // `tabs` is emptied and `viewControllers` takes it over, so switching back to
             // `.searchTab` must hand UIKit that same tab again. Wrapping the root in a
             // fresh tab there raised "UIViewController cannot be shared between multiple
             // UITab" (toggling the layout in Feature Flags crashed).
-            tabs = []
-            self.viewControllers = arranged
+            if wasUsingSearchTab {
+                tabs = []
+            }
+            let current = self.viewControllers ?? []
+            didReassign = wasUsingSearchTab || !current.elementsEqual(arranged, by: ===)
+            if didReassign {
+                self.viewControllers = arranged
+            }
         }
 
         restoreSelection(
             previousRoot: selectedRoot,
-            previousIdentifier: previousIdentifier,
-            usesSearchTab: usesSearchTab
+            usesSearchTab: usesSearchTab,
+            // First configure has nothing to preserve and no stale highlight to fix.
+            forceTransition: didReassign && selectedRoot != nil
         )
         updateFloatingButton()
     }
@@ -434,50 +451,86 @@ import UIKit
     /// Keeps the user on whichever tab they were looking at. Hiding the selected tab (or
     /// switching to `.searchTab`, which drops Favorites by default) falls back to the map
     /// rather than leaving the selection on a screen that's no longer on the bar.
+    ///
+    /// The previous root is matched by identity — through `tabCache` in `UITab` mode and
+    /// `viewControllers` in classic mode — so a root this build can't identify survives a
+    /// rebuild too. A previous root that isn't one of `roots` can only be the search
+    /// tab's, and the search tab survives every `UITab` rebuild.
     private func restoreSelection(
         previousRoot: UIViewController?,
-        previousIdentifier: TabIdentifier?,
-        usesSearchTab: Bool
+        usesSearchTab: Bool,
+        forceTransition: Bool
     ) {
-        guard let previousRoot else {
-            selectMapTab()
-            return
-        }
-
         if usesSearchTab {
-            if let identifier = previousIdentifier,
-               let tab = tabs.first(where: { $0.identifier == identifier.tabIdentifier }) {
-                selectedTab = tab
-                return
-            }
-            // No identifier means the search tab was selected, and it survives every rebuild.
-            if previousIdentifier == nil, let searchTab = tabs.first(where: { $0 is UISearchTab }) {
-                selectedTab = searchTab
-                return
-            }
-            selectMapTab()
+            let target: UITab? = previousRoot.flatMap { root in
+                if let tab = tabCache[ObjectIdentifier(root)], tabs.contains(where: { $0 === tab }) {
+                    return tab
+                }
+                if !roots.contains(where: { $0 === root }) {
+                    return tabs.first { $0 is UISearchTab }
+                }
+                return nil
+            } ?? mapTab
+            guard let target else { return }
+            applySelection(tab: target, forceTransition: forceTransition)
             return
         }
 
-        if let index = viewControllers?.firstIndex(of: previousRoot) {
-            selectedIndex = index
-        } else {
-            selectMapTab()
+        let target = previousRoot.flatMap { viewControllers?.firstIndex(of: $0) } ?? mapIndex
+        guard let target else { return }
+        applySelection(index: target, forceTransition: forceTransition)
+    }
+
+    /// The map's `UITab`, when the bar is running on tabs.
+    private var mapTab: UITab? {
+        tabs.first { $0.identifier == TabIdentifier.map.tabIdentifier }
+    }
+
+    /// The map's index in `viewControllers`, falling back to the first tab.
+    private var mapIndex: Int? {
+        guard let viewControllers, !viewControllers.isEmpty else { return nil }
+        return viewControllers.firstIndex { TabIdentifier.identifier(forRoot: $0) == .map } ?? 0
+    }
+
+    /// Selects `target` in `UITab` mode. After `tabs` was reassigned, UIKit can report the
+    /// old tab as still selected while the bar highlights another (or nothing), and setting
+    /// `selectedTab` to the value it already reports is a no-op — so in that case the
+    /// selection bounces through another tab first, which makes it a real change that
+    /// the bar follows. The bounce never goes through the search tab, which would
+    /// activate search.
+    private func applySelection(tab target: UITab, forceTransition: Bool) {
+        if forceTransition, selectedTab === target,
+           let other = tabs.first(where: { $0 !== target && !($0 is UISearchTab) }) {
+            UIView.performWithoutAnimation {
+                selectedTab = other
+            }
         }
+        selectedTab = target
+    }
+
+    /// Selects `index` in classic `viewControllers` mode. Same bounce as the `UITab`
+    /// variant: reassigning `viewControllers` can leave `selectedIndex` already reporting
+    /// the target while the bar highlights the first item.
+    private func applySelection(index target: Int, forceTransition: Bool) {
+        let count = viewControllers?.count ?? 0
+        guard target < count else { return }
+        if forceTransition, selectedIndex == target, let other = (0..<count).first(where: { $0 != target }) {
+            UIView.performWithoutAnimation {
+                selectedIndex = other
+            }
+        }
+        selectedIndex = target
     }
 
     /// Selects the map, wherever the user dragged it. The map can't be hidden, so this
     /// always lands somewhere sensible; deep links use it instead of assuming index 0.
     @objc public func selectMapTab() {
-        if !tabs.isEmpty,
-           let mapTab = tabs.first(where: { $0.identifier == TabIdentifier.map.tabIdentifier }) {
+        if !tabs.isEmpty, let mapTab {
             selectedTab = mapTab
             return
         }
-        if let index = viewControllers?.firstIndex(where: { TabIdentifier.identifier(forRoot: $0) == .map }) {
-            selectedIndex = index
-        } else if viewControllers?.isEmpty == false {
-            selectedIndex = 0
+        if let mapIndex {
+            selectedIndex = mapIndex
         }
     }
 

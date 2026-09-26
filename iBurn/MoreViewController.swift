@@ -484,7 +484,7 @@ class MoreViewController: UITableViewController, SKStoreProductViewControllerDel
     }
     
     func showOnboardingView() {
-        var onboardingVC: OnboardingViewController? = nil
+        var onboardingVC: BRCOnboardingViewController? = nil
         onboardingVC = BRCOnboardingViewController(completion: { () -> Void in
             onboardingVC!.dismiss(animated: true, completion: nil)
         })

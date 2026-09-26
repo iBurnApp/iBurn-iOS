@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CocoaLumberjack
+import CocoaLumberjackSwift
 import PlayaDB
 
 /// Which camps the `camp-labels-big` style layer already draws a name for.

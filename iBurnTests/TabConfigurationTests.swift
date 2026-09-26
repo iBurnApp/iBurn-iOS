@@ -623,4 +623,91 @@ final class TabConfigurationTests: XCTestCase {
         try useSearchTabLayout()
         assertPartitioned()
     }
+
+    // MARK: - Selection across layout switches
+    //
+    // Switching the Map Search Layout rebuilds the bar (`tabs` in the search-tab layout,
+    // `viewControllers` otherwise). The tab that was selected must stay selected — in
+    // UIKit's model *and* on the bar — or the bar highlights Map while More stays on
+    // screen, and tapping More pops its stack as a re-tap.
+
+    /// A tab controller over a real More root plus two roots `TabIdentifier` doesn't know,
+    /// which keep the tail of the bar — so a selection can sit somewhere other than index
+    /// 0, where UIKit's default would hide a lost selection.
+    @MainActor
+    private func makeTabController() -> (TabController, more: UINavigationController, first: UIViewController, second: UIViewController) {
+        let more = UINavigationController(rootViewController: MoreViewController())
+        more.tabBarItem.title = "More"
+        let first = UIViewController()
+        first.tabBarItem.title = "First"
+        let second = UIViewController()
+        second.tabBarItem.title = "Second"
+        let controller = TabController()
+        controller.configure(withRootViewControllers: [more, first, second])
+        return (controller, more, first, second)
+    }
+
+    @MainActor
+    private func assertSelected(
+        _ expected: UIViewController,
+        in controller: TabController,
+        after layout: MapSearchLayout,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertIdentical(controller.selectedViewController, expected, "selection after switching to \(layout)", file: file, line: line)
+        if controller.tabs.contains(where: { $0 is UISearchTab }) {
+            XCTAssertIdentical(controller.selectedTab?.viewController, expected, "selected tab after switching to \(layout)", file: file, line: line)
+        } else if let index = controller.viewControllers?.firstIndex(of: expected) {
+            XCTAssertEqual(controller.selectedIndex, index, "selected index after switching to \(layout)", file: file, line: line)
+        }
+        // The bar's highlight, which is what went wrong on device.
+        if let item = controller.tabBar.selectedItem {
+            XCTAssertEqual(item.title, expected.tabBarItem.title, "highlighted item after switching to \(layout)", file: file, line: line)
+        }
+    }
+
+    private var layoutSwitches: [MapSearchLayout] {
+        [.bottomAccessory, .searchTab, .navigationBar, .searchTab, .bottomAccessory, .navigationBar]
+    }
+
+    @MainActor
+    func testSelectionSurvivesLayoutSwitches() throws {
+        try XCTSkipUnless(MapSearchLayout.searchTab.isAvailable, "layout switching needs iOS 26")
+        let (controller, _, _, second) = makeTabController()
+        controller.selectedViewController = second
+        assertSelected(second, in: controller, after: .navigationBar)
+
+        for layout in layoutSwitches {
+            MapSearchLayout.current = layout
+            assertSelected(second, in: controller, after: layout)
+        }
+    }
+
+    @MainActor
+    func testMoreStaysSelectedWithItsStackAcrossLayoutSwitches() throws {
+        try XCTSkipUnless(MapSearchLayout.searchTab.isAvailable, "layout switching needs iOS 26")
+        let (controller, more, first, _) = makeTabController()
+        // Start somewhere else so More's selection is a real change, then drill in the way
+        // More → Debug does before the switch.
+        controller.selectedViewController = first
+        controller.selectedViewController = more
+        more.pushViewController(UIViewController(), animated: false)
+
+        for layout in layoutSwitches {
+            MapSearchLayout.current = layout
+            assertSelected(more, in: controller, after: layout)
+            XCTAssertEqual(more.viewControllers.count, 2, "More's stack survives the switch to \(layout)")
+        }
+    }
+
+    @MainActor
+    func testRebuildWithoutChangesKeepsTheSelection() {
+        let (controller, _, first, _) = makeTabController()
+        controller.selectedViewController = first
+        let before = controller.viewControllers
+        controller.rebuildTabs()
+        XCTAssertEqual(controller.viewControllers, before)
+        assertSelected(first, in: controller, after: .navigationBar)
+    }
 }

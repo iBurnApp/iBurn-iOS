@@ -7,7 +7,6 @@
 //
 
 @import UIKit;
-@import Onboard;
 @import CoreLocation;
 
 NS_ASSUME_NONNULL_BEGIN

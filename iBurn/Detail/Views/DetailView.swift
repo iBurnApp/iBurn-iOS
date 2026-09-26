@@ -442,7 +442,7 @@ struct DetailTravelTimeCell: View {
     @Environment(\.themeColors) var themeColors
     
     var body: some View {
-        if let attributedString = TTTLocationFormatter.brc_humanizedString(forDistance: distance) {
+        if let attributedString = TravelTimeFormatter.attributedString(forDistance: distance) {
             HStack {
                 Text(AttributedString(attributedString))
                     .frame(maxWidth: .infinity, alignment: .leading)

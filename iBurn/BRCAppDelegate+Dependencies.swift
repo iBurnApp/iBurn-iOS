@@ -6,7 +6,7 @@
 //  Copyright © 2025 Burning Man Earth. All rights reserved.
 //
 
-import CocoaLumberjack
+import CocoaLumberjackSwift
 import CoreLocation
 import Foundation
 

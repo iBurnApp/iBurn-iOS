@@ -7,9 +7,9 @@
 //
 
 import Foundation
-import CocoaLumberjack
-import BButton
+import CocoaLumberjackSwift
 import MapKit
+import UIKit
 import PlayaDB
 
 /// Zoom + embargo gate for the map's region-fetch annotation path.
@@ -399,8 +399,14 @@ public class UserMapViewAdapter: MapViewAdapter {
             return super.mapView(mapView, leftCalloutAccessoryViewFor: annotation)
         }
         // Keep the edit button
-        let button = BButton(frame: CGRect(x: 0, y: 0, width: 30, height: 30), type: .default, style: .bootstrapV3, icon: .FAPencil, fontSize: 20)
-        button?.tag = ButtonTag.edit.rawValue
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "pencil"), for: .normal)
+        button.tag = ButtonTag.edit.rawValue
+        button.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        button.accessibilityLabel = NSLocalizedString(
+            "Edit pin",
+            comment: "callout button that edits a user-dropped map pin"
+        )
         return button
     }
     
