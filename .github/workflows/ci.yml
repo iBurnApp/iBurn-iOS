@@ -1,9 +1,9 @@
 name: CI
 
+# Pushes to the long-lived branches, plus manual runs from any branch. Pull requests are
+# validated by pr.yml; both call build-and-test.yml so a PR isn't built twice.
 on:
   push:
-    branches: [ master, develop ]
-  pull_request:
     branches: [ master, develop ]
   workflow_dispatch:
 
@@ -11,121 +11,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
     name: Build and Test
-    runs-on: macos-26-arm64
-    timeout-minutes: 60
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        scheme: [iBurn, iBurnTests, PlayaKitTests]
-        
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v7
-      with:
-        submodules: recursive
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '26.6'
-    
-    - name: Cache Ruby Gems
-      uses: actions/cache@v6
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
-    
-    - name: Cache Swift packages
-      uses: actions/cache@v6
-      with:
-        # SwiftPM's shared repository cache plus the checkouts/artifacts xcodebuild resolves
-        # into DerivedData. Keep the default DerivedData SourcePackages location: the
-        # Crashlytics phase and the LicensePlistBuildTool plugin both look there.
-        path: |
-          ~/Library/Caches/org.swift.swiftpm
-          ~/Library/Developer/Xcode/DerivedData/iBurn-*/SourcePackages
-        key: ${{ runner.os }}-spm-${{ hashFiles('iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-spm-
-    
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4'
-        bundler-cache: true
-        
-    - name: Setup Dependencies
-      run: |
-        bundle config path vendor/bundle
-        bundle install --jobs 4 --retry 3
-    
-    - name: Create Required Secret Files
-      env:
-        MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
-        CRASHLYTICS_API_TOKEN: ${{ secrets.CRASHLYTICS_API_TOKEN }}
-        HOCKEY_BETA_IDENTIFIER: ${{ secrets.HOCKEY_BETA_IDENTIFIER }}
-        HOCKEY_LIVE_IDENTIFIER: ${{ secrets.HOCKEY_LIVE_IDENTIFIER }}
-        EMBARGO_PASSCODE_SHA256: ${{ secrets.EMBARGO_PASSCODE_SHA256 }}
-        UPDATES_URL: ${{ secrets.UPDATES_URL }}
-        MAPBOX_STYLE_URL: ${{ secrets.MAPBOX_STYLE_URL }}
-      run: |
-        # Create GoogleService-Info.plist (placeholder)
-        touch iBurn/GoogleService-Info.plist
-        
-        # Create InfoPlistSecrets.h
-        cat > ./iBurn/InfoPlistSecrets.h << EOF
-        #define MAPBOX_ACCESS_TOKEN ${MAPBOX_ACCESS_TOKEN:-test}
-        #define CRASHLYTICS_API_TOKEN ${CRASHLYTICS_API_TOKEN:-test}
-        EOF
-        
-        # Create BRCSecrets.m
-        cat > ./iBurn/BRCSecrets.m << EOF
-        NSString * const kBRCHockeyBetaIdentifier = @"${HOCKEY_BETA_IDENTIFIER:-}";
-        NSString * const kBRCHockeyLiveIdentifier = @"${HOCKEY_LIVE_IDENTIFIER:-}";
-        NSString * const kBRCEmbargoPasscodeSHA256Hash = @"${EMBARGO_PASSCODE_SHA256:-}";
-        NSString * const kBRCUpdatesURLString = @"${UPDATES_URL:-}";
-        NSString * const kBRCMapBoxStyleURL = @"${MAPBOX_STYLE_URL:-https://example.com}";
-        NSString * const kBRCMapBoxAccessToken = @"${MAPBOX_ACCESS_TOKEN:-}";
-        EOF
-    
-    - name: Build App
-      if: matrix.scheme == 'iBurn'
-      run: |
-        xcodebuild -workspace iBurn.xcworkspace \
-                   -skipPackagePluginValidation \
-                   -skipMacroValidation \
-                   -scheme iBurn \
-                   -sdk iphonesimulator \
-                   -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
-                   build | xcpretty -c
-    
-    - name: Run Tests
-      if: matrix.scheme != 'iBurn'
-      run: |
-        xcodebuild -workspace iBurn.xcworkspace \
-                   -skipPackagePluginValidation \
-                   -skipMacroValidation \
-                   -scheme ${{ matrix.scheme }} \
-                   -sdk iphonesimulator \
-                   -destination "platform=iOS Simulator,name=iPhone 17 Pro,arch=arm64,OS=latest" \
-                   test | xcpretty -c
-    
-    - name: Archive Test Results
-      if: always() && matrix.scheme != 'iBurn'
-      uses: actions/upload-artifact@v7
-      with:
-        name: test-results-${{ matrix.scheme }}
-        path: |
-          ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/
-          *.xcresult
-        retention-days: 30
+    uses: ./.github/workflows/build-and-test.yml
