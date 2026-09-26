@@ -63,6 +63,8 @@ jobs:
         EOF
 
         cat > ./iBurn/BRCSecrets.m << EOF
+        #import <Foundation/Foundation.h>
+
         NSString * const kBRCHockeyBetaIdentifier = @"";
         NSString * const kBRCHockeyLiveIdentifier = @"";
         NSString * const kBRCEmbargoPasscodeSHA256Hash = @"";

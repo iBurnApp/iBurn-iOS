@@ -110,6 +110,8 @@ jobs:
         
         # Create BRCSecrets.m
         cat > ./iBurn/BRCSecrets.m << EOF
+        #import <Foundation/Foundation.h>
+
         NSString * const kBRCHockeyBetaIdentifier = @"${HOCKEY_BETA_IDENTIFIER}";
         NSString * const kBRCHockeyLiveIdentifier = @"${HOCKEY_LIVE_IDENTIFIER}";
         NSString * const kBRCEmbargoPasscodeSHA256Hash = @"${EMBARGO_PASSCODE_SHA256}";
