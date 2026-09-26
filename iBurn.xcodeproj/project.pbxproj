@@ -10,6 +10,7 @@
 		04720AD2C99286B359A608F3 /* fence.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 426F86ABDF799A13905EEFEC /* fence.geojson */; };
 		0F5280F97FF05B6472BE5119 /* PlayaAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 7B4FC0E27D6177950F583A6C /* PlayaAPI */; };
 		2C3F1471343CC8D21B1AC0F4 /* streets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 765683D57014A2585A750818 /* streets.geojson */; };
+		5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC5EE0A8D36528A3F4C315B /* PermissionScope */; };
 		5C39982F89FB9433FB0DEBD3 /* iBurn.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = D5A03B131F60EB0BA63B6154 /* iBurn.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		63CE2A581987140F00F65B01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A571987140F00F65B01 /* Foundation.framework */; };
 		63CE2A5A1987140F00F65B01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63CE2A591987140F00F65B01 /* CoreGraphics.framework */; };
@@ -17,9 +18,11 @@
 		69E87EE357276FE574287C5F /* points.geojson in Resources */ = {isa = PBXBuildFile; fileRef = E4C02C37EA6C6EC484366C05 /* points.geojson */; };
 		7B2FA7D941A961C1D7E01881 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 943BDAA9ED89068B088FA38F /* Foundation.framework */; };
 		93CBF9AE70B2AF9D4E656366 /* polygons.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 9E10477F2E42824CFC141C92 /* polygons.geojson */; };
+		B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */; };
 		C03FD6DC2084AA53017BF9DA /* PlayaGeo in Frameworks */ = {isa = PBXBuildFile; productRef = 749A3060A0B43D8A742A931E /* PlayaGeo */; };
 		C518515B936EF809B70240D6 /* iBurn2026APIData in Frameworks */ = {isa = PBXBuildFile; productRef = A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */; };
 		C6E7832B37C2F274DE417CD3 /* toilets.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 3FBB22955D76D43845931068 /* toilets.geojson */; };
+		CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */; };
 		D90256412E1F3FE00058AEF8 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = D90256402E1F3FE00058AEF8 /* PlayaDB */; };
 		D902564B2E1F41060058AEF8 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = D902564A2E1F41060058AEF8 /* GRDB */; };
 		D902566B2E1F3FE00058AEF9 /* PlayaColors in Frameworks */ = {isa = PBXBuildFile; productRef = D902566A2E1F3FE00058AEF9 /* PlayaColors */; };
@@ -43,9 +46,6 @@
 		D9E86E3A2E4B2052009B4834 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9E86E392E4B2052009B4834 /* FirebaseAnalyticsCore */; };
 		D9EB0A012EAB000100000001 /* YearSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D9EB0A002EAB000000000002 /* YearSettings.plist */; };
 		F7E3E8D3B6D02857B42F3284 /* PlayaDB in Frameworks */ = {isa = PBXBuildFile; productRef = 5E05B7773440522D30BDA948 /* PlayaDB */; };
-		B08CDCE76BDAB58A46720ABF /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */; };
-		CFA4427F6E863D59FF0432DB /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */; };
-		5699F421B2F5FCEC34F36AF1 /* PermissionScope in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC5EE0A8D36528A3F4C315B /* PermissionScope */; };
 		FFEF45E47F6D06D12B58AC25 /* Onboard in Frameworks */ = {isa = PBXBuildFile; productRef = 60B8A4256F3450ECD01ACABE /* Onboard */; };
 /* End PBXBuildFile section */
 
@@ -646,7 +646,7 @@
 		};
 		EF9882E7ED7DC46133E9399C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = A240549471898D1C345FB22F /* plugin:LicensePlistBuildTool */;
+			productRef = A240549471898D1C345FB22F /* LicensePlistBuildTool */;
 		};
 /* End PBXTargetDependency section */
 
@@ -986,9 +986,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Submodules/PermissionScope;
+		};
 		7DF963F5F752CA90881D93D0 /* XCLocalSwiftPackageReference "Packages/PlayaGeo" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaGeo;
+		};
+		A9906D84580EA8E37CC2726F /* XCLocalSwiftPackageReference "Submodules/Onboard" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Submodules/Onboard;
 		};
 		D902563F2E1F3FE00058AEF8 /* XCLocalSwiftPackageReference "Packages/PlayaDB" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1006,17 +1014,25 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/PlayaAPI;
 		};
-		0F46ADEFAC407196815AB184 /* XCLocalSwiftPackageReference "Submodules/PermissionScope" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Submodules/PermissionScope;
-		};
-		A9906D84580EA8E37CC2726F /* XCLocalSwiftPackageReference "Submodules/Onboard" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Submodules/Onboard;
-		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.10.0;
+			};
+		};
+		7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mono0926/LicensePlist";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.28.2;
+			};
+		};
 		D90256492E1F41060058AEF8 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift.git";
@@ -1057,28 +1073,25 @@
 				minimumVersion = 7.0.3;
 			};
 		};
-		4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/CocoaLumberjack/CocoaLumberjack";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.10.0;
-			};
-		};
-		7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mono0926/LicensePlist";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.28.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		5E05B7773440522D30BDA948 /* PlayaDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlayaDB;
+		};
+		60B8A4256F3450ECD01ACABE /* Onboard */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Onboard;
+		};
+		60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjackSwift;
+		};
+		6DC5EE0A8D36528A3F4C315B /* PermissionScope */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PermissionScope;
 		};
 		749A3060A0B43D8A742A931E /* PlayaGeo */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1087,6 +1100,16 @@
 		7B4FC0E27D6177950F583A6C /* PlayaAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlayaAPI;
+		};
+		8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
+			productName = CocoaLumberjack;
+		};
+		A240549471898D1C345FB22F /* LicensePlistBuildTool */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */;
+			productName = "plugin:LicensePlistBuildTool";
 		};
 		A5CE57DA0AB0F2BBD589609D /* iBurn2026APIData */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1155,29 +1178,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D966561228A9970B002FA471 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalyticsCore;
-		};
-		8B9F4453E056A58B207FD0B3 /* CocoaLumberjack */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjack;
-		};
-		60C3E91A8036B7738DC45EED /* CocoaLumberjackSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4E86DCD7F1CB9B4E3124DD0F /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
-			productName = CocoaLumberjackSwift;
-		};
-		6DC5EE0A8D36528A3F4C315B /* PermissionScope */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = PermissionScope;
-		};
-		60B8A4256F3450ECD01ACABE /* Onboard */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Onboard;
-		};
-		A240549471898D1C345FB22F /* plugin:LicensePlistBuildTool */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 7C202D0E0226217CD1E87023 /* XCRemoteSwiftPackageReference "LicensePlist" */;
-			productName = "plugin:LicensePlistBuildTool";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
