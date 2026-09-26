@@ -55,7 +55,31 @@ jobs:
       run: |
         # These are gitignored. CI only builds for the simulator and runs tests, so stub
         # values are enough and no repository secrets are needed (PRs from forks get none).
-        touch iBurn/GoogleService-Info.plist
+        # GoogleService-Info.plist must be a valid plist (CopyPlistFile rejects an empty file)
+        # and a well-formed Firebase config: BRCAppDelegate calls [FIRApp configure] at
+        # launch, which throws on a missing or malformed file and would take down the test
+        # host. The values are fake placeholders in the formats Firebase validates.
+        cat > iBurn/GoogleService-Info.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>API_KEY</key><string>AIzaSyCI0000000000000000000000000000000</string>
+          <key>GCM_SENDER_ID</key><string>123456789012</string>
+          <key>PLIST_VERSION</key><string>1</string>
+          <key>BUNDLE_ID</key><string>com.trailbehind.iBurn2010</string>
+          <key>PROJECT_ID</key><string>iburn-ci-placeholder</string>
+          <key>STORAGE_BUCKET</key><string>iburn-ci-placeholder.appspot.com</string>
+          <key>IS_ADS_ENABLED</key><false/>
+          <key>IS_ANALYTICS_ENABLED</key><false/>
+          <key>IS_APPINVITE_ENABLED</key><false/>
+          <key>IS_GCM_ENABLED</key><false/>
+          <key>IS_SIGNIN_ENABLED</key><false/>
+          <key>GOOGLE_APP_ID</key><string>1:123456789012:ios:0000000000000000</string>
+        </dict>
+        </plist>
+        EOF
+        plutil -lint iBurn/GoogleService-Info.plist
 
         cat > ./iBurn/InfoPlistSecrets.h << EOF
         #define MAPBOX_ACCESS_TOKEN test
