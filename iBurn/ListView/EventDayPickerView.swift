@@ -1,20 +1,26 @@
 import SwiftUI
+import PlayaAPI
 
 /// Horizontal scrollable day picker for event list navigation.
+///
+/// Days are Black Rock City days: labels and "is selected" use BRC time, so the picker
+/// agrees with the event times and day buckets whatever zone the device is set to.
 struct EventDayPickerView: View {
     let days: [Date]
     @Binding var selectedDay: Date
     @Environment(\.themeColors) var themeColors
 
-    private static let weekdayFormatter: DateFormatter = {
+    static let weekdayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEE"
+        f.timeZone = .burningMan
         return f
     }()
 
-    private static let dayNumberFormatter: DateFormatter = {
+    static let dayNumberFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "d"
+        f.timeZone = .burningMan
         return f
     }()
 
@@ -23,7 +29,7 @@ struct EventDayPickerView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(days, id: \.self) { day in
-                        let isSelected = Calendar.current.isDate(day, inSameDayAs: selectedDay)
+                        let isSelected = Calendar.burningMan.isDate(day, inSameDayAs: selectedDay)
                         Button {
                             selectedDay = day
                         } label: {

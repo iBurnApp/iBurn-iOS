@@ -7,26 +7,14 @@
 //
 
 import Foundation
+import PlayaAPI
 
-extension TimeZone {
-    /// Gerlach time / PDT
-    static let burningManTimeZone = TimeZone(abbreviation: "PDT")!
-}
-
-extension Calendar {
-    /// Gregorian calendar in Black Rock City time. Use it for any day or hour-of-day
-    /// bucketing of event times, so it agrees with the times the UI shows (which are
-    /// formatted in `burningManTimeZone`) whatever zone the device is set to.
-    static let burningMan: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
-        return calendar
-    }()
-}
+// `TimeZone.burningMan` and `Calendar.burningMan` (Black Rock City time) live in PlayaAPI so
+// the app, the watch and PlayaDB share one definition. See BlackRockCityTime.swift there.
 
 extension NSTimeZone {
     @objc public static var brc_burningManTimeZone: NSTimeZone {
-        return TimeZone.burningManTimeZone as NSTimeZone
+        return TimeZone.burningMan as NSTimeZone
     }
 }
 
@@ -35,7 +23,7 @@ extension DateFormatter {
     static let eventGroupDateFormatter: DateFormatter = {
         var df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
-        df.timeZone = TimeZone.burningManTimeZone
+        df.timeZone = TimeZone.burningMan
         return df
     }()
     
@@ -43,7 +31,7 @@ extension DateFormatter {
     static let dayOfWeek: DateFormatter = {
         var df = DateFormatter()
         df.dateFormat = "EEEE"
-        df.timeZone = TimeZone.burningManTimeZone
+        df.timeZone = TimeZone.burningMan
         return df
     }()
     
@@ -51,7 +39,7 @@ extension DateFormatter {
     static let timeOnly: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "h:mma"
-        df.timeZone = TimeZone.burningManTimeZone
+        df.timeZone = TimeZone.burningMan
         return df
     }()
     
@@ -59,7 +47,7 @@ extension DateFormatter {
     static let annotationDateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "E' 'M/d' 'h:mma"
-        df.timeZone = TimeZone.burningManTimeZone
+        df.timeZone = TimeZone.burningMan
         return df
     }()
     
@@ -68,7 +56,7 @@ extension DateFormatter {
         let df = DateFormatter()
         df.dateStyle = .short
         df.timeStyle = .short
-        df.timeZone = TimeZone.burningManTimeZone
+        df.timeZone = TimeZone.burningMan
         return df
     }()
 }

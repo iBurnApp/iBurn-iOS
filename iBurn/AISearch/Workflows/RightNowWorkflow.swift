@@ -227,7 +227,7 @@ private func vibeMentionsVehicles(_ vibe: String) -> Bool {
 private func brcTimeFormatter() -> DateFormatter {
     let f = DateFormatter()
     f.dateFormat = "h:mm a"
-    f.timeZone = .burningManTimeZone
+    f.timeZone = .burningMan
     return f
 }
 

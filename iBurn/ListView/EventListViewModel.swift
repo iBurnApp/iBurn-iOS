@@ -89,8 +89,9 @@ final class EventListViewModel: ObservableObject {
         self.filterStorageKey = filterStorageKey
         self.festivalDays = festivalDays
 
-        // Default to current day within the festival range
-        self.selectedDay = YearSettings.dayWithinFestival(.present)
+        // Default to current day within the festival range, as the BRC midnight that
+        // starts it — the same instant as the matching `festivalDays` entry and day key.
+        self.selectedDay = Calendar.burningMan.startOfDay(for: YearSettings.dayWithinFestival(.present))
 
         // Load persisted filter or use sensible default (hide expired). The max-duration
         // preference is stored under its own key and overlaid here so the 6h default applies
@@ -122,8 +123,9 @@ final class EventListViewModel: ObservableObject {
 
     /// Sections for the currently selected day — pure in-memory dict lookup.
     /// Returns `[]` for days the user hasn't generated content for.
+    /// Keys are Black Rock City midnights (see `PlayaDBImpl.bucketByDayThenHour`).
     var browseSections: [EventHourSection] {
-        let key = Calendar.current.startOfDay(for: selectedDay)
+        let key = Calendar.burningMan.startOfDay(for: selectedDay)
         return dayBuckets[key] ?? []
     }
 

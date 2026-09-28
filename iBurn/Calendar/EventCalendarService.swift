@@ -246,7 +246,7 @@ actor EventCalendarServiceImpl: EventCalendarService {
             startDate: occurrence.startDate,
             endDate: occurrence.endDate,
             isAllDay: occurrence.allDay,
-            timeZone: TimeZone.burningManTimeZone,
+            timeZone: TimeZone.burningMan,
             alarmOffsets: alarmOffsets
         )
     }

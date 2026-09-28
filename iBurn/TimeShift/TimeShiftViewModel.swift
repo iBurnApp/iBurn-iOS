@@ -63,6 +63,7 @@ public class TimeShiftViewModel: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        formatter.timeZone = .burningMan
         return formatter.string(from: selectedDate)
     }
     
@@ -153,56 +154,29 @@ public class TimeShiftViewModel: ObservableObject {
     }
     
     func setToSunrise() {
-        // Find next sunrise (7:00 AM)
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
-        components.hour = 7
-        components.minute = 0
-        
-        if let sunrise = Calendar.current.date(from: components),
-           sunrise > selectedDate {
-            selectedDate = sunrise
-        } else {
-            // Next day's sunrise
-            components.day! += 1
-            if let nextSunrise = Calendar.current.date(from: components) {
-                selectedDate = nextSunrise
-            }
-        }
+        selectedDate = Self.next(hour: 7, after: selectedDate)
     }
-    
+
     func setToNoon() {
-        // Find next noon (12:00 PM)
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
-        components.hour = 12
-        components.minute = 0
-        
-        if let noon = Calendar.current.date(from: components),
-           noon > selectedDate {
-            selectedDate = noon
-        } else {
-            // Next day's noon
-            components.day! += 1
-            if let nextNoon = Calendar.current.date(from: components) {
-                selectedDate = nextNoon
-            }
-        }
+        selectedDate = Self.next(hour: 12, after: selectedDate)
     }
-    
+
     func setToSunset() {
-        // Find next sunset (7:00 PM)
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: selectedDate)
-        components.hour = 19
-        components.minute = 0
-        
-        if let sunset = Calendar.current.date(from: components),
-           sunset > selectedDate {
-            selectedDate = sunset
-        } else {
-            // Next day's sunset
-            components.day! += 1
-            if let nextSunset = Calendar.current.date(from: components) {
-                selectedDate = nextSunset
-            }
+        selectedDate = Self.next(hour: 19, after: selectedDate)
+    }
+
+    /// The next `hour`:00 on the playa strictly after `date`: today's if it's still ahead,
+    /// otherwise tomorrow's. Black Rock City time (`Calendar.burningMan`) — "sunrise" means
+    /// 7 AM in Black Rock City, not 7 AM wherever the phone happens to be set.
+    static func next(hour: Int, after date: Date, calendar: Calendar = .burningMan) -> Date {
+        let dayStart = calendar.startOfDay(for: date)
+        if let today = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: dayStart),
+           today > date {
+            return today
         }
+        guard let nextDay = calendar.date(byAdding: .day, value: 1, to: dayStart),
+              let tomorrow = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: nextDay)
+        else { return date }
+        return tomorrow
     }
 }

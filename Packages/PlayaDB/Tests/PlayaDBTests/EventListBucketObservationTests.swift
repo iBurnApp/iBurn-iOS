@@ -2,6 +2,7 @@ import XCTest
 import CoreLocation
 import GRDB
 @testable import PlayaDB
+import PlayaAPI
 import PlayaAPITestHelpers
 
 /// Tests for `observeEventsByDayThenHour` — the long-lived observation that powers
@@ -78,7 +79,7 @@ final class EventListBucketObservationTests: XCTestCase {
     }
 
     private func startOfDay(_ date: Date) -> Date {
-        Calendar.current.startOfDay(for: date)
+        Calendar.burningMan.startOfDay(for: date)
     }
 
     // MARK: - Tests
@@ -86,7 +87,7 @@ final class EventListBucketObservationTests: XCTestCase {
     /// Multi-day fixtures bucket cleanly into per-day, per-hour sections, ordered.
     func testBucketGroupsByDayThenHour() async throws {
         let year = 2099
-        let cal = Calendar.current
+        let cal = Calendar.burningMan
         guard let dayA = cal.date(from: DateComponents(year: year, month: 8, day: 25, hour: 14)),
               let dayB = cal.date(from: DateComponents(year: year, month: 8, day: 26, hour: 9)) else {
             return XCTFail("Could not construct fixture dates")
@@ -124,7 +125,7 @@ final class EventListBucketObservationTests: XCTestCase {
     func testJoinedFetchResolvesHostCamp() async throws {
         let year = 2099
         try await insertCamp(uid: "host-camp-1", name: "Camp Sparkle", year: year)
-        let cal = Calendar.current
+        let cal = Calendar.burningMan
         let start = try XCTUnwrap(cal.date(from: DateComponents(year: year, month: 8, day: 28, hour: 11)))
         try await insertEvent(uid: "evt-hosted-1", name: "Sparkle Hour", year: year,
                               start: start, end: start.addingTimeInterval(3600),
@@ -140,7 +141,7 @@ final class EventListBucketObservationTests: XCTestCase {
     /// Favoriting an event re-emits because `object_metadata` is in the tracked region set.
     func testFavoriteToggleReEmits() async throws {
         let year = 2099
-        let cal = Calendar.current
+        let cal = Calendar.burningMan
         let start = try XCTUnwrap(cal.date(from: DateComponents(year: year, month: 8, day: 29, hour: 13)))
         try await insertEvent(uid: "evt-fav-1", name: "Fav Me", year: year,
                               start: start, end: start.addingTimeInterval(3600))
@@ -172,7 +173,7 @@ final class EventListBucketObservationTests: XCTestCase {
     /// `onlyFavorites = true` is pushed into SQL via EXISTS; non-favorited rows are excluded.
     func testOnlyFavoritesFilterAppliesAtSqlLevel() async throws {
         let year = 2099
-        let cal = Calendar.current
+        let cal = Calendar.burningMan
         let start = try XCTUnwrap(cal.date(from: DateComponents(year: year, month: 8, day: 30, hour: 10)))
 
         try await insertEvent(uid: "evt-favored", name: "Favored", year: year,

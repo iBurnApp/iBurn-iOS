@@ -1099,11 +1099,11 @@ class DetailViewModel: ObservableObject {
     private func formatPlayaEventSchedule(occ: EventObjectOccurrence) -> NSAttributedString {
         let dayFormatter = DateFormatter()
         dayFormatter.dateFormat = "EEEE M/d"
-        dayFormatter.timeZone = TimeZone.burningManTimeZone
+        dayFormatter.timeZone = TimeZone.burningMan
 
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
+        timeFormatter.timeZone = TimeZone.burningMan
 
         let dayString = dayFormatter.string(from: occ.startDate)
         let timeString: String
@@ -1141,22 +1141,26 @@ class DetailViewModel: ObservableObject {
     
 
     /// Formats start/end dates into a "Day at Time - Duration" string.
-    static func formatEventTimeAndDuration(startDate: Date?, endDate: Date?) -> String {
+    ///
+    /// "Today"/"Tomorrow" are Black Rock City days relative to `now`, matching the BRC
+    /// times printed beside them, whatever zone the device is set to.
+    static func formatEventTimeAndDuration(startDate: Date?, endDate: Date?, now: Date = .present) -> String {
         guard let startDate, let endDate else { return "" }
-        let calendar = Calendar.current
+        let calendar = Calendar.burningMan
         let timeFormatter = DateFormatter()
         timeFormatter.timeStyle = .short
-        timeFormatter.timeZone = TimeZone.burningManTimeZone
+        timeFormatter.timeZone = TimeZone.burningMan
 
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now))
         var timeString: String
-        if calendar.isDateInToday(startDate) {
+        if calendar.isDate(startDate, inSameDayAs: now) {
             timeString = "Today at \(timeFormatter.string(from: startDate))"
-        } else if calendar.isDateInTomorrow(startDate) {
+        } else if let tomorrow, calendar.isDate(startDate, inSameDayAs: tomorrow) {
             timeString = "Tomorrow at \(timeFormatter.string(from: startDate))"
         } else {
             let dayFormatter = DateFormatter()
             dayFormatter.dateFormat = "EEEE M/d"
-            dayFormatter.timeZone = TimeZone.burningManTimeZone
+            dayFormatter.timeZone = TimeZone.burningMan
             timeString = "\(dayFormatter.string(from: startDate)) at \(timeFormatter.string(from: startDate))"
         }
 

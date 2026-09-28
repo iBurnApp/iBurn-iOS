@@ -85,8 +85,7 @@ enum TimeOfDay: String, CaseIterable, Identifiable, Sendable {
         let high = YearSettings.eventEnd
         func clamp(_ date: Date) -> Date { min(max(date, low), high) }
 
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
+        let calendar = Calendar.burningMan
         let dayStart = calendar.startOfDay(for: day)
 
         guard let range = hourRange else {

@@ -92,14 +92,14 @@ extension EventObjectOccurrence {
         formatter.dateFormat = "h:mma"
         formatter.amSymbol = "am"
         formatter.pmSymbol = "pm"
-        formatter.timeZone = TimeZone.burningManTimeZone
+        formatter.timeZone = TimeZone.burningMan
         return formatter.string(from: date)
     }
 
     private func dayAbbrev(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
-        formatter.timeZone = TimeZone.burningManTimeZone
+        formatter.timeZone = TimeZone.burningMan
         return formatter.string(from: date)
     }
 }

@@ -7,6 +7,7 @@
 //
 
 import CoreLocation
+import PlayaAPI
 import PlayaDB
 import PlayaGeo
 import SwiftUI
@@ -154,9 +155,12 @@ struct DetailScreen: View {
     private func occurrenceText(_ occurrence: EventObjectOccurrence) -> String {
         let weekdayFormatter = DateFormatter()
         weekdayFormatter.setLocalizedDateFormatFromTemplate("EEE")
+        // Black Rock City time, matching the phone and the event list.
+        weekdayFormatter.timeZone = .burningMan
         let intervalFormatter = DateIntervalFormatter()
         intervalFormatter.dateStyle = .none
         intervalFormatter.timeStyle = .short
+        intervalFormatter.timeZone = .burningMan
         let weekday = weekdayFormatter.string(from: occurrence.startDate)
         let times = intervalFormatter.string(from: occurrence.startDate, to: occurrence.endDate)
         return "\(weekday) \(times)"

@@ -1,4 +1,5 @@
 import Foundation
+import PlayaAPI
 import CoreLocation
 import GRDB
 
@@ -327,9 +328,8 @@ public extension EventObjectOccurrence {
 // MARK: - Playa-time formatters
 
 extension DateFormatter {
-    /// Black Rock City runs on US Pacific time; the app's `TimeZone.burningManTimeZone`
-    /// is the same zone, expressed as the fixed PDT offset the event always falls in.
-    static let playaTimeZone = TimeZone(identifier: "America/Los_Angeles") ?? .current
+    /// Black Rock City time; see `TimeZone.burningMan` in PlayaAPI.
+    static let playaTimeZone = TimeZone.burningMan
 
     /// e.g. "4:19 PM"
     static let playaTimeOnly: DateFormatter = {

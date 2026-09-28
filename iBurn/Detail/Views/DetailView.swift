@@ -610,7 +610,7 @@ struct DetailDateCell: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = format
-        formatter.timeZone = TimeZone.burningManTimeZone
+        formatter.timeZone = TimeZone.burningMan
         return formatter.string(from: date)
     }
 }

@@ -25,7 +25,7 @@ enum SearchResultIndex {
     // MARK: - Index Titles
 
     /// The index title a single result sorts under.
-    static func indexTitle(for item: SearchResultItem, calendar: Calendar = brcCalendar) -> String {
+    static func indexTitle(for item: SearchResultItem, calendar: Calendar = .burningMan) -> String {
         switch item {
         case .event(let occurrence):
             return eventTitle(for: occurrence.startDate, calendar: calendar)
@@ -46,13 +46,13 @@ enum SearchResultIndex {
 
     /// Day initial + 12-hour clock hour, e.g. "M6" for Monday 6:00. The day initial is
     /// what keeps a multi-day result set from showing the same digits over and over.
-    static func eventTitle(for date: Date, calendar: Calendar = brcCalendar) -> String {
+    static func eventTitle(for date: Date, calendar: Calendar = .burningMan) -> String {
         let dayInitial = dayOfWeekFormatter.string(from: date).first.map(String.init) ?? ""
         return "\(dayInitial)\(clockHour(for: date, calendar: calendar))"
     }
 
     /// The rail's two characters spelled out for the scrub bubble: "Mon 9a", "Tue 12p".
-    static func spelledEventTitle(for date: Date, calendar: Calendar = brcCalendar) -> String {
+    static func spelledEventTitle(for date: Date, calendar: Calendar = .burningMan) -> String {
         let day = dayAbbreviationFormatter.string(from: date)
         let meridiem = calendar.component(.hour, from: date) < 12 ? "a" : "p"
         return "\(day) \(clockHour(for: date, calendar: calendar))\(meridiem)"
@@ -64,7 +64,7 @@ enum SearchResultIndex {
     }
 
     /// Spoken form of an item's stop, without the section name.
-    static func spelledTitle(for item: SearchResultItem, calendar: Calendar = brcCalendar) -> String {
+    static func spelledTitle(for item: SearchResultItem, calendar: Calendar = .burningMan) -> String {
         switch item {
         case .event(let occurrence):
             return spelledEventTitle(for: occurrence.startDate, calendar: calendar)
@@ -104,7 +104,7 @@ enum SearchResultIndex {
     /// ordered, so a stop always scrolls forward from the one above it.
     static func stops(
         for sections: [SearchResultSection],
-        calendar: Calendar = brcCalendar
+        calendar: Calendar = .burningMan
     ) -> [Stop] {
         var stops: [Stop] = []
         for section in sections {
@@ -144,7 +144,7 @@ enum SearchResultIndex {
     static func entries(
         for sections: [SearchResultSection],
         maxCount: Int,
-        calendar: Calendar = brcCalendar
+        calendar: Calendar = .burningMan
     ) -> [IndexRailEntry] {
         entries(
             stops: stops(for: sections, calendar: calendar),
@@ -224,7 +224,7 @@ enum SearchResultIndex {
     /// Counted by distinct destinations, not by stops: a single section whose rows all
     /// share one letter produces a marker and a letter that both scroll to the same row,
     /// which is a rail that cannot take you anywhere.
-    static func isEnabled(for sections: [SearchResultSection], calendar: Calendar = brcCalendar) -> Bool {
+    static func isEnabled(for sections: [SearchResultSection], calendar: Calendar = .burningMan) -> Bool {
         isEnabled(
             stops: stops(for: sections, calendar: calendar),
             totalRows: sections.reduce(0) { $0 + $1.items.count }
@@ -262,24 +262,17 @@ enum SearchResultIndex {
 
     // MARK: - Calendar
 
-    /// Black Rock City local time, matching the Yap grouping formatter.
-    static let brcCalendar: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .burningManTimeZone
-        return calendar
-    }()
-
     private static let dayOfWeekFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
-        formatter.timeZone = .burningManTimeZone
+        formatter.timeZone = .burningMan
         return formatter
     }()
 
     private static let dayAbbreviationFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
-        formatter.timeZone = .burningManTimeZone
+        formatter.timeZone = .burningMan
         return formatter
     }()
 }

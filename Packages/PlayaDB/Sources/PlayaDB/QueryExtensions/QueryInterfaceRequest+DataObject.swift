@@ -143,7 +143,8 @@ extension QueryInterfaceRequest where RowDecoder == EventOccurrence {
 
     /// Upcoming events (starting within X hours).
     public func startingWithin(hours: Int, from date: Date = PlayaDBClock.now()) -> Self {
-        let endDate = Calendar.current.date(byAdding: .hour, value: hours, to: date) ?? date
+        // Elapsed hours, not wall-clock hours: no calendar (and so no time zone) involved.
+        let endDate = date.addingTimeInterval(TimeInterval(hours) * 3600)
         return self
             .filter(EventOccurrence.Columns.startTime >= date)
             .filter(EventOccurrence.Columns.startTime <= endDate)

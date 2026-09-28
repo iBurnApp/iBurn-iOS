@@ -1,5 +1,6 @@
 import XCTest
 @testable import PlayaDB
+import PlayaAPI
 
 final class EventHourSectionTests: XCTestCase {
 
@@ -10,7 +11,7 @@ final class EventHourSectionTests: XCTestCase {
         components.day = 24
         components.hour = hour
         components.minute = minute
-        let start = try XCTUnwrap(Calendar.current.date(from: components))
+        let start = try XCTUnwrap(Calendar.burningMan.date(from: components))
         let end = start.addingTimeInterval(3600)
 
         let event = EventObject(

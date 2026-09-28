@@ -205,6 +205,7 @@ struct NearbyView: View {
     private func timeShiftInfoView(_ config: TimeShiftConfiguration) -> some View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE MMM d, h:mm a"
+        formatter.timeZone = .burningMan
         var text = "Warped: \(formatter.string(from: config.date))"
         if let location = config.location {
             text += String(format: " (%.4f, %.4f)", location.coordinate.latitude, location.coordinate.longitude)

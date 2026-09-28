@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import PlayaAPI
 import MapKit
 
 /// Filter options for querying event occurrences
@@ -125,9 +126,10 @@ public struct EventFilter: Hashable, Codable {
         EventFilter(startingWithinHours: hours)
     }
 
-    /// Filter for events on a specific day
+    /// Filter for events on a specific festival day: the Black Rock City day
+    /// (`Calendar.burningMan`) containing `date`, whatever zone the device is set to.
     public static func forDay(_ date: Date) -> EventFilter {
-        let calendar = Calendar.current
+        let calendar = Calendar.burningMan
         let startOfDay = calendar.startOfDay(for: date)
         let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
         return EventFilter(startDate: startOfDay, endDate: endOfDay)
