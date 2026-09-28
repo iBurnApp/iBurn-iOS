@@ -13,11 +13,12 @@ import XCTest
 
 final class GlobalSearchFilterTests: XCTestCase {
 
-    private var calendar: Calendar { .current }
+    /// Filters bucket by Black Rock City time, so fixtures are built on that clock too.
+    private var calendar: Calendar { .burningMan }
 
     // MARK: - Fixtures
 
-    /// A date on an arbitrary but fixed day, at the given local hour.
+    /// A date on an arbitrary but fixed day, at the given Black Rock City hour.
     private func date(day: Int, hour: Int, minute: Int = 0) throws -> Date {
         var components = DateComponents()
         components.year = 2026
@@ -162,6 +163,27 @@ final class GlobalSearchFilterTests: XCTestCase {
         XCTAssertTrue(SearchTimeOfDay.lateNight.contains(lateNightStart, calendar: calendar))
         XCTAssertTrue(SearchTimeOfDay.lateNight.contains(pastMidnight, calendar: calendar))
         XCTAssertFalse(SearchTimeOfDay.morning.contains(pastMidnight, calendar: calendar))
+    }
+
+    /// Regression: bands and day bounds used `Calendar.current`, so on a device (or CI
+    /// runner) outside Pacific time a noon event stopped counting as "Afternoon" even though
+    /// its row said 12:00 PM. Pin the process zone far from Pacific and use the default
+    /// calendar arguments, as the app does.
+    func testBandsAndDayBoundsUseBlackRockCityTimeWhateverTheDeviceZone() throws {
+        let originalZone = NSTimeZone.default
+        defer { NSTimeZone.default = originalZone }
+        NSTimeZone.default = try XCTUnwrap(TimeZone(identifier: "Asia/Tokyo"))
+
+        let noonOnPlaya = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-30T12:00:00-07:00"))
+        XCTAssertTrue(SearchTimeOfDay.afternoon.contains(noonOnPlaya))
+        XCTAssertFalse(SearchTimeOfDay.lateNight.contains(noonOnPlaya),
+                       "Noon on playa is 4am in Tokyo; the band must not follow the device")
+
+        let bounds = try XCTUnwrap(GlobalSearchFilter(day: noonOnPlaya).dayBounds)
+        XCTAssertEqual(bounds.start,
+                       try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-30T00:00:00-07:00")))
+        XCTAssertEqual(bounds.end,
+                       try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-31T00:00:00-07:00")))
     }
 
     // MARK: - Dedupe

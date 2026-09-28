@@ -421,7 +421,7 @@ final class GlobalSearchViewModel: ObservableObject {
     nonisolated static func dedupedOccurrences(
         _ occurrences: [EventObjectOccurrence],
         filter: GlobalSearchFilter,
-        calendar: Calendar = .current
+        calendar: Calendar = .burningMan
     ) -> [EventObjectOccurrence] {
         var seenEventUIDs: Set<String> = []
         return occurrences

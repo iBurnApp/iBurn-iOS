@@ -117,9 +117,30 @@ Read those for the current data-generation and geocoder-build pipelines.
 
 ## CI/CD
 
-GitHub Actions workflows live in `.github/workflows/` (`ci.yml`, `pr.yml`, `deploy.yml`, plus the
-Claude review workflows). Secrets are managed through GitHub Secrets — the workflow files list the
-exact names required. Deployment is triggered by git tags starting with `v`.
+GitHub Actions workflows live in `.github/workflows/`. `ci.yml` covers pushes to master/develop and
+manual runs (`gh workflow run ci.yml --ref <branch>`); `pr.yml` covers pull requests. Both call the
+reusable `build-and-test.yml`, which has two jobs:
+- build the `iBurn` scheme (which also builds iBurnWatch), then test `iBurnTests`, which covers
+  PlayaKitTests and PlayaGeocoderTests too;
+- run `swift test` for PlayaAPI, PlayaColors, PlayaDB, PlayaGeo and PlayaSeed on one runner.
+
+Runner and toolchain:
+- The runner is `runs-on: xcode-27`, GitHub's macOS 27 image. The `macos-26*` images only ship
+  Xcode 26, and `macos-26-arm64` is not a valid label at all: jobs on it queue until the 24h
+  timeout.
+- Xcode comes from `DEVELOPER_DIR=/Applications/Xcode_27.1.app`.
+- The only simulator runtime is iOS 27.0, so the destination pins `OS=27.0`. `OS=latest`
+  resolves to the 27.1 SDK version and finds no device.
+- Output goes through `xcbeautify`, which is on the image; xcpretty isn't.
+- Run steps use `shell: bash`, which turns on pipefail.
+
+Secrets:
+- CI writes stub `BRCSecrets.m`, `InfoPlistSecrets.h` and `GoogleService-Info.plist` and needs no
+  secrets.
+- The Firebase plist must be well-formed, because `[FIRApp configure]` runs in the test host.
+- Only `deploy.yml` reads GitHub Secrets. It is triggered by `v*` tags and runs fastlane `beta` on
+  the same image.
+- The Claude workflows run only on `@claude` comments.
 
 For the Travis → GitHub Actions migration history, see `Docs/2025-07-23-github-actions-migration.md`.
 

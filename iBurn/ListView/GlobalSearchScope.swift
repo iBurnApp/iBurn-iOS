@@ -47,7 +47,8 @@ enum GlobalSearchScope: String, CaseIterable, Identifiable, Codable {
 
 /// Coarse band of the day an event occurrence starts in. Bands are expressed as
 /// hour-of-day so they apply the same way on every festival day, including when no
-/// particular day is selected.
+/// particular day is selected. Hours are Black Rock City time (`Calendar.burningMan`),
+/// the same clock event rows display, not the device's time zone.
 ///
 /// `lateNight` wraps midnight (22:00–05:59), so its membership test is a union of two
 /// ranges rather than a single interval — see `contains(hour:)`.
@@ -93,7 +94,7 @@ enum SearchTimeOfDay: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Whether an occurrence starting at `hour` (0...23, local) falls in this band.
+    /// Whether an occurrence starting at `hour` (0...23, Black Rock City time) falls in this band.
     func contains(hour: Int) -> Bool {
         guard let bounds = hourBounds else { return true }
         if bounds.start <= bounds.end {
@@ -104,7 +105,7 @@ enum SearchTimeOfDay: String, CaseIterable, Identifiable, Codable {
     }
 
     /// Whether an occurrence starting at `date` falls in this band.
-    func contains(_ date: Date, calendar: Calendar = .current) -> Bool {
+    func contains(_ date: Date, calendar: Calendar = .burningMan) -> Bool {
         guard hourBounds != nil else { return true }
         return contains(hour: calendar.component(.hour, from: date))
     }
@@ -131,10 +132,11 @@ struct GlobalSearchFilter: Equatable, Codable {
     var isDefault: Bool { self == GlobalSearchFilter() }
 
     /// Calendar-day bounds for `day`, as `[start, end)` — the same shape
-    /// `EventFilter.forDay(_:)` produces. `nil` when no day is selected.
+    /// `EventFilter.forDay(_:)` produces, in Black Rock City time. `nil` when no day is
+    /// selected.
     var dayBounds: (start: Date, end: Date)? {
         guard let day else { return nil }
-        let calendar = Calendar.current
+        let calendar = Calendar.burningMan
         let start = calendar.startOfDay(for: day)
         guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
         return (start, end)

@@ -13,6 +13,17 @@ extension TimeZone {
     static let burningManTimeZone = TimeZone(abbreviation: "PDT")!
 }
 
+extension Calendar {
+    /// Gregorian calendar in Black Rock City time. Use it for any day or hour-of-day
+    /// bucketing of event times, so it agrees with the times the UI shows (which are
+    /// formatted in `burningManTimeZone`) whatever zone the device is set to.
+    static let burningMan: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .burningManTimeZone
+        return calendar
+    }()
+}
+
 extension NSTimeZone {
     @objc public static var brc_burningManTimeZone: NSTimeZone {
         return TimeZone.burningManTimeZone as NSTimeZone

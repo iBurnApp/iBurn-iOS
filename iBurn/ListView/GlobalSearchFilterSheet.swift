@@ -28,6 +28,9 @@ struct GlobalSearchFilterSheet: View {
     private static let dayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEEE, MMM d"
+        // Festival days are Black Rock City midnights; label them in that zone so a phone
+        // set west of Pacific time doesn't show the previous day.
+        f.timeZone = .burningManTimeZone
         return f
     }()
 

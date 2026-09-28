@@ -20,12 +20,14 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  # Same toolchain as build-and-test.yml: the `xcode-27` image (macOS 27) ships Xcode 27.x;
+  # the macos-26 images only have Xcode 26, which can't build the iOS 27 SDK project.
+  DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
 
 jobs:
   deploy:
     name: Deploy to TestFlight
-    runs-on: macos-26-arm64
+    runs-on: xcode-27
     timeout-minutes: 120
     
     steps:
@@ -52,11 +54,9 @@ jobs:
           fi
         done
 
-    - name: Setup Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '26.6'
-    
+    - name: Show toolchain
+      run: xcodebuild -version
+
     - name: Cache Ruby Gems
       uses: actions/cache@v6
       with:
@@ -74,9 +74,9 @@ jobs:
         path: |
           ~/Library/Caches/org.swift.swiftpm
           ~/Library/Developer/Xcode/DerivedData/iBurn-*/SourcePackages
-        key: ${{ runner.os }}-spm-${{ hashFiles('iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+        key: ${{ runner.os }}-xcode27-spm-${{ hashFiles('iBurn.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
         restore-keys: |
-          ${{ runner.os }}-spm-
+          ${{ runner.os }}-xcode27-spm-
     
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
@@ -110,6 +110,8 @@ jobs:
         
         # Create BRCSecrets.m
         cat > ./iBurn/BRCSecrets.m << EOF
+        #import <Foundation/Foundation.h>
+
         NSString * const kBRCHockeyBetaIdentifier = @"${HOCKEY_BETA_IDENTIFIER}";
         NSString * const kBRCHockeyLiveIdentifier = @"${HOCKEY_LIVE_IDENTIFIER}";
         NSString * const kBRCEmbargoPasscodeSHA256Hash = @"${EMBARGO_PASSCODE_SHA256}";

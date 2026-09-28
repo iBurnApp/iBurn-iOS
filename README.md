@@ -31,6 +31,8 @@ $ curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js http://playaevent
 * Create `BRCSecrets.m` and fill it with the following contents:
 
 	```obj-c
+	#import <Foundation/Foundation.h>
+
 	NSString * const kBRCHockeyBetaIdentifier = @"";
 	NSString * const kBRCHockeyLiveIdentifier = @"";
 	// To generate new passcode (without salt):
@@ -52,7 +54,7 @@ $ curl -o ./Submodules/iBurn-Data/data/2015/2015/camps.json.js http://playaevent
 or run these commands:
 
 ```
-$ echo -e "NSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n NSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\nNSString * const kBRCMapBoxAccessToken = @\"\";\n" > ./iBurn/BRCSecrets.m
+$ echo -e "#import <Foundation/Foundation.h>\n\nNSString * const kBRCHockeyBetaIdentifier = @\"\";\nNSString * const kBRCHockeyLiveIdentifier = @\"\";\nNSString * const kBRCEmbargoPasscodeSHA256Hash = @\"\";\nNSString * const kBRCUpdatesURLString = @\"\";\n NSString * const kBRCMapBoxStyleURL = @\"https://example.com\";\nNSString * const kBRCMapBoxAccessToken = @\"\";\n" > ./iBurn/BRCSecrets.m
 $ echo -e "#define MAPBOX_ACCESS_TOKEN test\n#define CRASHLYTICS_API_TOKEN test\n" > ./iBurn/InfoPlistSecrets.h
 ```
 
